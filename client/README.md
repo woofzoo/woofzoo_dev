@@ -34,3 +34,58 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+
+my-nextjs-app/
+├── .env.local
+├── .env.example
+├── next.config.js
+├── middleware.ts
+├── package.json
+├── tsconfig.json
+│
+├── public/
+│   ├── images/
+│   └── icons/
+│
+└── src/
+    ├── app/                     # App Router
+    │   ├── globals.css
+    │   ├── layout.tsx
+    │   ├── page.tsx
+    │   ├── loading.tsx
+    │   ├── error.tsx
+    │   │
+    │   ├── (auth)/              # Route groups
+    │   │   ├── login/page.tsx
+    │   │   └── register/page.tsx
+    │   │
+    │   ├── dashboard/
+    │   │   ├── layout.tsx
+    │   │   ├── page.tsx
+    │   │   └── [id]/page.tsx
+    │   │
+    │   └── api/                 # API routes
+    │       ├── auth/route.ts
+    │       └── users/route.ts
+    │
+    ├── components/              # UI components
+    │   ├── ui/                  # Basic components
+    │   ├── forms/
+    │   └── layout/
+    │
+    ├── lib/                     # Utilities & config
+    │   ├── auth.ts
+    │   ├── db.ts
+    │   ├── utils.ts
+    │   └── validations.ts
+    │
+    ├── hooks/                   # Custom hooks
+    │   └── use-auth.ts
+    │
+    ├── store/                   # State management
+    │   └── auth-store.ts
+    │
+    └── types/                   # TypeScript types
+        ├── auth.ts
+        └── global.d.ts
