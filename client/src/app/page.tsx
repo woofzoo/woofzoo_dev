@@ -1,15 +1,17 @@
-// page.tsx
 'use client'
+
 import { useEffect } from 'react'
 
-const page = () => {
+const Page = () => {
   useEffect(() => {
     document.title = "My Client Page"
   }, [])
 
   return (
-    <div>page</div>
+    <div className='text-amber-400'>
+      <p>page</p>
+    </div>
   )
 }
 
-export default page
+export default Page
