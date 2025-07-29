@@ -1,343 +1,321 @@
-// ============================================================================
-// SCSS Variables - Production Grade
-// ============================================================================
 
-// ============================================================================
-// BASE COLORS
-// ============================================================================
-$orange-primary: #ff6933;
-$teal-primary: #21A0A0;
-$yellow-primary: #FEB041;
-$red-primary: #E63E01;
+@theme {
+  /* ============================================================================ */
+  /* BASE COLORS */
+  /* ============================================================================ */
+  --color-orange-primary: #ff6933;
+  --color-teal-primary: #21A0A0;
+  --color-yellow-primary: #FEB041;
+  --color-red-primary: #E63E01;
 
-// ============================================================================
-// COLOR VARIANTS & SHADES
-// ============================================================================
+  /* ============================================================================ */
+  /* ORANGE VARIANTS */
+  /* ============================================================================ */
+  --color-orange-50: #fff4f0;
+  --color-orange-100: #ffe0d1;
+  --color-orange-200: #ffccb3;
+  --color-orange-300: #ffb894;
+  --color-orange-400: #ff7d52;
+  --color-orange-500: #ff6933;
+  --color-orange-600: #e55a2e;
+  --color-orange-700: #cc4a28;
+  --color-orange-800: #b33b23;
+  --color-orange-900: #992b1d;
 
-// Orange Variants
-$orange-50: lighten($orange-primary, 45%);   // #fff4f0
-$orange-100: lighten($orange-primary, 35%);  // #ffe0d1
-$orange-200: lighten($orange-primary, 25%);  // #ffccb3
-$orange-300: lighten($orange-primary, 15%);  // #ffb894
-$orange-400: lighten($orange-primary, 5%);   // #ff7d52
-$orange-500: $orange-primary;                // #ff6933
-$orange-600: darken($orange-primary, 10%);   // #e55a2e
-$orange-700: darken($orange-primary, 20%);   // #cc4a28
-$orange-800: darken($orange-primary, 30%);   // #b33b23
-$orange-900: darken($orange-primary, 40%);   // #992b1d
+  /* ============================================================================ */
+  /* TEAL VARIANTS */
+  /* ============================================================================ */
+  --color-teal-50: #f0fafa;
+  --color-teal-100: #d1f2f2;
+  --color-teal-200: #b3ebeb;
+  --color-teal-300: #94e3e3;
+  --color-teal-400: #52c7c7;
+  --color-teal-500: #21A0A0;
+  --color-teal-600: #1e9090;
+  --color-teal-700: #1a8080;
+  --color-teal-800: #177070;
+  --color-teal-900: #136060;
 
-// Teal Variants
-$teal-50: lighten($teal-primary, 45%);       // #f0fafa
-$teal-100: lighten($teal-primary, 35%);      // #d1f2f2
-$teal-200: lighten($teal-primary, 25%);      // #b3ebeb
-$teal-300: lighten($teal-primary, 15%);      // #94e3e3
-$teal-400: lighten($teal-primary, 5%);       // #52c7c7
-$teal-500: $teal-primary;                    // #21A0A0
-$teal-600: darken($teal-primary, 10%);       // #1e9090
-$teal-700: darken($teal-primary, 20%);       // #1a8080
-$teal-800: darken($teal-primary, 30%);       // #177070
-$teal-900: darken($teal-primary, 40%);       // #136060
+  /* ============================================================================ */
+  /* YELLOW VARIANTS */
+  /* ============================================================================ */
+  --color-yellow-50: #fffcf5;
+  --color-yellow-100: #fef7e1;
+  --color-yellow-200: #fef2cd;
+  --color-yellow-300: #feedb9;
+  --color-yellow-400: #feb958;
+  --color-yellow-500: #FEB041;
+  --color-yellow-600: #e59e3a;
+  --color-yellow-700: #cc8d34;
+  --color-yellow-800: #b37b2d;
+  --color-yellow-900: #996a27;
 
-// Yellow Variants
-$yellow-50: lighten($yellow-primary, 45%);   // #fffcf5
-$yellow-100: lighten($yellow-primary, 35%);  // #fef7e1
-$yellow-200: lighten($yellow-primary, 25%);  // #fef2cd
-$yellow-300: lighten($yellow-primary, 15%);  // #feedb9
-$yellow-400: lighten($yellow-primary, 5%);   // #feb958
-$yellow-500: $yellow-primary;                // #FEB041
-$yellow-600: darken($yellow-primary, 10%);   // #e59e3a
-$yellow-700: darken($yellow-primary, 20%);   // #cc8d34
-$yellow-800: darken($yellow-primary, 30%);   // #b37b2d
-$yellow-900: darken($yellow-primary, 40%);   // #996a27
+  /* ============================================================================ */
+  /* RED VARIANTS */
+  /* ============================================================================ */
+  --color-red-50: #fef2f0;
+  --color-red-100: #fce0d1;
+  --color-red-200: #f9cdb3;
+  --color-red-300: #f7bb94;
+  --color-red-400: #ea5218;
+  --color-red-500: #E63E01;
+  --color-red-600: #cf3801;
+  --color-red-700: #b83201;
+  --color-red-800: #a12c01;
+  --color-red-900: #8a2601;
 
-// Red Variants
-$red-50: lighten($red-primary, 45%);         // #fef2f0
-$red-100: lighten($red-primary, 35%);        // #fce0d1
-$red-200: lighten($red-primary, 25%);        // #f9cdb3
-$red-300: lighten($red-primary, 15%);        // #f7bb94
-$red-400: lighten($red-primary, 5%);         // #ea5218
-$red-500: $red-primary;                      // #E63E01
-$red-600: darken($red-primary, 10%);         // #cf3801
-$red-700: darken($red-primary, 20%);         // #b83201
-$red-800: darken($red-primary, 30%);         // #a12c01
-$red-900: darken($red-primary, 40%);         // #8a2601
+  /* ============================================================================ */
+  /* NEUTRAL COLORS */
+  /* ============================================================================ */
+  --color-white: #ffffff;
+  --color-gray-50: #fafafa;
+  --color-gray-100: #f4f4f5;
+  --color-gray-200: #e4e4e7;
+  --color-gray-300: #d4d4d8;
+  --color-gray-400: #a1a1aa;
+  --color-gray-500: #71717a;
+  --color-gray-600: #52525b;
+  --color-gray-700: #3f3f46;
+  --color-gray-800: #27272a;
+  --color-gray-900: #18181b;
+  --color-black: #000000;
 
-// ============================================================================
-// NEUTRAL COLORS
-// ============================================================================
-$white: #ffffff;
-$gray-50: #fafafa;
-$gray-100: #f4f4f5;
-$gray-200: #e4e4e7;
-$gray-300: #d4d4d8;
-$gray-400: #a1a1aa;
-$gray-500: #71717a;
-$gray-600: #52525b;
-$gray-700: #3f3f46;
-$gray-800: #27272a;
-$gray-900: #18181b;
-$black: #000000;
+  /* ============================================================================ */
+  /* SEMANTIC COLORS */
+  /* ============================================================================ */
+  --color-primary: #ff6933;
+  --color-primary-light: #ff7d52;
+  --color-primary-dark: #e55a2e;
+  --color-secondary: #21A0A0;
+  --color-secondary-light: #52c7c7;
+  --color-secondary-dark: #1e9090;
+  --color-accent: #FEB041;
+  --color-accent-light: #feb958;
+  --color-accent-dark: #e59e3a;
+  --color-success: #10b981;
+  --color-success-light: #34d399;
+  --color-success-dark: #059669;
+  --color-warning: #FEB041;
+  --color-warning-light: #feb958;
+  --color-warning-dark: #e59e3a;
+  --color-error: #E63E01;
+  --color-error-light: #ea5218;
+  --color-error-dark: #cf3801;
+  --color-info: #21A0A0;
+  --color-info-light: #52c7c7;
+  --color-info-dark: #1e9090;
 
-// ============================================================================
-// SEMANTIC COLORS
-// ============================================================================
-$primary: $orange-primary;
-$primary-light: $orange-400;
-$primary-dark: $orange-600;
+  /* ============================================================================ */
+  /* BACKGROUND COLORS */
+  /* ============================================================================ */
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #fafafa;
+  --color-bg-tertiary: #f4f4f5;
+  --color-bg-surface: #ffffff;
+  --color-bg-card: #ffffff;
 
-$secondary: $teal-primary;
-$secondary-light: $teal-400;
-$secondary-dark: $teal-600;
+  /* ============================================================================ */
+  /* TEXT COLORS */
+  /* ============================================================================ */
+  --color-text-primary: #18181b;
+  --color-text-secondary: #52525b;
+  --color-text-tertiary: #a1a1aa;
+  --color-text-inverse: #ffffff;
+  --color-text-muted: #71717a;
+  --color-text-disabled: #d4d4d8;
 
-$accent: $yellow-primary;
-$accent-light: $yellow-400;
-$accent-dark: $yellow-600;
+  /* ============================================================================ */
+  /* BORDER COLORS */
+  /* ============================================================================ */
+  --color-border-light: #e4e4e7;
+  --color-border-medium: #d4d4d8;
+  --color-border-dark: #a1a1aa;
+  --color-border-focus: #ff6933;
+  --color-border-error: #E63E01;
+  --color-border-success: #10b981;
 
-$success: #10b981;
-$success-light: #34d399;
-$success-dark: #059669;
+  /* ============================================================================ */
+  /* SPACING */
+  /* ============================================================================ */
+  --spacing-0: 0;
+  --spacing-1: 0.25rem;
+  --spacing-2: 0.5rem;
+  --spacing-3: 0.75rem;
+  --spacing-4: 1rem;
+  --spacing-5: 1.25rem;
+  --spacing-6: 1.5rem;
+  --spacing-8: 2rem;
+  --spacing-10: 2.5rem;
+  --spacing-12: 3rem;
+  --spacing-16: 4rem;
+  --spacing-20: 5rem;
+  --spacing-24: 6rem;
+  --spacing-32: 8rem;
+  --spacing-40: 10rem;
+  --spacing-48: 12rem;
+  --spacing-56: 14rem;
+  --spacing-64: 16rem;
 
-$warning: $yellow-primary;
-$warning-light: $yellow-400;
-$warning-dark: $yellow-600;
+  /* ============================================================================ */
+  /* BORDER RADIUS */
+  /* ============================================================================ */
+  --radius-none: 0;
+  --radius-sm: 0.125rem;
+  --radius-base: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+  --radius-3xl: 1.5rem;
+  --radius-full: 9999px;
 
-$error: $red-primary;
-$error-light: $red-400;
-$error-dark: $red-600;
+  /* ============================================================================ */
+  /* FONT SIZES */
+  /* ============================================================================ */
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 1.875rem;
+  --font-size-4xl: 2.25rem;
+  --font-size-5xl: 3rem;
+  --font-size-6xl: 3.75rem;
 
-$info: $teal-primary;
-$info-light: $teal-400;
-$info-dark: $teal-600;
+  /* ============================================================================ */
+  /* SHADOWS */
+  /* ============================================================================ */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-base: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px 0 rgb(0 0 0 / 0.06);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -1px rgb(0 0 0 / 0.06);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.05);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 10px 10px -5px rgb(0 0 0 / 0.04);
+  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+  --shadow-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.06);
+}
 
-// ============================================================================
-// BACKGROUND COLORS
-// ============================================================================
-$bg-primary: $white;
-$bg-secondary: $gray-50;
-$bg-tertiary: $gray-100;
-$bg-overlay: rgba(0, 0, 0, 0.5);
-$bg-surface: $white;
-$bg-card: $white;
+:root {
+  /* ============================================================================ */
+  /* LIGHT THEME (DEFAULT) */
+  /* ============================================================================ */
+  --primary-color: var(--color-orange-500);
+  --primary-light: var(--color-orange-400);
+  --primary-dark: var(--color-orange-600);
+  --secondary-color: var(--color-teal-500);
+  --secondary-light: var(--color-teal-400);
+  --secondary-dark: var(--color-teal-600);
+  --accent-color: var(--color-yellow-500);
+  --accent-light: var(--color-yellow-400);
+  --accent-dark: var(--color-yellow-600);
+  
+  --success-color: var(--color-success);
+  --warning-color: var(--color-warning);
+  --error-color: var(--color-error);
+  --info-color: var(--color-info);
+  
+  --text-primary: var(--color-text-primary);
+  --text-secondary: var(--color-text-secondary);
+  --text-tertiary: var(--color-text-tertiary);
+  --text-inverse: var(--color-text-inverse);
+  --text-muted: var(--color-text-muted);
+  --text-disabled: var(--color-text-disabled);
+  
+  --background-primary: var(--color-bg-primary);
+  --background-secondary: var(--color-bg-secondary);
+  --background-tertiary: var(--color-bg-tertiary);
+  --background-surface: var(--color-bg-surface);
+  --background-card: var(--color-bg-card);
+  --background-overlay: rgba(0, 0, 0, 0.5);
+  
+  --border-light: var(--color-border-light);
+  --border-medium: var(--color-border-medium);
+  --border-dark: var(--color-border-dark);
+  --border-focus: var(--color-border-focus);
+  --border-error: var(--color-border-error);
+  --border-success: var(--color-border-success);
+}
 
-// ============================================================================
-// TEXT COLORS
-// ============================================================================
-$text-primary: $gray-900;
-$text-secondary: $gray-600;
-$text-tertiary: $gray-400;
-$text-inverse: $white;
-$text-muted: $gray-500;
-$text-disabled: $gray-300;
+[data-theme="dark"] {
+  /* ============================================================================ */
+  /* DARK THEME OVERRIDES */
+  /* ============================================================================ */
+  --primary-color: var(--color-orange-400);
+  --primary-light: var(--color-orange-300);
+  --primary-dark: var(--color-orange-500);
+  --secondary-color: var(--color-teal-400);
+  --secondary-light: var(--color-teal-300);
+  --secondary-dark: var(--color-teal-500);
+  --accent-color: var(--color-yellow-400);
+  --accent-light: var(--color-yellow-300);
+  --accent-dark: var(--color-yellow-500);
+  
+  --text-primary: var(--color-gray-50);
+  --text-secondary: var(--color-gray-300);
+  --text-tertiary: var(--color-gray-400);
+  --text-inverse: var(--color-gray-900);
+  --text-muted: var(--color-gray-400);
+  --text-disabled: var(--color-gray-600);
+  
+  --background-primary: var(--color-gray-900);
+  --background-secondary: var(--color-gray-800);
+  --background-tertiary: var(--color-gray-700);
+  --background-surface: var(--color-gray-800);
+  --background-card: var(--color-gray-800);
+  --background-overlay: rgba(0, 0, 0, 0.7);
+  
+  --border-light: var(--color-gray-700);
+  --border-medium: var(--color-gray-600);
+  --border-dark: var(--color-gray-500);
+}
 
-// ============================================================================
-// BORDER COLORS
-// ============================================================================
-$border-light: $gray-200;
-$border-medium: $gray-300;
-$border-dark: $gray-400;
-$border-focus: $primary;
-$border-error: $error;
-$border-success: $success;
-
-// ============================================================================
-// TYPOGRAPHY
-// ============================================================================
-
-// Font Families
-$font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-$font-secondary: 'Poppins', sans-serif;
-$font-mono: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
-
-// Font Weights
-$font-weight-light: 300;
-$font-weight-normal: 400;
-$font-weight-medium: 500;
-$font-weight-semibold: 600;
-$font-weight-bold: 700;
-$font-weight-extrabold: 800;
-
-// Font Sizes
-$font-size-xs: 0.75rem;    // 12px
-$font-size-sm: 0.875rem;   // 14px
-$font-size-base: 1rem;     // 16px
-$font-size-lg: 1.125rem;   // 18px
-$font-size-xl: 1.25rem;    // 20px
-$font-size-2xl: 1.5rem;    // 24px
-$font-size-3xl: 1.875rem;  // 30px
-$font-size-4xl: 2.25rem;   // 36px
-$font-size-5xl: 3rem;      // 48px
-$font-size-6xl: 3.75rem;   // 60px
-
-// Line Heights
-$line-height-tight: 1.25;
-$line-height-snug: 1.375;
-$line-height-normal: 1.5;
-$line-height-relaxed: 1.625;
-$line-height-loose: 2;
-
-// ============================================================================
-// SPACING
-// ============================================================================
-$spacing-0: 0;
-$spacing-1: 0.25rem;   // 4px
-$spacing-2: 0.5rem;    // 8px
-$spacing-3: 0.75rem;   // 12px
-$spacing-4: 1rem;      // 16px
-$spacing-5: 1.25rem;   // 20px
-$spacing-6: 1.5rem;    // 24px
-$spacing-8: 2rem;      // 32px
-$spacing-10: 2.5rem;   // 40px
-$spacing-12: 3rem;     // 48px
-$spacing-16: 4rem;     // 64px
-$spacing-20: 5rem;     // 80px
-$spacing-24: 6rem;     // 96px
-$spacing-32: 8rem;     // 128px
-$spacing-40: 10rem;    // 160px
-$spacing-48: 12rem;    // 192px
-$spacing-56: 14rem;    // 224px
-$spacing-64: 16rem;    // 256px
-
-// ============================================================================
-// BREAKPOINTS
-// ============================================================================
-$breakpoint-xs: 375px;
-$breakpoint-sm: 640px;
-$breakpoint-md: 768px;
-$breakpoint-lg: 1024px;
-$breakpoint-xl: 1280px;
-$breakpoint-2xl: 1536px;
-
-// ============================================================================
-// BORDER RADIUS
-// ============================================================================
-$border-radius-none: 0;
-$border-radius-sm: 0.125rem;   // 2px
-$border-radius-base: 0.25rem;  // 4px
-$border-radius-md: 0.375rem;   // 6px
-$border-radius-lg: 0.5rem;     // 8px
-$border-radius-xl: 0.75rem;    // 12px
-$border-radius-2xl: 1rem;      // 16px
-$border-radius-3xl: 1.5rem;    // 24px
-$border-radius-full: 9999px;
-
-// ============================================================================
-// SHADOWS
-// ============================================================================
-$shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-$shadow-base: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-$shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-$shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-$shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-$shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-$shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
-
-// ============================================================================
-// Z-INDEX
-// ============================================================================
-$z-index-hide: -1;
-$z-index-auto: auto;
-$z-index-base: 0;
-$z-index-docked: 10;
-$z-index-dropdown: 1000;
-$z-index-sticky: 1100;
-$z-index-banner: 1200;
-$z-index-overlay: 1300;
-$z-index-modal: 1400;
-$z-index-popover: 1500;
-$z-index-skiplink: 1600;
-$z-index-toast: 1700;
-$z-index-tooltip: 1800;
-
-// ============================================================================
-// TRANSITIONS & ANIMATIONS
-// ============================================================================
-$transition-duration-fast: 150ms;
-$transition-duration-base: 200ms;
-$transition-duration-slow: 300ms;
-$transition-duration-slower: 500ms;
-
-$transition-timing-ease: ease;
-$transition-timing-ease-in: ease-in;
-$transition-timing-ease-out: ease-out;
-$transition-timing-ease-in-out: ease-in-out;
-
-$transition-all: all $transition-duration-base $transition-timing-ease-in-out;
-$transition-colors: color $transition-duration-base $transition-timing-ease-in-out,
-                   background-color $transition-duration-base $transition-timing-ease-in-out,
-                   border-color $transition-duration-base $transition-timing-ease-in-out;
-$transition-opacity: opacity $transition-duration-base $transition-timing-ease-in-out;
-$transition-transform: transform $transition-duration-base $transition-timing-ease-in-out;
-
-// ============================================================================
-// COMPONENT SPECIFIC VARIABLES
-// ============================================================================
-
-// Buttons
-$button-height-sm: 2rem;
-$button-height-base: 2.5rem;
-$button-height-lg: 3rem;
-$button-padding-x-sm: $spacing-3;
-$button-padding-x-base: $spacing-4;
-$button-padding-x-lg: $spacing-6;
-
-// Forms
-$input-height: 2.5rem;
-$input-padding-x: $spacing-3;
-$input-padding-y: $spacing-2;
-$input-border-width: 1px;
-$input-focus-ring-width: 2px;
-$input-focus-ring-color: rgba($primary, 0.2);
-
-// Cards
-$card-padding: $spacing-6;
-$card-border-width: 1px;
-
-// Navigation
-$nav-height: 4rem;
-$nav-padding-x: $spacing-6;
-
-// Sidebar
-$sidebar-width: 16rem;
-$sidebar-width-collapsed: 4rem;
-
-// ============================================================================
-// OPACITY LEVELS
-// ============================================================================
-$opacity-0: 0;
-$opacity-5: 0.05;
-$opacity-10: 0.1;
-$opacity-20: 0.2;
-$opacity-25: 0.25;
-$opacity-30: 0.3;
-$opacity-40: 0.4;
-$opacity-50: 0.5;
-$opacity-60: 0.6;
-$opacity-70: 0.7;
-$opacity-75: 0.75;
-$opacity-80: 0.8;
-$opacity-90: 0.9;
-$opacity-95: 0.95;
-$opacity-100: 1;
-
-// ============================================================================
-// GRADIENTS
-// ============================================================================
-$gradient-primary: linear-gradient(135deg, $orange-400 0%, $orange-600 100%);
-$gradient-secondary: linear-gradient(135deg, $teal-400 0%, $teal-600 100%);
-$gradient-accent: linear-gradient(135deg, $yellow-400 0%, $yellow-600 100%);
-$gradient-rainbow: linear-gradient(135deg, $orange-400 0%, $teal-400 25%, $yellow-400 50%, $red-400 75%, $orange-400 100%);
-
-// ============================================================================
-// UTILITY MIXINS VARIABLES
-// ============================================================================
-$container-max-width: 1200px;
-$container-padding: $spacing-4;
-
-// Grid
-$grid-columns: 12;
-$grid-gap: $spacing-6;
-
-// Aspect Ratios
-$aspect-ratio-square: 1;
-$aspect-ratio-video: 16/9;
-$aspect-ratio-photo: 4/3;
+/* ============================================================================ */
+/* CUSTOM UTILITIES */
+/* ============================================================================ */
+@layer utilities {
+  .text-primary-var {
+    color: var(--text-primary);
+  }
+  .text-secondary-var {
+    color: var(--text-secondary);
+  }
+  .text-tertiary-var {
+    color: var(--text-tertiary);
+  }
+  .text-muted-var {
+    color: var(--text-muted);
+  }
+  .text-inverse-var {
+    color: var(--text-inverse);
+  }
+  
+  .bg-primary-var {
+    background-color: var(--primary-color);
+  }
+  .bg-secondary-var {
+    background-color: var(--secondary-color);
+  }
+  .bg-accent-var {
+    background-color: var(--accent-color);
+  }
+  .bg-surface-var {
+    background-color: var(--background-surface);
+  }
+  .bg-card-var {
+    background-color: var(--background-card);
+  }
+  
+  .border-primary-var {
+    border-color: var(--primary-color);
+  }
+  .border-light-var {
+    border-color: var(--border-light);
+  }
+  .border-focus-var {
+    border-color: var(--border-focus);
+  }
+  
+  .shadow-primary {
+    box-shadow: 0 4px 6px -1px rgba(255, 105, 51, 0.1), 0 2px 4px -1px rgba(255, 105, 51, 0.06);
+  }
+}
