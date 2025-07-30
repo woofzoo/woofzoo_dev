@@ -1,8 +1,9 @@
+import ParentLayout from '@/components/layout/ParentLayout'
 import React from 'react'
 
 const page = () => {
   return (
-    <div className='bg-primary'>page</div>
+    <ParentLayout className='bg-primary'>page</ParentLayout>
   )
 }
 
