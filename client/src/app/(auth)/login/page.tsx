@@ -1,9 +1,12 @@
 import ParentLayout from '@/components/layout/ParentLayout';
+import Input from '@/components/ui/Input';
 import React from 'react'
 
 const LoginPage = () => {
   return (
-    <ParentLayout className=''>login page</ParentLayout>
+    <ParentLayout className=''>
+      {/* <Input /> */}
+    </ParentLayout>
   )
 }
 
