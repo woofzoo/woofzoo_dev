@@ -21,18 +21,22 @@ const LoginPage = () => {
   return (
     <ParentLayout className="">
       <div className="space-y-6">
-        <div className="text-center space-y-3">
-          <div className="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center bg-gradient-to-br from-primary to-primary/80 shadow-lg shadow-primary/25">
-            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-            </svg>
+        <div className="text-center space-y-5">
+          <div className="w-[10rem] rounded-2xl mx-auto mb-4 flex items-center justify-center">
+            <img
+              src="/group-1.svg"
+              alt="TM Logo"
+              className=" object-contain"
+            />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
-            Welcome Back
-          </h1>
-          <p className="text-gray-600">
-            Sign in to your account to continue
-          </p>
+          <div className='space-y-2'>
+            <h1 className="text-xl font-bold text-gray-900 tracking-tight">
+              Welcome Back
+            </h1>
+            <p className="text-gray-600">
+              Sign in to your account to continue
+            </p>
+          </div>
         </div>
 
         {/* Login Form */}
