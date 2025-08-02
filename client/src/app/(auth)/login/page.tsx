@@ -48,7 +48,7 @@ const LoginPage = () => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="border-gray-200/80 bg-white/50 backdrop-blur-sm focus:border-primary focus:ring-primary/20 placeholder:text-gray-400"
+            className="w-full border-gray-200/80 bg-accent-pastel/40 p-2 backdrop-blur-sm focus:border-primary focus:ring-primary/20 placeholder:text-gray-400 outline-none"
           />
 
           <Input
@@ -58,7 +58,7 @@ const LoginPage = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            className="border-gray-200/80 bg-white/50 backdrop-blur-sm focus:border-primary focus:ring-primary/20 placeholder:text-gray-400"
+            className="w-full border-gray-200/80 bg-accent-pastel/40 p-2 backdrop-blur-sm focus:border-primary focus:ring-primary/20 placeholder:text-gray-400 outline-none"
           />
 
           {/* Remember Me & Forgot Password */}
