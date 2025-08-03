@@ -2,9 +2,11 @@
 
 import ParentLayout from '@/components/layout/ParentLayout';
 import Input from '@/components/ui/Input';
+import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 
 const LoginPage = () => {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
@@ -77,7 +79,8 @@ const LoginPage = () => {
             </label>
             <button
               type="button"
-              className="text-sm font-medium text-secondary hover:text-secondary/80 hover:underline transition-all duration-200"
+              className="text-sm font-medium text-secondary hover:text-secondary/80 hover:underline transition-all duration-200 cursor-pointer"
+              onClick={() => router.push('/forgot-password')}
             >
               Forgot password?
             </button>
