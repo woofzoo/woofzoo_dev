@@ -79,8 +79,6 @@ const VerifyOtp = () => {
                   />
                ))}
             </div>
-
-            {/* Submit Button */}
             <button
                onClick={handleSubmit}
                disabled={isLoading || otp.includes('')}
