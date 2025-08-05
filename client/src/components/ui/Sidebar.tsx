@@ -3,8 +3,7 @@
 import { menuItems } from '@/utils/content';
 import {
    ChevronDown,
-   ChevronRight,
-   Stethoscope
+   ChevronRight
 } from 'lucide-react';
 import React, { useState } from 'react';
 
