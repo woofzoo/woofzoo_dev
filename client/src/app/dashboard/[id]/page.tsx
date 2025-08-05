@@ -1,8 +1,12 @@
+import DashLayout from '@/components/layout/DashLayout'
+import Sidebar from '@/components/ui/Sidebar'
 import React from 'react'
 
 const DashPageById = () => {
    return (
-      <div>DashPageById</div>
+      <DashLayout>
+         <Sidebar/>
+      </DashLayout>
    )
 }
 
