@@ -219,6 +219,38 @@
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus {
-  -webkit-box-shadow: 0 0 0px 1000px var(--accent-color-pastel)/40 inset !important;
+  -webkit-box-shadow: 0 0 0px 1000px var(--accent-color-pastel) / 40 inset !important;
   transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Customize scrollbar */
+.sidebar-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  background-color: var(--border-primary); /* or your custom color */
+  border-radius: 4px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Hide scrollbar by default */
+.sidebar-scroll {
+  scrollbar-width: none; /* Firefox */
+}
+
+.sidebar-scroll::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Edge */
+}
+
+/* Show on hover */
+.sidebar-scroll-hover:hover {
+  scrollbar-width: thin; /* Firefox */
+}
+
+.sidebar-scroll-hover:hover::-webkit-scrollbar {
+  display: block;
 }
