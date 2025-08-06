@@ -1,5 +1,7 @@
 import { cn } from '@/utils/cn';
 import React from 'react';
+import Navbar from '@/components/ui/Navbar';
+import Sidebar from '@/components/ui/Sidebar';
 
 interface DashLayoutProps {
    className?: string;
@@ -34,13 +36,25 @@ const DashLayout: React.FC<DashLayoutProps> = ({ className, children }) => {
             <div className="absolute bottom-1/3 left-1/5 w-1 h-1 bg-primary/25 rounded-full animate-bounce delay-700" />
          </div>
 
-         {/* Main Content */}
-         <main className={cn(
-            'relative z-10 text-text-primary min-h-screen',
-            className
-         )}>
-            {children}
-         </main>
+         {/* Layout Structure */}
+         <div className="relative z-10 flex h-screen">
+            {/* Sidebar */}
+            <Sidebar />
+            
+            {/* Main Content Area */}
+            <div className="flex-1 flex flex-col">
+               {/* Navbar */}
+               <Navbar />
+               
+               {/* Page Content */}
+               <main className={cn(
+                  'flex-1 overflow-auto text-text-primary',
+                  className
+               )}>
+                  {children}
+               </main>
+            </div>
+         </div>
       </div>
    );
 };

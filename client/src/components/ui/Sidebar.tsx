@@ -35,7 +35,7 @@ const Sidebar: React.FC = () => {
          className="h-screen w-80 bg-background-secondary border-r border-border-primary flex flex-col"
       >
          {/* Header */}
-         <div className="p-3 border-b border-border-primary mt-3">
+         <div className="p-3 border-b border-border-primary mt-4">
             <div className="w-[13rem] rounded-2xl mb-4 flex items-center justify-center">
                <img
                   src="/tm-logo.svg"
@@ -46,7 +46,7 @@ const Sidebar: React.FC = () => {
          </div>
 
          {/* Navigation */}
-         <nav className="flex-1 overflow-y-auto p-4">
+         <nav className="flex-1 overflow-y-auto p-4 sidebar-scroll">
             <div className="space-y-1">
                {menuItems.map((item) => (
                   <div key={item.id}>
@@ -77,7 +77,7 @@ const Sidebar: React.FC = () => {
                            />
                            <div className="text-left">
                               <div
-                                 className={`font-medium ${activeItem === item.id
+                                 className={`font-medium cursor-pointer ${activeItem === item.id
                                     ? 'text-primary'
                                     : 'text-text-primary'
                                     }`}
