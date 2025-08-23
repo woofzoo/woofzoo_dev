@@ -1,0 +1,1008 @@
+# WoofZoo FastAPI Project - Cursor Rules
+
+## Project Overview
+This is a FastAPI project following Clean Architecture principles with layered design:
+- **Models** (Data Layer) - SQLAlchemy ORM models
+- **Schemas** (Validation Layer) - Pydantic models for request/response
+- **Repositories** (Data Access Layer) - Database operations
+- **Services** (Business Logic Layer) - Business rules and logic
+- **Controllers** (API Layer) - HTTP request/response handling
+- **Routes** (Routing Layer) - API endpoint definitions
+
+## Architecture Principles
+
+### 1. Clean Architecture Layers
+Always follow the layered architecture pattern:
+```
+Routes → Controllers → Services → Repositories → Models
+```
+
+### 2. Dependency Injection
+- Use FastAPI's dependency injection system
+- **Use hybrid approach: centralized for small apps, domain-specific for large apps**
+- Follow the pattern: `get_*_repository` → `get_*_service` → `get_*_controller`
+- Import dependencies from `app.dependencies` in route files
+- For complex apps, use `app/dependencies/domains/` for domain-specific organization
+- This keeps route files clean and makes dependency management easier
+
+### 3. Separation of Concerns
+- Each layer has a single responsibility
+- Models: Database entities only
+- Schemas: Data validation and serialization
+- Repositories: Database operations only
+- Services: Business logic and rules
+- Controllers: HTTP handling and error responses
+- Routes: Endpoint definitions and dependency injection
+
+## Coding Standards
+
+### Python Style
+- Use Python 3.13+ features
+- Follow PEP 8 with Black formatting (88 character line length)
+- Use type hints for all function parameters and return values
+- Use async/await for all database operations
+- Use docstrings for all public functions and classes
+
+### File Naming
+- Use snake_case for file names
+- Use PascalCase for class names
+- Use snake_case for function and variable names
+- Use UPPER_CASE for constants
+
+### Import Organization
+```python
+# Standard library imports
+from typing import List, Optional
+from datetime import datetime
+
+# Third-party imports
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.ext.asyncio import AsyncSession
+
+# Local imports
+from app.models.task import Task
+from app.schemas.task import TaskCreate, TaskResponse
+from app.services.task import TaskService
+```
+
+## Adding New Features
+
+### 1. Model Layer (app/models/)
+```python
+"""
+[Feature] model for the application.
+
+This module defines the [Feature] SQLAlchemy model.
+"""
+
+from datetime import datetime
+from typing import Optional
+
+from sqlalchemy import Column, DateTime, Integer, String, Text
+from sqlalchemy.sql import func
+
+from app.database import Base
+
+
+class Feature(Base):
+    """Feature model representing a feature in the system."""
+    
+    __tablename__ = "features"
+    
+    id: int = Column(Integer, primary_key=True, index=True)
+    name: str = Column(String(255), nullable=False, index=True)
+    description: Optional[str] = Column(Text, nullable=True)
+    created_at: datetime = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False
+    )
+    updated_at: datetime = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False
+    )
+    
+    def __repr__(self) -> str:
+        return f"<Feature(id={self.id}, name='{self.name}')>"
+    
+    def to_dict(self) -> dict:
+        return {
+            "id": self.id,
+            "name": self.name,
+            "description": self.description,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+        }
+```
+
+### 2. Schema Layer (app/schemas/)
+```python
+"""
+[Feature] Pydantic schemas for request/response validation.
+
+This module defines Pydantic models for [feature]-related API operations.
+"""
+
+from datetime import datetime
+from typing import Optional
+
+from pydantic import BaseModel, Field, ConfigDict
+
+
+class FeatureBase(BaseModel):
+    """Base Feature schema with common fields."""
+    
+    name: str = Field(..., min_length=1, max_length=255, description="Feature name")
+    description: Optional[str] = Field(None, max_length=1000, description="Feature description")
+    
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "name": "New Feature",
+                "description": "Description of the new feature"
+            }
+        }
+    )
+
+
+class FeatureCreate(FeatureBase):
+    """Schema for creating a new feature."""
+    pass
+
+
+class FeatureUpdate(BaseModel):
+    """Schema for updating an existing feature."""
+    
+    name: Optional[str] = Field(None, min_length=1, max_length=255, description="Feature name")
+    description: Optional[str] = Field(None, max_length=1000, description="Feature description")
+    
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "name": "Updated Feature",
+                "description": "Updated description"
+            }
+        }
+    )
+
+
+class FeatureResponse(FeatureBase):
+    """Schema for feature response."""
+    
+    id: int = Field(..., description="Feature unique identifier")
+    created_at: datetime = Field(..., description="Feature creation timestamp")
+    updated_at: datetime = Field(..., description="Feature last update timestamp")
+    
+    model_config = ConfigDict(
+        from_attributes=True,
+        json_schema_extra={
+            "example": {
+                "id": 1,
+                "name": "New Feature",
+                "description": "Description of the new feature",
+                "created_at": "2024-01-01T12:00:00Z",
+                "updated_at": "2024-01-01T12:00:00Z"
+            }
+        }
+    )
+
+
+class FeatureListResponse(BaseModel):
+    """Schema for list of features response."""
+    
+    features: list[FeatureResponse] = Field(..., description="List of features")
+    total: int = Field(..., description="Total number of features")
+```
+
+### 3. Repository Layer (app/repositories/)
+```python
+"""
+[Feature] repository for database operations.
+
+This module provides the [Feature]Repository class for [feature]-specific
+database operations extending the base repository functionality.
+"""
+
+from typing import List, Optional
+
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.models.feature import Feature
+from app.repositories.base import BaseRepository
+
+
+class FeatureRepository(BaseRepository[Feature]):
+    """
+    Feature repository for feature-specific database operations.
+    
+    This class extends BaseRepository to provide feature-specific
+    database operations and queries.
+    """
+    
+    def __init__(self, session: AsyncSession) -> None:
+        """Initialize the feature repository."""
+        super().__init__(Feature, session)
+    
+    async def get_by_name(self, name: str) -> Optional[Feature]:
+        """Get a feature by name."""
+        result = await self.session.execute(
+            select(Feature).where(Feature.name == name)
+        )
+        return result.scalar_one_or_none()
+    
+    async def search_features(self, search_term: str, skip: int = 0, limit: int = 100) -> List[Feature]:
+        """Search features by name or description."""
+        search_pattern = f"%{search_term}%"
+        result = await self.session.execute(
+            select(Feature)
+            .where(
+                (Feature.name.ilike(search_pattern)) |
+                (Feature.description.ilike(search_pattern))
+            )
+            .offset(skip)
+            .limit(limit)
+        )
+        return result.scalars().all()
+```
+
+### 4. Service Layer (app/services/)
+```python
+"""
+[Feature] service for business logic operations.
+
+This module provides the [Feature]Service class for [feature]-related business logic,
+acting as an intermediary between controllers and repositories.
+"""
+
+from typing import List, Optional
+
+from app.models.feature import Feature
+from app.repositories.feature import FeatureRepository
+from app.schemas.feature import FeatureCreate, FeatureUpdate
+
+
+class FeatureService:
+    """
+    Feature service for business logic operations.
+    
+    This class handles business logic for feature operations, including
+    validation, business rules, and coordination between repositories.
+    """
+    
+    def __init__(self, feature_repository: FeatureRepository) -> None:
+        """Initialize the feature service."""
+        self.feature_repository = feature_repository
+    
+    async def create_feature(self, feature_data: FeatureCreate) -> Feature:
+        """Create a new feature with business logic validation."""
+        # Check if feature with same name already exists
+        existing_feature = await self.feature_repository.get_by_name(feature_data.name)
+        if existing_feature:
+            raise ValueError(f"Feature with name '{feature_data.name}' already exists")
+        
+        # Create the feature
+        feature = await self.feature_repository.create(
+            name=feature_data.name,
+            description=feature_data.description
+        )
+        
+        return feature
+    
+    async def get_feature_by_id(self, feature_id: int) -> Optional[Feature]:
+        """Get a feature by ID."""
+        return await self.feature_repository.get_by_id(feature_id)
+    
+    async def get_all_features(self, skip: int = 0, limit: int = 100) -> List[Feature]:
+        """Get all features with pagination."""
+        return await self.feature_repository.get_all(skip=skip, limit=limit)
+    
+    async def update_feature(self, feature_id: int, feature_data: FeatureUpdate) -> Optional[Feature]:
+        """Update a feature with business logic validation."""
+        # Check if feature exists
+        existing_feature = await self.feature_repository.get_by_id(feature_id)
+        if not existing_feature:
+            return None
+        
+        # If name is being updated, check for duplicates
+        if feature_data.name and feature_data.name != existing_feature.name:
+            duplicate_feature = await self.feature_repository.get_by_name(feature_data.name)
+            if duplicate_feature:
+                raise ValueError(f"Feature with name '{feature_data.name}' already exists")
+        
+        # Prepare update data
+        update_data = {}
+        if feature_data.name is not None:
+            update_data["name"] = feature_data.name
+        if feature_data.description is not None:
+            update_data["description"] = feature_data.description
+        
+        # Update the feature
+        return await self.feature_repository.update(feature_id, **update_data)
+    
+    async def delete_feature(self, feature_id: int) -> bool:
+        """Delete a feature."""
+        return await self.feature_repository.delete(feature_id)
+    
+    async def search_features(self, search_term: str, skip: int = 0, limit: int = 100) -> List[Feature]:
+        """Search features by name or description."""
+        if not search_term.strip():
+            return await self.get_all_features(skip=skip, limit=limit)
+        
+        return await self.feature_repository.search_features(
+            search_term=search_term.strip(),
+            skip=skip,
+            limit=limit
+        )
+```
+
+### 5. Controller Layer (app/controllers/)
+```python
+"""
+[Feature] controller for API layer.
+
+This module provides the [Feature]Controller class for handling HTTP requests
+and responses related to [feature] operations.
+"""
+
+from typing import List
+
+from fastapi import HTTPException, status
+
+from app.schemas.feature import FeatureCreate, FeatureListResponse, FeatureResponse, FeatureUpdate
+from app.services.feature import FeatureService
+
+
+class FeatureController:
+    """
+    Feature controller for handling HTTP requests and responses.
+    
+    This class handles HTTP requests related to feature operations,
+    including request validation, response formatting, and error handling.
+    """
+    
+    def __init__(self, feature_service: FeatureService) -> None:
+        """Initialize the feature controller."""
+        self.feature_service = feature_service
+    
+    async def create_feature(self, feature_data: FeatureCreate) -> FeatureResponse:
+        """Create a new feature."""
+        try:
+            feature = await self.feature_service.create_feature(feature_data)
+            return FeatureResponse.model_validate(feature)
+        except ValueError as e:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e)
+            )
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to create feature"
+            )
+    
+    async def get_feature(self, feature_id: int) -> FeatureResponse:
+        """Get a feature by ID."""
+        feature = await self.feature_service.get_feature_by_id(feature_id)
+        if not feature:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Feature with ID {feature_id} not found"
+            )
+        
+        return FeatureResponse.model_validate(feature)
+    
+    async def get_all_features(self, skip: int = 0, limit: int = 100) -> FeatureListResponse:
+        """Get all features with pagination."""
+        try:
+            features = await self.feature_service.get_all_features(skip=skip, limit=limit)
+            total = await self.feature_service.feature_repository.count()
+            
+            feature_responses = [FeatureResponse.model_validate(feature) for feature in features]
+            return FeatureListResponse(features=feature_responses, total=total)
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to retrieve features"
+            )
+    
+    async def update_feature(self, feature_id: int, feature_data: FeatureUpdate) -> FeatureResponse:
+        """Update a feature."""
+        try:
+            feature = await self.feature_service.update_feature(feature_id, feature_data)
+            if not feature:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"Feature with ID {feature_id} not found"
+                )
+            
+            return FeatureResponse.model_validate(feature)
+        except HTTPException:
+            raise
+        except ValueError as e:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e)
+            )
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to update feature"
+            )
+    
+    async def delete_feature(self, feature_id: int) -> dict:
+        """Delete a feature."""
+        try:
+            deleted = await self.feature_service.delete_feature(feature_id)
+            if not deleted:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"Feature with ID {feature_id} not found"
+                )
+            
+            return {"message": f"Feature with ID {feature_id} deleted successfully"}
+        except HTTPException:
+            raise
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to delete feature"
+            )
+    
+    async def search_features(self, search_term: str, skip: int = 0, limit: int = 100) -> FeatureListResponse:
+        """Search features by name or description."""
+        try:
+            features = await self.feature_service.search_features(
+                search_term=search_term,
+                skip=skip,
+                limit=limit
+            )
+            
+            feature_responses = [FeatureResponse.model_validate(feature) for feature in features]
+            return FeatureListResponse(features=feature_responses, total=len(feature_responses))
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to search features"
+            )
+```
+
+### 6. Routes Layer (app/routes/)
+```python
+"""
+[Feature] routes for API endpoints.
+
+This module defines all [feature]-related API endpoints with proper
+dependency injection and request/response handling.
+"""
+
+from fastapi import APIRouter, Depends, Query, status
+
+from app.controllers.feature import FeatureController
+from app.dependencies import get_feature_controller
+from app.schemas.feature import FeatureCreate, FeatureListResponse, FeatureResponse, FeatureUpdate
+
+# Create router
+router = APIRouter(prefix="/features", tags=["features"])
+
+
+# API Endpoints
+@router.post(
+    "/",
+    response_model=FeatureResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Create a new feature",
+    description="Create a new feature with the provided data"
+)
+async def create_feature(
+    feature_data: FeatureCreate,
+    controller: FeatureController = Depends(get_feature_controller)
+) -> FeatureResponse:
+    """Create a new feature."""
+    return await controller.create_feature(feature_data)
+
+
+@router.get(
+    "/",
+    response_model=FeatureListResponse,
+    summary="Get all features",
+    description="Retrieve all features with optional pagination"
+)
+async def get_features(
+    skip: int = Query(default=0, ge=0, description="Number of records to skip"),
+    limit: int = Query(default=100, ge=1, le=1000, description="Maximum number of records to return"),
+    controller: FeatureController = Depends(get_feature_controller)
+) -> FeatureListResponse:
+    """Get all features with pagination."""
+    return await controller.get_all_features(skip=skip, limit=limit)
+
+
+@router.get(
+    "/{feature_id}",
+    response_model=FeatureResponse,
+    summary="Get a feature by ID",
+    description="Retrieve a specific feature by its ID"
+)
+async def get_feature(
+    feature_id: int,
+    controller: FeatureController = Depends(get_feature_controller)
+) -> FeatureResponse:
+    """Get a feature by ID."""
+    return await controller.get_feature(feature_id)
+
+
+@router.put(
+    "/{feature_id}",
+    response_model=FeatureResponse,
+    summary="Update a feature",
+    description="Update an existing feature with the provided data"
+)
+async def update_feature(
+    feature_id: int,
+    feature_data: FeatureUpdate,
+    controller: FeatureController = Depends(get_feature_controller)
+) -> FeatureResponse:
+    """Update a feature."""
+    return await controller.update_feature(feature_id, feature_data)
+
+
+@router.delete(
+    "/{feature_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete a feature",
+    description="Delete a feature by its ID"
+)
+async def delete_feature(
+    feature_id: int,
+    controller: FeatureController = Depends(get_feature_controller)
+) -> None:
+    """Delete a feature."""
+    await controller.delete_feature(feature_id)
+
+
+@router.get(
+    "/search/",
+    response_model=FeatureListResponse,
+    summary="Search features",
+    description="Search features by name or description"
+)
+async def search_features(
+    q: str = Query(..., min_length=1, description="Search term"),
+    skip: int = Query(default=0, ge=0, description="Number of records to skip"),
+    limit: int = Query(default=100, ge=1, le=1000, description="Maximum number of records to return"),
+    controller: FeatureController = Depends(get_feature_controller)
+) -> FeatureListResponse:
+    """Search features by name or description."""
+    return await controller.search_features(search_term=q, skip=skip, limit=limit)
+```
+
+## Testing Guidelines
+
+### Test Structure
+- Create tests for each layer (API, Service, Repository)
+- Use pytest fixtures for common setup
+- Test both success and error cases
+- Use descriptive test names
+
+### Test Example
+```python
+"""
+Tests for [feature] functionality.
+
+This module contains tests for [feature]-related functionality including
+API endpoints, service layer, and repository layer.
+"""
+
+import pytest
+from fastapi import status
+
+from app.schemas.feature import FeatureCreate, FeatureUpdate
+
+
+class TestFeatureAPI:
+    """Test cases for feature API endpoints."""
+    
+    def test_create_feature_success(self, client, sample_feature_data):
+        """Test successful feature creation."""
+        response = client.post("/api/features/", json=sample_feature_data)
+        
+        assert response.status_code == status.HTTP_201_CREATED
+        data = response.json()
+        assert data["name"] == sample_feature_data["name"]
+        assert "id" in data
+        assert "created_at" in data
+        assert "updated_at" in data
+    
+    def test_create_feature_duplicate_name(self, client, sample_feature_data):
+        """Test feature creation with duplicate name."""
+        # Create first feature
+        client.post("/api/features/", json=sample_feature_data)
+        
+        # Try to create second feature with same name
+        response = client.post("/api/features/", json=sample_feature_data)
+        
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "already exists" in response.json()["detail"]
+```
+
+## Database Migrations
+
+### Creating Migrations
+```bash
+# Create a new migration
+alembic revision --autogenerate -m "Add feature table"
+
+# Apply migrations
+alembic upgrade head
+
+# Rollback migrations
+alembic downgrade -1
+```
+
+### Migration Example
+```python
+"""Add feature table
+
+Revision ID: 0002_add_feature_table
+Revises: 0001_initial
+Create Date: 2024-01-01 12:00:00.000000
+
+"""
+from alembic import op
+import sqlalchemy as sa
+
+# revision identifiers, used by Alembic.
+revision = '0002_add_feature_table'
+down_revision = '0001_initial'
+branch_labels = None
+depends_on = None
+
+
+def upgrade() -> None:
+    op.create_table('features',
+        sa.Column('id', sa.Integer(), nullable=False),
+        sa.Column('name', sa.String(length=255), nullable=False),
+        sa.Column('description', sa.Text(), nullable=True),
+        sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
+        sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
+        sa.PrimaryKeyConstraint('id')
+    )
+    op.create_index(op.f('ix_features_id'), 'features', ['id'], unique=False)
+    op.create_index(op.f('ix_features_name'), 'features', ['name'], unique=False)
+
+
+def downgrade() -> None:
+    op.drop_index(op.f('ix_features_name'), table_name='features')
+    op.drop_index(op.f('ix_features_id'), table_name='features')
+    op.drop_table('features')
+```
+
+## Package Updates
+
+### Update __init__.py files
+When adding new features, update the corresponding `__init__.py` files:
+
+```python
+# app/models/__init__.py
+from app.models.feature import Feature
+
+__all__ = ["Task", "Feature"]
+
+# app/schemas/__init__.py
+from app.schemas.feature import FeatureCreate, FeatureResponse, FeatureUpdate
+
+__all__ = ["TaskCreate", "TaskResponse", "TaskUpdate", "FeatureCreate", "FeatureResponse", "FeatureUpdate"]
+
+# app/repositories/__init__.py
+from app.repositories.feature import FeatureRepository
+
+__all__ = ["BaseRepository", "TaskRepository", "FeatureRepository"]
+
+# app/services/__init__.py
+from app.services.feature import FeatureService
+
+__all__ = ["TaskService", "FeatureService"]
+
+# app/controllers/__init__.py
+from app.controllers.feature import FeatureController
+
+__all__ = ["TaskController", "FeatureController"]
+
+# app/routes/__init__.py
+from app.routes.feature import router as feature_router
+
+__all__ = ["task_router", "feature_router"]
+```
+
+### 7. Dependencies Layer (app/dependencies/)
+
+The dependencies are organized into separate modules for better maintainability:
+
+#### 7.1 Database Dependencies (app/dependencies/database.py)
+```python
+"""
+Database dependencies for the application.
+
+This module contains all database-related dependency injection functions
+for repositories and database connections.
+"""
+
+from fastapi import Depends
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.database import get_db_session
+from app.repositories.feature import FeatureRepository
+
+
+def get_feature_repository(session: AsyncSession = Depends(get_db_session)) -> FeatureRepository:
+    """Dependency to get feature repository."""
+    return FeatureRepository(session)
+```
+
+#### 7.2 Service Dependencies (app/dependencies/services.py)
+```python
+"""
+Service dependencies for the application.
+
+This module contains all service-related dependency injection functions,
+including complex services with multiple dependencies.
+"""
+
+from fastapi import Depends
+from app.dependencies.database import get_feature_repository
+from app.services.feature import FeatureService
+
+
+def get_feature_service(
+    repository: FeatureRepository = Depends(get_feature_repository)
+) -> FeatureService:
+    """Dependency to get feature service."""
+    return FeatureService(repository)
+
+
+def get_complex_service(
+    feature_service: FeatureService = Depends(get_feature_service),
+    other_service: OtherService = Depends(get_other_service),
+    config_service: ConfigService = Depends(get_config_service)
+) -> ComplexService:
+    """Dependency for services with multiple dependencies."""
+    return ComplexService(
+        feature_service=feature_service,
+        other_service=other_service,
+        config_service=config_service
+    )
+```
+
+#### 7.3 Controller Dependencies (app/dependencies/controllers.py)
+```python
+"""
+Controller dependencies for the application.
+
+This module contains all controller-related dependency injection functions
+that depend on services.
+"""
+
+from fastapi import Depends
+from app.dependencies.services import get_feature_service
+from app.controllers.feature import FeatureController
+
+
+def get_feature_controller(
+    service: FeatureService = Depends(get_feature_service)
+) -> FeatureController:
+    """Dependency to get feature controller."""
+    return FeatureController(service)
+```
+
+#### 7.4 External Dependencies (app/dependencies/external.py)
+```python
+"""
+External dependencies for the application.
+
+This module contains dependency injection functions for external services,
+configurations, and third-party integrations.
+"""
+
+from fastapi import Depends
+from app.config import settings
+
+
+def get_redis_client() -> Redis:
+    """Dependency to get Redis client."""
+    from app.clients.redis import Redis
+    return Redis(host=settings.redis_host, port=settings.redis_port)
+
+
+def get_email_client() -> EmailClient:
+    """Dependency to get email client."""
+    from app.clients.email import EmailClient
+    return EmailClient(smtp_host=settings.smtp_host, smtp_port=settings.smtp_port)
+```
+
+#### 7.5 Main Dependencies Package (app/dependencies/__init__.py)
+```python
+"""
+Dependency injection package for the application.
+
+This package centralizes all dependency injection functions organized by domain.
+"""
+
+# Import all dependencies from submodules
+from app.dependencies.database import *
+from app.dependencies.services import *
+from app.dependencies.controllers import *
+from app.dependencies.external import *
+
+__all__ = [
+    # Database dependencies
+    "get_feature_repository",
+    
+    # Service dependencies
+    "get_feature_service",
+    "get_complex_service",
+    
+    # Controller dependencies
+    "get_feature_controller",
+    
+    # External dependencies
+    "get_redis_client",
+    "get_email_client",
+]
+```
+
+### Update main.py
+Add new routes to the main application:
+
+```python
+# app/main.py
+from app.routes import task_router, feature_router
+
+# Include API routes
+app.include_router(task_router, prefix=settings.api_prefix)
+app.include_router(feature_router, prefix=settings.api_prefix)
+```
+
+## Error Handling
+
+### HTTP Status Codes
+- `200 OK` - Successful GET, PUT operations
+- `201 Created` - Successful POST operations
+- `204 No Content` - Successful DELETE operations
+- `400 Bad Request` - Validation errors, business rule violations
+- `404 Not Found` - Resource not found
+- `500 Internal Server Error` - Unexpected server errors
+
+### Error Response Format
+```python
+{
+    "detail": "Error message describing what went wrong"
+}
+```
+
+## Security Guidelines
+
+### Input Validation
+- Always validate input data with Pydantic schemas
+- Use appropriate field validators (min_length, max_length, regex)
+- Sanitize user inputs to prevent injection attacks
+
+### Database Security
+- Use parameterized queries (SQLAlchemy handles this)
+- Never use string formatting for SQL queries
+- Validate all database inputs
+
+### API Security
+- Use HTTPS in production
+- Implement proper CORS policies
+- Add rate limiting for public endpoints
+- Use environment variables for sensitive configuration
+
+## Performance Guidelines
+
+### Database Optimization
+- Use database indexes for frequently queried fields
+- Implement pagination for list endpoints
+- Use select() to limit returned fields when possible
+- Consider database connection pooling
+
+### Caching Strategy
+- Cache frequently accessed data
+- Use Redis for session storage
+- Implement cache invalidation strategies
+
+## Documentation Standards
+
+### Code Documentation
+- Use docstrings for all public functions and classes
+- Include type hints for all parameters and return values
+- Document exceptions that may be raised
+- Provide usage examples in docstrings
+
+### API Documentation
+- Use descriptive endpoint summaries and descriptions
+- Include request/response examples
+- Document all possible response codes
+- Use proper OpenAPI tags for organization
+
+## Git Workflow
+
+### Commit Messages
+- Use conventional commit format: `type(scope): description`
+- Types: feat, fix, docs, style, refactor, test, chore
+- Examples:
+  - `feat(features): add feature CRUD operations`
+  - `fix(auth): resolve authentication token validation`
+  - `docs(api): update API documentation`
+
+### Branch Naming
+- Use feature branches: `feature/feature-name`
+- Use bugfix branches: `bugfix/issue-description`
+- Use hotfix branches: `hotfix/critical-fix`
+
+## Quality Assurance
+
+### Code Quality Tools
+- Run `make lint` before committing
+- Run `make format` to format code
+- Run `make type-check` to check types
+- Run `make test` to run all tests
+
+### Pre-commit Checklist
+- [ ] All tests pass
+- [ ] Code is formatted with Black
+- [ ] Imports are sorted with isort
+- [ ] Type checking passes with mypy
+- [ ] Linting passes with flake8
+- [ ] Documentation is updated
+- [ ] Migration files are created if needed
+
+## Deployment Guidelines
+
+### Environment Configuration
+- Use environment variables for all configuration
+- Never commit sensitive data to version control
+- Use different configurations for development, staging, and production
+
+### Docker Best Practices
+- Use multi-stage builds for smaller images
+- Run as non-root user
+- Include health checks
+- Use specific version tags for base images
+
+### Database Migrations
+- Always run migrations before deploying
+- Test migrations on staging environment first
+- Have rollback plan for failed migrations
+- Backup database before major migrations
+
+## Monitoring and Logging
+
+### Logging Standards
+- Use structured logging with consistent format
+- Include correlation IDs for request tracing
+- Log at appropriate levels (DEBUG, INFO, WARNING, ERROR)
+- Never log sensitive information
+
+### Health Checks
+- Implement health check endpoints
+- Monitor database connectivity
+- Check external service dependencies
+- Provide detailed health status information
+
+## Troubleshooting
+
+### Common Issues
+1. **Database Connection Issues**: Check DATABASE_URL and network connectivity
+2. **Migration Failures**: Ensure database is accessible and has proper permissions
+3. **Import Errors**: Verify all dependencies are installed and __init__.py files are updated
+4. **Type Errors**: Run mypy to identify type annotation issues
+5. **Test Failures**: Check test database configuration and fixtures
+
+### Debug Mode
+- Enable debug mode in development: `DEBUG=true`
+- Use FastAPI's automatic reload: `uvicorn app.main:app --reload`
+- Enable SQL query logging: `DATABASE_ECHO=true`
+
+This cursor rules file ensures consistent code quality, maintainable architecture, and scalable development practices for the WoofZoo FastAPI project.
