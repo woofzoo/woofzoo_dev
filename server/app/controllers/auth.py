@@ -65,7 +65,7 @@ class AuthController:
             tokens = self.jwt_service.create_tokens_for_user(user)
             
             # Create response
-            user_response = UserResponse.model_validate(user)
+            user_response = UserResponse.model_validate(user.to_dict())
             token_response = TokenResponse(**tokens)
             
             return LoginResponse(user=user_response, tokens=token_response)
@@ -166,7 +166,7 @@ class AuthController:
                     detail="User not found"
                 )
             
-            return UserResponse.model_validate(user)
+            return UserResponse.model_validate(user.to_dict())
         except HTTPException:
             raise
         except Exception as e:
@@ -189,7 +189,7 @@ class AuthController:
             
             # Get updated user
             user = await self.auth_service.get_user_by_id(user_id)
-            return UserResponse.model_validate(user)
+            return UserResponse.model_validate(user.to_dict())
         except HTTPException:
             raise
         except Exception as e:

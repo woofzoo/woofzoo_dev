@@ -7,7 +7,7 @@ including user registration, login, password reset, and email verification.
 
 import secrets
 import hashlib
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional, Tuple
 
 from passlib.context import CryptContext
@@ -68,7 +68,7 @@ class AuthService:
         
         # Generate verification token
         verification_token = self._generate_token()
-        verification_expires = datetime.utcnow() + timedelta(hours=settings.email_verification_expire_hours)
+        verification_expires = datetime.now(timezone.utc) + timedelta(hours=settings.email_verification_expire_hours)
         
         # Create user
         user = await self.user_repository.create(
@@ -80,15 +80,19 @@ class AuthService:
             roles=user_data.roles,
             email_verification_token=verification_token,
             email_verification_expires=verification_expires,
-            personalization={}  # Default empty personalization
+            personalization={},  # Default empty personalization
+            is_verified=settings.auto_verify_users  # Auto-verify in development mode
         )
         
-        # Send verification email
-        email_sent = await self.email_service.send_verification_email(
-            to_email=user.email,
-            to_name=user.full_name,
-            token=verification_token
-        )
+        # Send verification email (skip if auto-verify is enabled)
+        if settings.auto_verify_users:
+            email_sent = True  # Skip email sending in development mode
+        else:
+            email_sent = await self.email_service.send_verification_email(
+                to_email=user.email,
+                to_name=user.full_name,
+                token=verification_token
+            )
         
         return user, email_sent
     
@@ -130,24 +134,39 @@ class AuthService:
         Returns:
             bool: True if verification successful, False otherwise
         """
+        print(f"🔍 DEBUG: Starting email verification for token: {verification_data.token[:10]}...")
+        
         # Get user by verification token
         user = await self.user_repository.get_by_verification_token(verification_data.token)
         if not user:
+            print(f"❌ DEBUG: No user found with verification token: {verification_data.token[:10]}...")
             return False
         
+        print(f"✅ DEBUG: Found user: {user.email} (ID: {user.id})")
+        print(f"🔍 DEBUG: User verification status: {user.is_verified}")
+        print(f"🔍 DEBUG: Token expires at: {user.email_verification_expires}")
+        print(f"🔍 DEBUG: Current time: {datetime.now(timezone.utc)}")
+        
         # Check if token is expired
-        if user.email_verification_expires and user.email_verification_expires < datetime.utcnow():
+        if user.email_verification_expires and user.email_verification_expires < datetime.now(timezone.utc):
+            print(f"❌ DEBUG: Token expired at {user.email_verification_expires}")
             return False
+        
+        print(f"✅ DEBUG: Token is valid, proceeding with verification...")
         
         # Clear verification token and mark as verified
         success = await self.user_repository.clear_verification_token(user.id)
         
         if success:
+            print(f"✅ DEBUG: Successfully cleared verification token and marked user as verified")
             # Send welcome email
             await self.email_service.send_welcome_email(
                 to_email=user.email,
                 to_name=user.full_name
             )
+            print(f"✅ DEBUG: Welcome email sent to {user.email}")
+        else:
+            print(f"❌ DEBUG: Failed to clear verification token")
         
         return success
     
@@ -169,7 +188,7 @@ class AuthService:
         
         # Generate reset token
         reset_token = self._generate_token()
-        reset_expires = datetime.utcnow() + timedelta(hours=settings.password_reset_expire_hours)
+        reset_expires = datetime.now(timezone.utc) + timedelta(hours=settings.password_reset_expire_hours)
         
         # Update user with reset token
         await self.user_repository.update_reset_token(
@@ -203,7 +222,7 @@ class AuthService:
             return False
         
         # Check if token is expired
-        if user.password_reset_expires and user.password_reset_expires < datetime.utcnow():
+        if user.password_reset_expires and user.password_reset_expires < datetime.now(timezone.utc):
             return False
         
         # Hash new password
@@ -279,7 +298,7 @@ class AuthService:
         
         # Generate new verification token
         verification_token = self._generate_token()
-        verification_expires = datetime.utcnow() + timedelta(hours=settings.email_verification_expire_hours)
+        verification_expires = datetime.now(timezone.utc) + timedelta(hours=settings.email_verification_expire_hours)
         
         # Update verification token
         await self.user_repository.update_verification_token(

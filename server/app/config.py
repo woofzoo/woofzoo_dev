@@ -107,6 +107,12 @@ class Settings(BaseSettings):
         description="Require special characters in password"
     )
     
+    # Development settings
+    auto_verify_users: bool = Field(
+        default=False,
+        description="Auto-verify users in development mode (skips email verification)"
+    )
+    
     class Config:
         """Pydantic configuration."""
         env_file = ".env"

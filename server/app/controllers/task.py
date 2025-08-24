@@ -46,7 +46,7 @@ class TaskController:
         """
         try:
             task = await self.task_service.create_task(task_data)
-            return TaskResponse.model_validate(task)
+            return TaskResponse.model_validate(task.to_dict())
         except ValueError as e:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -78,7 +78,7 @@ class TaskController:
                 detail=f"Task with ID {task_id} not found"
             )
         
-        return TaskResponse.model_validate(task)
+        return TaskResponse.model_validate(task.to_dict())
     
     async def get_all_tasks(self, skip: int = 0, limit: int = 100) -> TaskListResponse:
         """
@@ -95,7 +95,7 @@ class TaskController:
             tasks = await self.task_service.get_all_tasks(skip=skip, limit=limit)
             total = await self.task_service.task_repository.count()
             
-            task_responses = [TaskResponse.model_validate(task) for task in tasks]
+            task_responses = [TaskResponse.model_validate(task.to_dict()) for task in tasks]
             return TaskListResponse(tasks=task_responses, total=total)
         except Exception as e:
             raise HTTPException(
@@ -125,7 +125,7 @@ class TaskController:
                     detail=f"Task with ID {task_id} not found"
                 )
             
-            return TaskResponse.model_validate(task)
+            return TaskResponse.model_validate(task.to_dict())
         except HTTPException:
             raise
         except ValueError as e:
@@ -184,7 +184,7 @@ class TaskController:
             tasks = await self.task_service.get_completed_tasks(skip=skip, limit=limit)
             total = await self.task_service.task_repository.count_completed_tasks()
             
-            task_responses = [TaskResponse.model_validate(task) for task in tasks]
+            task_responses = [TaskResponse.model_validate(task.to_dict()) for task in tasks]
             return TaskListResponse(tasks=task_responses, total=total)
         except Exception as e:
             raise HTTPException(
@@ -207,7 +207,7 @@ class TaskController:
             tasks = await self.task_service.get_pending_tasks(skip=skip, limit=limit)
             total = await self.task_service.task_repository.count_pending_tasks()
             
-            task_responses = [TaskResponse.model_validate(task) for task in tasks]
+            task_responses = [TaskResponse.model_validate(task.to_dict()) for task in tasks]
             return TaskListResponse(tasks=task_responses, total=total)
         except Exception as e:
             raise HTTPException(
@@ -234,7 +234,7 @@ class TaskController:
                 limit=limit
             )
             
-            task_responses = [TaskResponse.model_validate(task) for task in tasks]
+            task_responses = [TaskResponse.model_validate(task.to_dict()) for task in tasks]
             return TaskListResponse(tasks=task_responses, total=len(task_responses))
         except Exception as e:
             raise HTTPException(

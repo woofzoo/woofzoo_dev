@@ -5,7 +5,7 @@ This module provides JWT token generation and validation functionality
 for authentication and authorization.
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional, Dict, Any
 
 import jwt
@@ -52,9 +52,9 @@ class JWTService:
             str: JWT access token
         """
         if expires_delta:
-            expire = datetime.utcnow() + expires_delta
+            expire = datetime.now(timezone.utc) + expires_delta
         else:
-            expire = datetime.utcnow() + timedelta(minutes=self.access_token_expire_minutes)
+            expire = datetime.now(timezone.utc) + timedelta(minutes=self.access_token_expire_minutes)
         
         to_encode = {
             "sub": str(user_id),
@@ -63,7 +63,7 @@ class JWTService:
             "personalization": personalization,
             "type": "access",
             "exp": expire,
-            "iat": datetime.utcnow()
+            "iat": datetime.now(timezone.utc)
         }
         
         encoded_jwt = jwt.encode(to_encode, self.secret_key, algorithm=self.algorithm)
@@ -85,15 +85,15 @@ class JWTService:
             str: JWT refresh token
         """
         if expires_delta:
-            expire = datetime.utcnow() + expires_delta
+            expire = datetime.now(timezone.utc) + expires_delta
         else:
-            expire = datetime.utcnow() + timedelta(days=self.refresh_token_expire_days)
+            expire = datetime.now(timezone.utc) + timedelta(days=self.refresh_token_expire_days)
         
         to_encode = {
             "sub": str(user_id),
             "type": "refresh",
             "exp": expire,
-            "iat": datetime.utcnow()
+            "iat": datetime.now(timezone.utc)
         }
         
         encoded_jwt = jwt.encode(to_encode, self.secret_key, algorithm=self.algorithm)
@@ -217,5 +217,5 @@ class JWTService:
         """
         expiration = self.get_token_expiration(token)
         if expiration:
-            return datetime.utcnow() > expiration
+            return datetime.now(timezone.utc) > expiration
         return True

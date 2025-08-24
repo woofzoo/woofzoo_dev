@@ -51,6 +51,16 @@ class EmailService:
         Returns:
             bool: True if email sent successfully, False otherwise
         """
+        # In debug mode, just log the email instead of sending
+        if settings.debug:
+            print(f"🔧 DEBUG MODE - Email would be sent:")
+            print(f"   To: {to_name} <{to_email}>")
+            print(f"   Subject: {subject}")
+            print(f"   Content: {text_content[:100]}...")
+            if html_content:
+                print(f"   HTML Content: {html_content[:100]}...")
+            return True
+        
         try:
             async with httpx.AsyncClient() as client:
                 data = {

@@ -6,7 +6,7 @@ database operations extending the base repository functionality.
 """
 
 from typing import List, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -36,10 +36,16 @@ class UserRepository(BaseRepository[User]):
     
     async def get_by_verification_token(self, token: str) -> Optional[User]:
         """Get a user by email verification token."""
+        print(f"🔍 DEBUG: Searching for user with verification token: {token[:10]}...")
         result = await self.session.execute(
             select(User).where(User.email_verification_token == token)
         )
-        return result.scalar_one_or_none()
+        user = result.scalar_one_or_none()
+        if user:
+            print(f"✅ DEBUG: Found user {user.email} with verification token")
+        else:
+            print(f"❌ DEBUG: No user found with verification token")
+        return user
     
     async def get_by_reset_token(self, token: str) -> Optional[User]:
         """Get a user by password reset token."""
@@ -78,7 +84,7 @@ class UserRepository(BaseRepository[User]):
         result = await self.session.execute(
             update(User)
             .where(User.id == user_id)
-            .values(last_login=datetime.utcnow())
+            .values(last_login=datetime.now(timezone.utc))
         )
         await self.session.commit()
         return result.rowcount > 0
