@@ -5,11 +5,10 @@ This module provides database connection setup, session management,
 and dependency injection for database sessions.
 """
 
-from typing import AsyncGenerator
+from typing import Generator
 
-from sqlalchemy import MetaData
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
-from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy import MetaData, create_engine
+from sqlalchemy.orm import DeclarativeBase, sessionmaker, Session
 
 from app.config import settings
 
@@ -28,8 +27,8 @@ class Base(DeclarativeBase):
     )
 
 
-# Create async engine
-engine = create_async_engine(
+# Create synchronous engine
+engine = create_engine(
     settings.database_url,
     echo=settings.database_echo,
     future=True,
@@ -37,39 +36,37 @@ engine = create_async_engine(
     pool_recycle=300,
 )
 
-# Create async session factory
-AsyncSessionLocal = async_sessionmaker(
+# Create session factory
+SessionLocal = sessionmaker(
     engine,
-    class_=AsyncSession,
     expire_on_commit=False,
     autocommit=False,
     autoflush=False,
 )
 
 
-async def get_db_session() -> AsyncGenerator[AsyncSession, None]:
+def get_db_session() -> Generator[Session, None, None]:
     """
     Dependency to get database session.
     
     Yields:
-        AsyncSession: Database session for dependency injection.
+        Session: Database session for dependency injection.
     """
-    async with AsyncSessionLocal() as session:
-        try:
-            yield session
-        except Exception:
-            await session.rollback()
-            raise
-        finally:
-            await session.close()
+    session = SessionLocal()
+    try:
+        yield session
+    except Exception:
+        session.rollback()
+        raise
+    finally:
+        session.close()
 
 
-async def init_db() -> None:
+def init_db() -> None:
     """Initialize database tables."""
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    Base.metadata.create_all(bind=engine)
 
 
-async def close_db() -> None:
+def close_db() -> None:
     """Close database connections."""
-    await engine.dispose()
+    engine.dispose()

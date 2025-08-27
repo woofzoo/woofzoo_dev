@@ -30,7 +30,7 @@ class EmailService:
         self.base_url = f"https://api.mailgun.net/v3/{self.domain}"
         self.frontend_url = settings.frontend_url
     
-    async def send_email(
+    def send_email(
         self,
         to_email: str,
         to_name: str,
@@ -62,7 +62,7 @@ class EmailService:
             return True
         
         try:
-            async with httpx.AsyncClient() as client:
+            with httpx.Client() as client:
                 data = {
                     "from": f"{self.from_name} <{self.from_email}>",
                     "to": f"{to_name} <{to_email}>",
@@ -73,7 +73,7 @@ class EmailService:
                 if html_content:
                     data["html"] = html_content
                 
-                response = await client.post(
+                response = client.post(
                     f"{self.base_url}/messages",
                     data=data,
                     auth=("api", self.api_key),
@@ -90,7 +90,7 @@ class EmailService:
             print(f"Error sending email: {str(e)}")
             return False
     
-    async def send_verification_email(self, to_email: str, to_name: str, token: str) -> bool:
+    def send_verification_email(self, to_email: str, to_name: str, token: str) -> bool:
         """
         Send email verification email.
         
@@ -113,9 +113,9 @@ class EmailService:
         
         subject = "Verify Your Email - WoofZoo"
         
-        return await self.send_email(to_email, to_name, subject, text_content, html_content)
+        return self.send_email(to_email, to_name, subject, text_content, html_content)
     
-    async def send_password_reset_email(self, to_email: str, to_name: str, token: str) -> bool:
+    def send_password_reset_email(self, to_email: str, to_name: str, token: str) -> bool:
         """
         Send password reset email.
         
@@ -138,7 +138,7 @@ class EmailService:
         
         subject = "Reset Your Password - WoofZoo"
         
-        return await self.send_email(to_email, to_name, subject, text_content, html_content)
+        return self.send_email(to_email, to_name, subject, text_content, html_content)
     
     async def send_welcome_email(self, to_email: str, to_name: str) -> bool:
         """
@@ -156,4 +156,4 @@ class EmailService:
         
         subject = "Welcome to WoofZoo! 🐾"
         
-        return await self.send_email(to_email, to_name, subject, text_content, html_content)
+        return self.send_email(to_email, to_name, subject, text_content, html_content)

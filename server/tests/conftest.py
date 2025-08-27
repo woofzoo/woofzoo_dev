@@ -16,8 +16,7 @@ from sqlalchemy.pool import StaticPool
 from app.config import settings
 from app.database import Base, get_db_session
 from app.main import app
-from app.repositories.task import TaskRepository
-from app.services.task import TaskService
+
 
 
 # Test database URL
@@ -79,33 +78,4 @@ def client(test_session: AsyncSession) -> Generator:
     app.dependency_overrides.clear()
 
 
-@pytest.fixture
-def task_repository(test_session: AsyncSession) -> TaskRepository:
-    """Create a task repository for testing."""
-    return TaskRepository(test_session)
 
-
-@pytest.fixture
-def task_service(task_repository: TaskRepository) -> TaskService:
-    """Create a task service for testing."""
-    return TaskService(task_repository)
-
-
-@pytest.fixture
-def sample_task_data() -> dict:
-    """Sample task data for testing."""
-    return {
-        "title": "Test Task",
-        "description": "This is a test task",
-        "completed": False
-    }
-
-
-@pytest.fixture
-def sample_task_update_data() -> dict:
-    """Sample task update data for testing."""
-    return {
-        "title": "Updated Test Task",
-        "description": "This is an updated test task",
-        "completed": True
-    }

@@ -64,26 +64,26 @@ class User(Base):
     
     # Email verification
     email_verification_token: Optional[str] = Column(String(255), nullable=True, index=True)
-    email_verification_expires: Optional[datetime] = Column(DateTime(timezone=True), nullable=True)
+    email_verification_expires: Optional[datetime] = Column(DateTime, nullable=True)
     
     # Password reset
     password_reset_token: Optional[str] = Column(String(255), nullable=True, index=True)
-    password_reset_expires: Optional[datetime] = Column(DateTime(timezone=True), nullable=True)
+    password_reset_expires: Optional[datetime] = Column(DateTime, nullable=True)
     
     # Personalization settings (JSON object)
     personalization: dict = Column(JSON, nullable=False, default=dict)
     
     # Login tracking
-    last_login: Optional[datetime] = Column(DateTime(timezone=True), nullable=True)
+    last_login: Optional[datetime] = Column(DateTime, nullable=True)
     
     # Timestamps
     created_at: datetime = Column(
-        DateTime(timezone=True),
+        DateTime,
         server_default=func.now(),
         nullable=False
     )
     updated_at: datetime = Column(
-        DateTime(timezone=True),
+        DateTime,
         server_default=func.now(),
         onupdate=func.now(),
         nullable=False

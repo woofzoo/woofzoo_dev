@@ -31,12 +31,12 @@ security = HTTPBearer()
     summary="Register a new user",
     description="Create a new user account with email verification"
 )
-async def register_user(
+def register_user(
     user_data: UserSignup,
     controller: AuthController = Depends(get_auth_controller)
 ) -> MessageResponse:
     """Register a new user."""
-    return await controller.register_user(user_data)
+    return controller.register_user(user_data)
 
 
 @router.post(
@@ -45,12 +45,12 @@ async def register_user(
     summary="Login user",
     description="Authenticate user and return access tokens"
 )
-async def login_user(
+def login_user(
     login_data: UserLogin,
     controller: AuthController = Depends(get_auth_controller)
 ) -> LoginResponse:
     """Login user."""
-    return await controller.login_user(login_data)
+    return controller.login_user(login_data)
 
 
 @router.post(
@@ -59,12 +59,12 @@ async def login_user(
     summary="Verify email address",
     description="Verify user email address using verification token"
 )
-async def verify_email(
+def verify_email(
     verification_data: EmailVerification,
     controller: AuthController = Depends(get_auth_controller)
 ) -> MessageResponse:
     """Verify user email address."""
-    return await controller.verify_email(verification_data)
+    return controller.verify_email(verification_data)
 
 
 @router.get(
@@ -72,7 +72,7 @@ async def verify_email(
     summary="Verify email address via GET",
     description="Verify user email address using verification token from email link"
 )
-async def verify_email_get(
+def verify_email_get(
     token: str = Query(..., description="Email verification token"),
     controller: AuthController = Depends(get_auth_controller)
 ):
@@ -84,7 +84,7 @@ async def verify_email_get(
     """
     try:
         # Verify the email
-        success = await controller.verify_email(EmailVerification(token=token))
+        success = controller.verify_email(EmailVerification(token=token))
         
         if success:
             # Redirect to frontend with success message
@@ -107,12 +107,12 @@ async def verify_email_get(
     summary="Request password reset",
     description="Send password reset email to user"
 )
-async def request_password_reset(
+def request_password_reset(
     reset_request: PasswordResetRequest,
     controller: AuthController = Depends(get_auth_controller)
 ) -> MessageResponse:
     """Request password reset."""
-    return await controller.request_password_reset(reset_request)
+    return controller.request_password_reset(reset_request)
 
 
 @router.post(
@@ -121,12 +121,12 @@ async def request_password_reset(
     summary="Reset password",
     description="Reset user password using reset token"
 )
-async def reset_password(
+def reset_password(
     reset_data: PasswordReset,
     controller: AuthController = Depends(get_auth_controller)
 ) -> MessageResponse:
     """Reset user password."""
-    return await controller.reset_password(reset_data)
+    return controller.reset_password(reset_data)
 
 
 @router.get(
@@ -163,12 +163,12 @@ async def reset_password_get(
     summary="Refresh access token",
     description="Get new access token using refresh token"
 )
-async def refresh_tokens(
+def refresh_tokens(
     refresh_token: str = Query(..., description="Refresh token"),
     controller: AuthController = Depends(get_auth_controller)
 ) -> TokenResponse:
     """Refresh access token."""
-    return await controller.refresh_tokens(refresh_token)
+    return controller.refresh_tokens(refresh_token)
 
 
 @router.post(
@@ -177,12 +177,12 @@ async def refresh_tokens(
     summary="Resend verification email",
     description="Resend email verification link to user"
 )
-async def resend_verification_email(
+def resend_verification_email(
     email: str = Query(..., description="User email address"),
     controller: AuthController = Depends(get_auth_controller)
 ) -> MessageResponse:
     """Resend verification email."""
-    return await controller.resend_verification_email(email)
+    return controller.resend_verification_email(email)
 
 
 # Protected endpoints (authentication required)
@@ -192,12 +192,12 @@ async def resend_verification_email(
     summary="Get current user",
     description="Get current authenticated user information"
 )
-async def get_current_user(
+def get_current_user(
     user_id: int = Depends(get_current_user_id),
     controller: AuthController = Depends(get_auth_controller)
 ) -> UserResponse:
     """Get current user information."""
-    return await controller.get_current_user(user_id)
+    return controller.get_current_user(user_id)
 
 
 @router.put(
@@ -206,13 +206,13 @@ async def get_current_user(
     summary="Update personalization settings",
     description="Update current user's personalization settings"
 )
-async def update_personalization(
+def update_personalization(
     personalization_data: PersonalizationUpdate,
     user_id: int = Depends(get_current_user_id),
     controller: AuthController = Depends(get_auth_controller)
 ) -> UserResponse:
     """Update user personalization settings."""
-    return await controller.update_personalization(user_id, personalization_data)
+    return controller.update_personalization(user_id, personalization_data)
 
 
 @router.post(
@@ -221,14 +221,14 @@ async def update_personalization(
     summary="Change password",
     description="Change current user's password"
 )
-async def change_password(
+def change_password(
     current_password: str = Query(..., description="Current password"),
     new_password: str = Query(..., description="New password"),
     user_id: int = Depends(get_current_user_id),
     controller: AuthController = Depends(get_auth_controller)
 ) -> MessageResponse:
     """Change user password."""
-    return await controller.change_password(user_id, current_password, new_password)
+    return controller.change_password(user_id, current_password, new_password)
 
 
 @router.post(
@@ -237,12 +237,12 @@ async def change_password(
     summary="Logout user",
     description="Logout current user (client-side token invalidation)"
 )
-async def logout(
+def logout(
     user_id: int = Depends(get_current_user_id),
     controller: AuthController = Depends(get_auth_controller)
 ) -> MessageResponse:
     """Logout user."""
-    return await controller.logout(user_id)
+    return controller.logout(user_id)
 
 
 # Health check endpoint

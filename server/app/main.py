@@ -13,7 +13,7 @@ from fastapi.middleware.trustedhost import TrustedHostMiddleware
 
 from app.config import settings
 from app.database import close_db, init_db
-from app.routes import task_router, auth_router
+from app.routes import auth_router
 
 
 @asynccontextmanager
@@ -28,14 +28,14 @@ async def lifespan(app: FastAPI):
     """
     # Startup
     print("🚀 Starting WoofZoo API...")
-    await init_db()
+    init_db()
     print("✅ Database initialized successfully")
     
     yield
     
     # Shutdown
     print("🛑 Shutting down WoofZoo API...")
-    await close_db()
+    close_db()
     print("✅ Database connections closed")
 
 
@@ -67,12 +67,11 @@ app.add_middleware(
 )
 
 # Include API routes
-app.include_router(task_router, prefix=settings.api_prefix)
 app.include_router(auth_router, prefix=settings.api_prefix)
 
 
 @app.get("/", tags=["root"])
-async def root():
+def root():
     """
     Root endpoint.
     
@@ -89,7 +88,7 @@ async def root():
 
 
 @app.get("/health", tags=["health"])
-async def health_check():
+def health_check():
     """
     Health check endpoint.
     

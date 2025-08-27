@@ -25,23 +25,25 @@ woofzoo/
 │   ├── database.py             # Database connection and session management
 │   ├── models/                 # SQLAlchemy models
 │   │   ├── __init__.py
-│   │   └── task.py
+│   │   └── user.py
 │   ├── schemas/                # Pydantic schemas
 │   │   ├── __init__.py
-│   │   └── task.py
+│   │   └── auth.py
 │   ├── repositories/           # Data access layer
 │   │   ├── __init__.py
 │   │   ├── base.py
-│   │   └── task.py
+│   │   └── user.py
 │   ├── services/               # Business logic layer
 │   │   ├── __init__.py
-│   │   └── task.py
+│   │   ├── auth.py
+│   │   ├── email.py
+│   │   └── jwt.py
 │   ├── controllers/            # API controllers
 │   │   ├── __init__.py
-│   │   └── task.py
+│   │   └── auth.py
 │   └── routes/                 # API routes
 │       ├── __init__.py
-│       └── task.py
+│       └── auth.py
 ├── alembic/                    # Database migrations
 ├── tests/                      # Test suite
 ├── requirements.txt
@@ -127,7 +129,7 @@ pytest
 pytest --cov=app
 
 # Run specific test file
-pytest tests/test_task.py
+pytest tests/test_auth.py
 ```
 
 ## 🔧 Development Tools
@@ -148,29 +150,32 @@ flake8 app/ tests/
 
 ## 📖 API Endpoints
 
-### Tasks CRUD Operations
+### Authentication Operations
 
-- `GET /api/tasks` - List all tasks
-- `GET /api/tasks/{task_id}` - Get a specific task
-- `POST /api/tasks` - Create a new task
-- `PUT /api/tasks/{task_id}` - Update a task
-- `DELETE /api/tasks/{task_id}` - Delete a task
+- `POST /api/auth/register` - Register a new user
+- `POST /api/auth/login` - Login user
+- `POST /api/auth/refresh` - Refresh access token
+- `POST /api/auth/verify-email` - Verify user email
+- `POST /api/auth/forgot-password` - Request password reset
+- `POST /api/auth/reset-password` - Reset password
 
 ### Example Usage
 
 ```bash
-# Create a task
-curl -X POST "http://localhost:8000/api/tasks" \
+# Register a new user
+curl -X POST "http://localhost:8000/api/auth/register" \
      -H "Content-Type: application/json" \
-     -d '{"title": "Learn FastAPI", "description": "Study clean architecture"}'
+     -d '{"email": "user@example.com", "password": "password123", "full_name": "John Doe"}'
 
-# Get all tasks
-curl "http://localhost:8000/api/tasks"
-
-# Update a task
-curl -X PUT "http://localhost:8000/api/tasks/1" \
+# Login user
+curl -X POST "http://localhost:8000/api/auth/login" \
      -H "Content-Type: application/json" \
-     -d '{"title": "Learn FastAPI", "description": "Study clean architecture", "completed": true}'
+     -d '{"email": "user@example.com", "password": "password123"}'
+
+# Refresh token
+curl -X POST "http://localhost:8000/api/auth/refresh" \
+     -H "Content-Type: application/json" \
+     -d '{"refresh_token": "your_refresh_token"}'
 ```
 
 ## 🏗️ Architecture
@@ -190,12 +195,12 @@ The project uses FastAPI's dependency injection system to manage dependencies:
 
 ```python
 # Example dependency injection
-def get_task_service() -> TaskService:
-    return TaskService(get_task_repository())
+def get_auth_service() -> AuthService:
+    return AuthService(get_user_repository(), get_email_service(), get_jwt_service())
 
-@router.get("/tasks")
-async def get_tasks(service: TaskService = Depends(get_task_service)):
-    return await service.get_all_tasks()
+@router.post("/auth/login")
+def login(service: AuthService = Depends(get_auth_service)):
+    return service.login_user(login_data)
 ```
 
 ## 🤝 Contributing

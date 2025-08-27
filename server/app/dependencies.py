@@ -6,16 +6,13 @@ This module centralizes all dependency injection functions for the current proje
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session
 
 from app.database import get_db_session
-from app.repositories.task import TaskRepository
 from app.repositories.user import UserRepository
-from app.services.task import TaskService
 from app.services.auth import AuthService
 from app.services.email import EmailService
 from app.services.jwt import JWTService
-from app.controllers.task import TaskController
 from app.controllers.auth import AuthController
 
 # Security scheme
@@ -26,20 +23,7 @@ security = HTTPBearer()
 # DATABASE DEPENDENCIES
 # =============================================================================
 
-def get_task_repository(session: AsyncSession = Depends(get_db_session)) -> TaskRepository:
-    """
-    Dependency to get task repository.
-    
-    Args:
-        session: Database session
-        
-    Returns:
-        TaskRepository instance
-    """
-    return TaskRepository(session)
-
-
-def get_user_repository(session: AsyncSession = Depends(get_db_session)) -> UserRepository:
+def get_user_repository(session: Session = Depends(get_db_session)) -> UserRepository:
     """
     Dependency to get user repository.
     
@@ -76,21 +60,6 @@ def get_jwt_service() -> JWTService:
     return JWTService()
 
 
-def get_task_service(
-    repository: TaskRepository = Depends(get_task_repository)
-) -> TaskService:
-    """
-    Dependency to get task service.
-    
-    Args:
-        repository: Task repository instance
-        
-    Returns:
-        TaskService instance
-    """
-    return TaskService(repository)
-
-
 def get_auth_service(
     user_repository: UserRepository = Depends(get_user_repository),
     email_service: EmailService = Depends(get_email_service),
@@ -114,21 +83,6 @@ def get_auth_service(
 # CONTROLLER DEPENDENCIES
 # =============================================================================
 
-def get_task_controller(
-    service: TaskService = Depends(get_task_service)
-) -> TaskController:
-    """
-    Dependency to get task controller.
-    
-    Args:
-        service: Task service instance
-        
-    Returns:
-        TaskController instance
-    """
-    return TaskController(service)
-
-
 def get_auth_controller(
     auth_service: AuthService = Depends(get_auth_service),
     jwt_service: JWTService = Depends(get_jwt_service)
@@ -150,7 +104,7 @@ def get_auth_controller(
 # AUTHENTICATION DEPENDENCIES
 # =============================================================================
 
-async def get_current_user_id(
+def get_current_user_id(
     credentials: HTTPAuthorizationCredentials = Depends(security),
     jwt_service: JWTService = Depends(get_jwt_service)
 ) -> int:
@@ -193,7 +147,7 @@ async def get_current_user_id(
         )
 
 
-async def get_current_user(
+def get_current_user(
     user_id: int = Depends(get_current_user_id),
     user_repository: UserRepository = Depends(get_user_repository)
 ):
@@ -210,7 +164,7 @@ async def get_current_user(
     Raises:
         HTTPException: If user not found or inactive
     """
-    user = await user_repository.get_by_id(user_id)
+    user = user_repository.get_by_id(user_id)
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -236,7 +190,7 @@ def require_roles(required_roles: list[str]):
     Returns:
         Dependency function that checks user roles
     """
-    async def check_roles(
+    def check_roles(
         current_user = Depends(get_current_user)
     ):
         """
