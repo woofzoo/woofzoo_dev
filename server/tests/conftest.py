@@ -158,4 +158,85 @@ def sample_pet(db_session, sample_owner, sample_pet_data):
     return pet
 
 
+@pytest.fixture
+def sample_family_data():
+    """Sample family data for testing."""
+    return {
+        "name": "Test Family",
+        "description": "A test family for testing purposes"
+    }
+
+
+@pytest.fixture
+def sample_family(db_session, sample_owner, sample_family_data):
+    """Create a sample family in the database."""
+    from app.services.family import FamilyService
+    from app.repositories.family import FamilyRepository
+    from app.schemas.family import FamilyCreate
+    
+    family_repository = FamilyRepository(db_session)
+    family_service = FamilyService(family_repository)
+    
+    family_create = FamilyCreate(**sample_family_data)
+    family = family_service.create_family(family_create, str(sample_owner.id))
+    
+    return family
+
+
+@pytest.fixture
+def sample_family_member_data():
+    """Sample family member data for testing."""
+    return {
+        "user_id": "123e4567-e89b-12d3-a456-426614174001",
+        "access_level": "MEMBER"
+    }
+
+
+@pytest.fixture
+def sample_family_member(db_session, sample_family, sample_user, sample_family_member_data):
+    """Create a sample family member in the database."""
+    from app.services.family_member import FamilyMemberService
+    from app.repositories.family_member import FamilyMemberRepository
+    from app.schemas.family import FamilyMemberCreate
+    
+    family_member_repository = FamilyMemberRepository(db_session)
+    family_member_service = FamilyMemberService(family_member_repository)
+    
+    member_data = {**sample_family_member_data, "user_id": str(sample_user.id)}
+    member_create = FamilyMemberCreate(**member_data)
+    member = family_member_service.add_family_member(str(sample_family.id), member_create)
+    
+    return member
+
+
+@pytest.fixture
+def sample_family_invitation_data():
+    """Sample family invitation data for testing."""
+    return {
+        "email": "invitee@example.com",
+        "access_level": "MEMBER",
+        "message": "Join our family!"
+    }
+
+
+@pytest.fixture
+def sample_family_invitation(db_session, sample_family, sample_user, sample_family_invitation_data):
+    """Create a sample family invitation in the database."""
+    from app.services.family_invitation import FamilyInvitationService
+    from app.repositories.family_invitation import FamilyInvitationRepository
+    from app.schemas.family import FamilyInvitationCreate
+    
+    family_invitation_repository = FamilyInvitationRepository(db_session)
+    family_invitation_service = FamilyInvitationService(family_invitation_repository)
+    
+    invitation_create = FamilyInvitationCreate(**sample_family_invitation_data)
+    invitation = family_invitation_service.create_invitation(
+        str(sample_family.id), 
+        invitation_create, 
+        str(sample_user.id)
+    )
+    
+    return invitation
+
+
 

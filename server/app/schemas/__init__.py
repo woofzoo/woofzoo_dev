@@ -33,6 +33,20 @@ from app.schemas.pet_types import (
     PetTypesResponse,
     PetBreedsResponse,
 )
+from app.schemas.family import (
+    FamilyCreate,
+    FamilyResponse,
+    FamilyUpdate,
+    FamilyListResponse,
+    FamilyMemberCreate,
+    FamilyMemberResponse,
+    FamilyMemberUpdate,
+    FamilyMemberListResponse,
+    FamilyInvitationCreate,
+    FamilyInvitationResponse,
+    FamilyInvitationAccept,
+    FamilyInvitationListResponse,
+)
 
 __all__ = [
     # Auth schemas
@@ -63,4 +77,18 @@ __all__ = [
     # Pet types schemas
     "PetTypesResponse",
     "PetBreedsResponse",
+    
+    # Family schemas
+    "FamilyCreate",
+    "FamilyResponse",
+    "FamilyUpdate",
+    "FamilyListResponse",
+    "FamilyMemberCreate",
+    "FamilyMemberResponse",
+    "FamilyMemberUpdate",
+    "FamilyMemberListResponse",
+    "FamilyInvitationCreate",
+    "FamilyInvitationResponse",
+    "FamilyInvitationAccept",
+    "FamilyInvitationListResponse",
 ]
