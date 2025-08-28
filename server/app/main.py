@@ -13,7 +13,7 @@ from fastapi.middleware.trustedhost import TrustedHostMiddleware
 
 from app.config import settings
 from app.database import close_db, init_db
-from app.routes import auth_router
+from app.routes import auth_router, owner_router, pet_router, pet_types_router
 
 
 @asynccontextmanager
@@ -68,6 +68,9 @@ app.add_middleware(
 
 # Include API routes
 app.include_router(auth_router, prefix=settings.api_prefix)
+app.include_router(owner_router, prefix=settings.api_prefix)
+app.include_router(pet_router, prefix=settings.api_prefix)
+app.include_router(pet_types_router, prefix=settings.api_prefix)
 
 
 @app.get("/", tags=["root"])

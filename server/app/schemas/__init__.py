@@ -5,14 +5,16 @@ This package contains all Pydantic schemas for request/response validation.
 """
 
 from app.schemas.auth import (
-    UserCreate,
+    UserSignup,
     UserLogin,
     UserResponse,
     TokenResponse,
-    RefreshTokenRequest,
     PasswordResetRequest,
-    PasswordResetConfirm,
-    EmailVerificationRequest,
+    PasswordReset,
+    EmailVerification,
+    LoginResponse,
+    MessageResponse,
+    PersonalizationUpdate,
 )
 from app.schemas.owner import (
     OwnerCreate,
@@ -34,14 +36,16 @@ from app.schemas.pet_types import (
 
 __all__ = [
     # Auth schemas
-    "UserCreate",
+    "UserSignup",
     "UserLogin", 
     "UserResponse",
     "TokenResponse",
-    "RefreshTokenRequest",
     "PasswordResetRequest",
-    "PasswordResetConfirm",
-    "EmailVerificationRequest",
+    "PasswordReset",
+    "EmailVerification",
+    "LoginResponse",
+    "MessageResponse",
+    "PersonalizationUpdate",
     
     # Owner schemas
     "OwnerCreate",

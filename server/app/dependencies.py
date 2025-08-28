@@ -10,10 +10,19 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db_session
 from app.repositories.user import UserRepository
+from app.repositories.owner import OwnerRepository
+from app.repositories.pet import PetRepository
 from app.services.auth import AuthService
 from app.services.email import EmailService
 from app.services.jwt import JWTService
+from app.services.owner import OwnerService
+from app.services.pet import PetService
+from app.services.pet_id import PetIDService
+from app.services.pet_types import PetTypesService
 from app.controllers.auth import AuthController
+from app.controllers.owner import OwnerController
+from app.controllers.pet import PetController
+from app.controllers.pet_types import PetTypesController
 
 # Security scheme
 security = HTTPBearer()
@@ -34,6 +43,32 @@ def get_user_repository(session: Session = Depends(get_db_session)) -> UserRepos
         UserRepository instance
     """
     return UserRepository(session)
+
+
+def get_owner_repository(session: Session = Depends(get_db_session)) -> OwnerRepository:
+    """
+    Dependency to get owner repository.
+    
+    Args:
+        session: Database session
+        
+    Returns:
+        OwnerRepository instance
+    """
+    return OwnerRepository(session)
+
+
+def get_pet_repository(session: Session = Depends(get_db_session)) -> PetRepository:
+    """
+    Dependency to get pet repository.
+    
+    Args:
+        session: Database session
+        
+    Returns:
+        PetRepository instance
+    """
+    return PetRepository(session)
 
 
 # =============================================================================
@@ -60,6 +95,29 @@ def get_jwt_service() -> JWTService:
     return JWTService()
 
 
+def get_pet_id_service(session: Session = Depends(get_db_session)) -> PetIDService:
+    """
+    Dependency to get pet ID service.
+    
+    Args:
+        session: Database session
+        
+    Returns:
+        PetIDService instance
+    """
+    return PetIDService(session)
+
+
+def get_pet_types_service() -> PetTypesService:
+    """
+    Dependency to get pet types service.
+    
+    Returns:
+        PetTypesService instance
+    """
+    return PetTypesService()
+
+
 def get_auth_service(
     user_repository: UserRepository = Depends(get_user_repository),
     email_service: EmailService = Depends(get_email_service),
@@ -77,6 +135,38 @@ def get_auth_service(
         AuthService instance
     """
     return AuthService(user_repository, email_service, jwt_service)
+
+
+def get_owner_service(
+    owner_repository: OwnerRepository = Depends(get_owner_repository)
+) -> OwnerService:
+    """
+    Dependency to get owner service.
+    
+    Args:
+        owner_repository: Owner repository instance
+        
+    Returns:
+        OwnerService instance
+    """
+    return OwnerService(owner_repository)
+
+
+def get_pet_service(
+    pet_repository: PetRepository = Depends(get_pet_repository),
+    pet_id_service: PetIDService = Depends(get_pet_id_service)
+) -> PetService:
+    """
+    Dependency to get pet service.
+    
+    Args:
+        pet_repository: Pet repository instance
+        pet_id_service: Pet ID service instance
+        
+    Returns:
+        PetService instance
+    """
+    return PetService(pet_repository, pet_id_service)
 
 
 # =============================================================================
@@ -98,6 +188,51 @@ def get_auth_controller(
         AuthController instance
     """
     return AuthController(auth_service, jwt_service)
+
+
+def get_owner_controller(
+    owner_service: OwnerService = Depends(get_owner_service)
+) -> OwnerController:
+    """
+    Dependency to get owner controller.
+    
+    Args:
+        owner_service: Owner service instance
+        
+    Returns:
+        OwnerController instance
+    """
+    return OwnerController(owner_service)
+
+
+def get_pet_controller(
+    pet_service: PetService = Depends(get_pet_service)
+) -> PetController:
+    """
+    Dependency to get pet controller.
+    
+    Args:
+        pet_service: Pet service instance
+        
+    Returns:
+        PetController instance
+    """
+    return PetController(pet_service)
+
+
+def get_pet_types_controller(
+    pet_types_service: PetTypesService = Depends(get_pet_types_service)
+) -> PetTypesController:
+    """
+    Dependency to get pet types controller.
+    
+    Args:
+        pet_types_service: Pet types service instance
+        
+    Returns:
+        PetTypesController instance
+    """
+    return PetTypesController(pet_types_service)
 
 
 # =============================================================================

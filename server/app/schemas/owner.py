@@ -6,8 +6,9 @@ This module defines Pydantic models for owner-related API operations.
 
 from datetime import datetime
 from typing import Optional
+import uuid
 
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, field_validator
 
 
 class OwnerBase(BaseModel):
@@ -60,6 +61,14 @@ class OwnerResponse(OwnerBase):
     is_active: bool = Field(..., description="Owner account status")
     created_at: datetime = Field(..., description="Owner creation timestamp")
     updated_at: datetime = Field(..., description="Owner last update timestamp")
+    
+    @field_validator('id', mode='before')
+    @classmethod
+    def convert_uuid_to_string(cls, v):
+        """Convert UUID to string if needed."""
+        if isinstance(v, uuid.UUID):
+            return str(v)
+        return v
     
     model_config = ConfigDict(
         from_attributes=True,

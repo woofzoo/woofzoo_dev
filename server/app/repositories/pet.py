@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 
 from app.models.pet import Pet
 from app.repositories.base import BaseRepository
+import uuid
 
 
 class PetRepository(BaseRepository[Pet]):
@@ -53,9 +54,15 @@ class PetRepository(BaseRepository[Pet]):
         Returns:
             List of pet instances
         """
+        # Convert string owner_id to UUID
+        try:
+            owner_id_uuid = uuid.UUID(owner_id)
+        except (ValueError, AttributeError):
+            return []
+        
         result = self.session.execute(
             select(Pet)
-            .where(Pet.owner_id == owner_id)
+            .where(Pet.owner_id == owner_id_uuid)
             .where(Pet.is_active == True)
             .offset(skip)
             .limit(limit)
@@ -140,9 +147,15 @@ class PetRepository(BaseRepository[Pet]):
         Returns:
             Number of pets owned by the owner
         """
+        # Convert string owner_id to UUID
+        try:
+            owner_id_uuid = uuid.UUID(owner_id)
+        except (ValueError, AttributeError):
+            return 0
+        
         result = self.session.execute(
             select(Pet)
-            .where(Pet.owner_id == owner_id)
+            .where(Pet.owner_id == owner_id_uuid)
             .where(Pet.is_active == True)
         )
         return len(result.scalars().all())
