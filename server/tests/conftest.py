@@ -301,4 +301,11 @@ def sample_primary_photo(db_session, sample_pet, sample_user, sample_photo_data)
     return photo
 
 
+@pytest.fixture
+def jwt_service():
+    """Create a JWT service instance for testing."""
+    from app.services.jwt import JWTService
+    return JWTService()
+
+
 

@@ -28,6 +28,8 @@ from app.services.family_member import FamilyMemberService
 from app.services.family_invitation import FamilyInvitationService
 from app.services.photo import PhotoService
 from app.services.storage import StorageService
+from app.services.auth_service import AuthenticationService
+from app.middleware.auth import AuthMiddleware
 from app.controllers.auth import AuthController
 from app.controllers.owner import OwnerController
 from app.controllers.pet import PetController
@@ -36,6 +38,7 @@ from app.controllers.family import FamilyController
 from app.controllers.family_member import FamilyMemberController
 from app.controllers.family_invitation import FamilyInvitationController
 from app.controllers.photo import PhotoController
+from app.controllers.auth_controller import AuthenticationController
 
 # Security scheme
 security = HTTPBearer()
@@ -266,6 +269,42 @@ def get_family_invitation_service(
     return FamilyInvitationService(family_invitation_repository)
 
 
+def get_authentication_service(
+    user_repository: UserRepository = Depends(get_user_repository),
+    jwt_service: JWTService = Depends(get_jwt_service),
+    email_service: EmailService = Depends(get_email_service)
+) -> AuthenticationService:
+    """
+    Dependency to get authentication service.
+    
+    Args:
+        user_repository: User repository instance
+        jwt_service: JWT service instance
+        email_service: Email service instance
+        
+    Returns:
+        AuthenticationService instance
+    """
+    return AuthenticationService(user_repository, jwt_service, email_service)
+
+
+def get_auth_middleware(
+    jwt_service: JWTService = Depends(get_jwt_service),
+    user_repository: UserRepository = Depends(get_user_repository)
+) -> AuthMiddleware:
+    """
+    Dependency to get authentication middleware.
+    
+    Args:
+        jwt_service: JWT service instance
+        user_repository: User repository instance
+        
+    Returns:
+        AuthMiddleware instance
+    """
+    return AuthMiddleware(jwt_service, user_repository)
+
+
 # =============================================================================
 # CONTROLLER DEPENDENCIES
 # =============================================================================
@@ -375,6 +414,21 @@ def get_family_invitation_controller(
         FamilyInvitationController instance
     """
     return FamilyInvitationController(family_invitation_service)
+
+
+def get_auth_controller(
+    auth_service: AuthenticationService = Depends(get_authentication_service)
+) -> AuthenticationController:
+    """
+    Dependency to get authentication controller.
+    
+    Args:
+        auth_service: Authentication service instance
+        
+    Returns:
+        AuthenticationController instance
+    """
+    return AuthenticationController(auth_service)
 
 
 # =============================================================================

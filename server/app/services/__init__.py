@@ -16,6 +16,7 @@ from app.services.family_member import FamilyMemberService
 from app.services.family_invitation import FamilyInvitationService
 from app.services.photo import PhotoService
 from app.services.storage import StorageService
+from app.services.auth_service import AuthenticationService
 
 __all__ = [
     "AuthService",
@@ -30,4 +31,5 @@ __all__ = [
     "FamilyInvitationService",
     "PhotoService",
     "StorageService",
+    "AuthenticationService",
 ]
