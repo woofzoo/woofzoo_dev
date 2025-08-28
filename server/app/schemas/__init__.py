@@ -47,6 +47,14 @@ from app.schemas.family import (
     FamilyInvitationAccept,
     FamilyInvitationListResponse,
 )
+from app.schemas.photo import (
+    PhotoCreate,
+    PhotoUpdate,
+    PhotoResponse,
+    PhotoListResponse,
+    PhotoUploadRequest,
+    PhotoUploadResponse,
+)
 
 __all__ = [
     # Auth schemas
@@ -91,4 +99,12 @@ __all__ = [
     "FamilyInvitationResponse",
     "FamilyInvitationAccept",
     "FamilyInvitationListResponse",
+    
+    # Photo schemas
+    "PhotoCreate",
+    "PhotoUpdate",
+    "PhotoResponse",
+    "PhotoListResponse",
+    "PhotoUploadRequest",
+    "PhotoUploadResponse",
 ]

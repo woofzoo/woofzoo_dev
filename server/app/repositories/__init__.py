@@ -11,6 +11,7 @@ from app.repositories.pet import PetRepository
 from app.repositories.family import FamilyRepository
 from app.repositories.family_member import FamilyMemberRepository
 from app.repositories.family_invitation import FamilyInvitationRepository
+from app.repositories.photo import PhotoRepository
 
 __all__ = [
     "BaseRepository",
@@ -20,4 +21,5 @@ __all__ = [
     "FamilyRepository",
     "FamilyMemberRepository",
     "FamilyInvitationRepository",
+    "PhotoRepository",
 ]

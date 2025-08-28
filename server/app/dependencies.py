@@ -15,6 +15,7 @@ from app.repositories.pet import PetRepository
 from app.repositories.family import FamilyRepository
 from app.repositories.family_member import FamilyMemberRepository
 from app.repositories.family_invitation import FamilyInvitationRepository
+from app.repositories.photo import PhotoRepository
 from app.services.auth import AuthService
 from app.services.email import EmailService
 from app.services.jwt import JWTService
@@ -25,6 +26,8 @@ from app.services.pet_types import PetTypesService
 from app.services.family import FamilyService
 from app.services.family_member import FamilyMemberService
 from app.services.family_invitation import FamilyInvitationService
+from app.services.photo import PhotoService
+from app.services.storage import StorageService
 from app.controllers.auth import AuthController
 from app.controllers.owner import OwnerController
 from app.controllers.pet import PetController
@@ -32,6 +35,7 @@ from app.controllers.pet_types import PetTypesController
 from app.controllers.family import FamilyController
 from app.controllers.family_member import FamilyMemberController
 from app.controllers.family_invitation import FamilyInvitationController
+from app.controllers.photo import PhotoController
 
 # Security scheme
 security = HTTPBearer()
@@ -490,3 +494,62 @@ def require_roles(required_roles: list[str]):
         return current_user
     
     return check_roles
+
+
+# =============================================================================
+# PHOTO DEPENDENCIES
+# =============================================================================
+
+def get_photo_repository(session: Session = Depends(get_db_session)) -> PhotoRepository:
+    """
+    Dependency to get photo repository.
+    
+    Args:
+        session: Database session
+        
+    Returns:
+        PhotoRepository instance
+    """
+    return PhotoRepository(session)
+
+
+def get_storage_service() -> StorageService:
+    """
+    Dependency to get storage service.
+    
+    Returns:
+        StorageService instance
+    """
+    return StorageService()
+
+
+def get_photo_service(
+    photo_repository: PhotoRepository = Depends(get_photo_repository),
+    storage_service: StorageService = Depends(get_storage_service)
+) -> PhotoService:
+    """
+    Dependency to get photo service.
+    
+    Args:
+        photo_repository: Photo repository instance
+        storage_service: Storage service instance
+        
+    Returns:
+        PhotoService instance
+    """
+    return PhotoService(photo_repository, storage_service)
+
+
+def get_photo_controller(
+    photo_service: PhotoService = Depends(get_photo_service)
+) -> PhotoController:
+    """
+    Dependency to get photo controller.
+    
+    Args:
+        photo_service: Photo service instance
+        
+    Returns:
+        PhotoController instance
+    """
+    return PhotoController(photo_service)

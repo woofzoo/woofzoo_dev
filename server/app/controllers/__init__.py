@@ -11,6 +11,7 @@ from app.controllers.pet_types import PetTypesController
 from app.controllers.family import FamilyController
 from app.controllers.family_member import FamilyMemberController
 from app.controllers.family_invitation import FamilyInvitationController
+from app.controllers.photo import PhotoController
 
 __all__ = [
     "AuthController",
@@ -20,4 +21,5 @@ __all__ = [
     "FamilyController",
     "FamilyMemberController",
     "FamilyInvitationController",
+    "PhotoController",
 ]

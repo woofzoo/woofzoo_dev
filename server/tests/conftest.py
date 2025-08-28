@@ -239,4 +239,66 @@ def sample_family_invitation(db_session, sample_family, sample_user, sample_fami
     return invitation
 
 
+@pytest.fixture
+def sample_photo_data():
+    """Sample photo data for testing."""
+    return {
+        "filename": "test_photo.jpg",
+        "file_size": 1024000,
+        "mime_type": "image/jpeg",
+        "width": 1920,
+        "height": 1080,
+        "is_primary": False
+    }
+
+
+@pytest.fixture
+def sample_photo_upload_data():
+    """Sample photo upload data for testing."""
+    return {
+        "filename": "test_upload.jpg",
+        "file_size": 512000,
+        "mime_type": "image/jpeg",
+        "is_primary": False
+    }
+
+
+@pytest.fixture
+def sample_photo(db_session, sample_pet, sample_user, sample_photo_data):
+    """Create a sample photo in the database."""
+    from app.services.photo import PhotoService
+    from app.repositories.photo import PhotoRepository
+    from app.services.storage import StorageService
+    from app.schemas.photo import PhotoCreate
+    
+    photo_repository = PhotoRepository(db_session)
+    storage_service = StorageService()
+    photo_service = PhotoService(photo_repository, storage_service)
+    
+    photo_data = {**sample_photo_data, "pet_id": str(sample_pet.id), "uploaded_by": sample_user.id}
+    photo_create = PhotoCreate(**photo_data)
+    photo = photo_service.create_photo(photo_create)
+    
+    return photo
+
+
+@pytest.fixture
+def sample_primary_photo(db_session, sample_pet, sample_user, sample_photo_data):
+    """Create a sample primary photo in the database."""
+    from app.services.photo import PhotoService
+    from app.repositories.photo import PhotoRepository
+    from app.services.storage import StorageService
+    from app.schemas.photo import PhotoCreate
+    
+    photo_repository = PhotoRepository(db_session)
+    storage_service = StorageService()
+    photo_service = PhotoService(photo_repository, storage_service)
+    
+    photo_data = {**sample_photo_data, "pet_id": str(sample_pet.id), "uploaded_by": sample_user.id, "is_primary": True}
+    photo_create = PhotoCreate(**photo_data)
+    photo = photo_service.create_photo(photo_create)
+    
+    return photo
+
+
 

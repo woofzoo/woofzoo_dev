@@ -11,6 +11,7 @@ from app.models.family_member import FamilyMember, AccessLevel
 from app.models.pet import Pet, Gender
 from app.models.otp import OTP, OTPPurpose
 from app.models.family_invitation import FamilyInvitation
+from app.models.photo import Photo
 
 __all__ = [
     "User",
@@ -24,4 +25,5 @@ __all__ = [
     "OTP",
     "OTPPurpose",
     "FamilyInvitation",
+    "Photo",
 ]
