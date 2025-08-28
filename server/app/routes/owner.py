@@ -8,7 +8,7 @@ dependency injection and request/response handling.
 from fastapi import APIRouter, Depends, Query, status
 
 from app.controllers.owner import OwnerController
-from app.dependencies import get_owner_controller
+from app.dependencies import get_owner_controller, get_current_user_id
 from app.schemas.owner import OwnerCreate, OwnerListResponse, OwnerResponse, OwnerUpdate
 
 # Create router
@@ -25,6 +25,7 @@ router = APIRouter(prefix="/owners", tags=["owners"])
 )
 async def create_owner(
     owner_data: OwnerCreate,
+    user_id: int = Depends(get_current_user_id),
     controller: OwnerController = Depends(get_owner_controller)
 ) -> OwnerResponse:
     """Create a new owner."""
@@ -40,6 +41,7 @@ async def create_owner(
 async def get_owners(
     skip: int = Query(default=0, ge=0, description="Number of records to skip"),
     limit: int = Query(default=100, ge=1, le=1000, description="Maximum number of records to return"),
+    user_id: int = Depends(get_current_user_id),
     controller: OwnerController = Depends(get_owner_controller)
 ) -> OwnerListResponse:
     """Get all owners with pagination."""
@@ -54,6 +56,7 @@ async def get_owners(
 )
 async def get_owner(
     owner_id: str,
+    user_id: int = Depends(get_current_user_id),
     controller: OwnerController = Depends(get_owner_controller)
 ) -> OwnerResponse:
     """Get an owner by ID."""
@@ -83,6 +86,7 @@ async def get_owner_by_phone(
 async def update_owner(
     owner_id: str,
     owner_data: OwnerUpdate,
+    user_id: int = Depends(get_current_user_id),
     controller: OwnerController = Depends(get_owner_controller)
 ) -> OwnerResponse:
     """Update an owner."""
@@ -97,6 +101,7 @@ async def update_owner(
 )
 async def delete_owner(
     owner_id: str,
+    user_id: int = Depends(get_current_user_id),
     controller: OwnerController = Depends(get_owner_controller)
 ) -> None:
     """Delete an owner."""

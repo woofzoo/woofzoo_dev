@@ -8,7 +8,7 @@ dependency injection and request/response handling.
 from fastapi import APIRouter, Depends, Query, status
 
 from app.controllers.family import FamilyController
-from app.dependencies import get_family_controller
+from app.dependencies import get_family_controller, get_current_user_id
 from app.schemas.family import FamilyCreate, FamilyListResponse, FamilyResponse, FamilyUpdate
 
 # Create router
@@ -26,6 +26,7 @@ router = APIRouter(prefix="/families", tags=["families"])
 def create_family(
     family_data: FamilyCreate,
     owner_id: str = Query(..., description="Owner's unique identifier"),
+    user_id: int = Depends(get_current_user_id),
     controller: FamilyController = Depends(get_family_controller)
 ) -> FamilyResponse:
     """Create a new family."""
@@ -42,6 +43,7 @@ def get_families_by_owner(
     owner_id: str = Query(..., description="Owner's unique identifier"),
     skip: int = Query(default=0, ge=0, description="Number of records to skip"),
     limit: int = Query(default=100, ge=1, le=1000, description="Maximum number of records to return"),
+    user_id: int = Depends(get_current_user_id),
     controller: FamilyController = Depends(get_family_controller)
 ) -> FamilyListResponse:
     """Get families by owner ID with pagination."""
@@ -56,6 +58,7 @@ def get_families_by_owner(
 )
 def get_family(
     family_id: str,
+    user_id: int = Depends(get_current_user_id),
     controller: FamilyController = Depends(get_family_controller)
 ) -> FamilyResponse:
     """Get a family by ID."""
@@ -71,6 +74,7 @@ def get_family(
 def update_family(
     family_id: str,
     family_data: FamilyUpdate,
+    user_id: int = Depends(get_current_user_id),
     controller: FamilyController = Depends(get_family_controller)
 ) -> FamilyResponse:
     """Update a family."""
@@ -85,6 +89,7 @@ def update_family(
 )
 def delete_family(
     family_id: str,
+    user_id: int = Depends(get_current_user_id),
     controller: FamilyController = Depends(get_family_controller)
 ) -> None:
     """Delete a family."""
@@ -102,6 +107,7 @@ def search_families(
     owner_id: str = Query(None, description="Optional owner ID filter"),
     skip: int = Query(default=0, ge=0, description="Number of records to skip"),
     limit: int = Query(default=100, ge=1, le=1000, description="Maximum number of records to return"),
+    user_id: int = Depends(get_current_user_id),
     controller: FamilyController = Depends(get_family_controller)
 ) -> FamilyListResponse:
     """Search families by name or description."""

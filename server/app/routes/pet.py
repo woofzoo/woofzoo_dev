@@ -8,7 +8,7 @@ dependency injection and request/response handling.
 from fastapi import APIRouter, Depends, Query, status
 
 from app.controllers.pet import PetController
-from app.dependencies import get_pet_controller
+from app.dependencies import get_pet_controller, get_current_user_id
 from app.schemas.pet import PetCreate, PetListResponse, PetResponse, PetUpdate, PetLookupRequest
 
 # Create router
@@ -25,6 +25,7 @@ router = APIRouter(prefix="/pets", tags=["pets"])
 )
 def create_pet(
     pet_data: PetCreate,
+    user_id: int = Depends(get_current_user_id),
     controller: PetController = Depends(get_pet_controller)
 ) -> PetResponse:
     """Create a new pet."""
@@ -40,6 +41,7 @@ def create_pet(
 def get_pets(
     skip: int = Query(default=0, ge=0, description="Number of records to skip"),
     limit: int = Query(default=100, ge=1, le=1000, description="Maximum number of records to return"),
+    user_id: int = Depends(get_current_user_id),
     controller: PetController = Depends(get_pet_controller)
 ) -> PetListResponse:
     """Get all pets with pagination."""
@@ -54,6 +56,7 @@ def get_pets(
 )
 def get_pet(
     pet_id: str,
+    user_id: int = Depends(get_current_user_id),
     controller: PetController = Depends(get_pet_controller)
 ) -> PetResponse:
     """Get a pet by ID."""
@@ -84,6 +87,7 @@ def get_pets_by_owner(
     owner_id: str,
     skip: int = Query(default=0, ge=0, description="Number of records to skip"),
     limit: int = Query(default=100, ge=1, le=1000, description="Maximum number of records to return"),
+    user_id: int = Depends(get_current_user_id),
     controller: PetController = Depends(get_pet_controller)
 ) -> PetListResponse:
     """Get pets by owner."""
@@ -99,6 +103,7 @@ def get_pets_by_owner(
 def update_pet(
     pet_id: str,
     pet_data: PetUpdate,
+    user_id: int = Depends(get_current_user_id),
     controller: PetController = Depends(get_pet_controller)
 ) -> PetResponse:
     """Update a pet."""
@@ -113,6 +118,7 @@ def update_pet(
 )
 def delete_pet(
     pet_id: str,
+    user_id: int = Depends(get_current_user_id),
     controller: PetController = Depends(get_pet_controller)
 ) -> None:
     """Delete a pet."""
@@ -175,6 +181,7 @@ def get_pets_by_breed(
 )
 def lookup_pet(
     lookup_data: PetLookupRequest,
+    user_id: int = Depends(get_current_user_id),
     controller: PetController = Depends(get_pet_controller)
 ) -> PetResponse:
     """Lookup a pet by pet ID."""

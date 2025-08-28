@@ -8,7 +8,7 @@ dependency injection and request/response handling.
 from fastapi import APIRouter, Depends, Query, status
 
 from app.controllers.photo import PhotoController
-from app.dependencies import get_photo_controller
+from app.dependencies import get_photo_controller, get_current_user_id
 from app.schemas.photo import PhotoCreate, PhotoListResponse, PhotoResponse, PhotoUpdate, PhotoUploadRequest, PhotoUploadResponse
 
 # Create router
@@ -27,6 +27,7 @@ def create_photo_upload_request(
     pet_id: str = Query(..., description="Pet's unique identifier"),
     uploaded_by: int = Query(None, description="User's unique identifier who is uploading"),
     upload_request: PhotoUploadRequest = None,
+    user_id: int = Depends(get_current_user_id),
     controller: PhotoController = Depends(get_photo_controller)
 ) -> PhotoUploadResponse:
     """Create a photo upload request with pre-signed URL."""
@@ -42,6 +43,7 @@ def create_photo_upload_request(
 )
 def create_photo(
     photo_data: PhotoCreate,
+    user_id: int = Depends(get_current_user_id),
     controller: PhotoController = Depends(get_photo_controller)
 ) -> PhotoResponse:
     """Create a new photo."""
@@ -58,6 +60,7 @@ def get_photos_by_pet(
     pet_id: str = Query(..., description="Pet's unique identifier"),
     skip: int = Query(default=0, ge=0, description="Number of records to skip"),
     limit: int = Query(default=100, ge=1, le=1000, description="Maximum number of records to return"),
+    user_id: int = Depends(get_current_user_id),
     controller: PhotoController = Depends(get_photo_controller)
 ) -> PhotoListResponse:
     """Get photos by pet ID with pagination."""
@@ -72,6 +75,7 @@ def get_photos_by_pet(
 )
 def get_primary_photo(
     pet_id: str,
+    user_id: int = Depends(get_current_user_id),
     controller: PhotoController = Depends(get_photo_controller)
 ) -> PhotoResponse:
     """Get the primary photo for a pet."""
@@ -88,6 +92,7 @@ def get_photos_by_uploader(
     uploaded_by: int,
     skip: int = Query(default=0, ge=0, description="Number of records to skip"),
     limit: int = Query(default=100, ge=1, le=1000, description="Maximum number of records to return"),
+    user_id: int = Depends(get_current_user_id),
     controller: PhotoController = Depends(get_photo_controller)
 ) -> PhotoListResponse:
     """Get photos by uploader with pagination."""
@@ -102,6 +107,7 @@ def get_photos_by_uploader(
 )
 def get_photo(
     photo_id: str,
+    user_id: int = Depends(get_current_user_id),
     controller: PhotoController = Depends(get_photo_controller)
 ) -> PhotoResponse:
     """Get a photo by ID."""
@@ -116,6 +122,7 @@ def get_photo(
 def get_photo_download_url(
     photo_id: str,
     expires_in: int = Query(default=3600, ge=300, le=86400, description="URL expiration time in seconds"),
+    user_id: int = Depends(get_current_user_id),
     controller: PhotoController = Depends(get_photo_controller)
 ) -> dict:
     """Get a download URL for a photo."""
@@ -131,6 +138,7 @@ def get_photo_download_url(
 def update_photo(
     photo_id: str,
     photo_data: PhotoUpdate,
+    user_id: int = Depends(get_current_user_id),
     controller: PhotoController = Depends(get_photo_controller)
 ) -> PhotoResponse:
     """Update a photo."""
@@ -145,6 +153,7 @@ def update_photo(
 )
 def delete_photo(
     photo_id: str,
+    user_id: int = Depends(get_current_user_id),
     controller: PhotoController = Depends(get_photo_controller)
 ) -> None:
     """Delete a photo (soft delete)."""
@@ -158,6 +167,7 @@ def delete_photo(
 )
 def hard_delete_photo(
     photo_id: str,
+    user_id: int = Depends(get_current_user_id),
     controller: PhotoController = Depends(get_photo_controller)
 ) -> dict:
     """Permanently delete a photo."""
@@ -172,6 +182,7 @@ def hard_delete_photo(
 def set_primary_photo(
     pet_id: str,
     photo_id: str,
+    user_id: int = Depends(get_current_user_id),
     controller: PhotoController = Depends(get_photo_controller)
 ) -> dict:
     """Set a photo as primary for a pet."""
