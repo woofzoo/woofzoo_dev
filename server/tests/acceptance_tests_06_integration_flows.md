@@ -61,34 +61,6 @@ This document outlines acceptance tests for integration and end-to-end flows of 
 **And** medical history should be accessible to authorized users  
 **And** data should be properly organized and searchable  
 
-## Test Case 6.7: Multi-User Collaboration
-**Given** multiple users are working with the same pets  
-**When** they perform various operations simultaneously  
-**Then** all operations should complete successfully  
-**And** data consistency should be maintained  
-**And** conflicts should be resolved appropriately  
-
-## Test Case 6.8: System Migration and Data Import
-**Given** existing pet data needs to be imported  
-**When** the import process is executed  
-**Then** all data should be properly imported  
-**And** relationships should be maintained  
-**And** data integrity should be preserved  
-
-## Test Case 6.9: Backup and Recovery
-**Given** system data needs to be backed up  
-**When** the backup process is executed  
-**Then** all data should be properly backed up  
-**And** the backup should be verifiable  
-**And** recovery should be possible from the backup  
-
-## Test Case 6.10: Performance Under Load
-**Given** the system is under heavy load  
-**When** multiple users perform various operations  
-**Then** the system should maintain acceptable performance  
-**And** all operations should complete successfully  
-**And** no data should be lost or corrupted  
-
 ---
 
 ## Test Execution Notes

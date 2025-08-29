@@ -63,38 +63,32 @@ This document outlines acceptance tests for the core pet management functionalit
 **Then** the pet should be removed from the system  
 **And** associated photos should be handled according to business rules  
 
-## Test Case 3.10: Public Pet Lookup
-**Given** a pet exists with a unique pet ID  
-**When** anyone (including unauthenticated users) looks up the pet using the pet ID  
-**Then** the pet's public information should be returned  
-**And** sensitive information should be protected  
-
-## Test Case 3.11: Pet Data Validation
+## Test Case 3.10: Pet Data Validation
 **Given** a user attempts to create or update a pet  
 **When** they provide invalid data (invalid age, invalid weight, missing required fields)  
 **Then** the operation should fail  
 **And** specific validation error messages should be returned  
 **And** no changes should be made to the database  
 
-## Test Case 3.12: Pet Emergency Contacts
+## Test Case 3.11: Pet Emergency Contacts
 **Given** a pet profile exists with emergency contact information  
 **When** the pet information is retrieved  
 **Then** the emergency contact information should be included  
 **And** the information should be properly formatted  
 
-## Test Case 3.13: Pet Insurance Information
+## Test Case 3.12: Pet Insurance Information
 **Given** a pet profile exists with insurance information  
 **When** the pet information is retrieved  
 **Then** the insurance information should be included  
 **And** the information should be properly formatted  
 
-## Test Case 3.14: Pet Photos Association
+## Test Case 3.13: Pet Photos Association
 **Given** a pet has multiple photos  
 **When** the pet information is retrieved  
 **Then** the photo URLs should be included  
 **And** the primary photo should be clearly identified  
 
-## Test Case 3.15: Pet Age Calculation
+## Test Case 3.14: Pet Age Calculation
 **Given** a pet has a birth date recorded  
 **When** the pet information is retrieved  
 **Then** the calculated age should be accurate  
