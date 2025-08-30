@@ -113,6 +113,64 @@ class Settings(BaseSettings):
         description="Auto-verify users in development mode (skips email verification)"
     )
     
+    # Pet Profile Settings
+    pet_photo_max_size_mb: int = Field(
+        default=5, 
+        description="Maximum pet photo size in MB"
+    )
+    pet_photo_allowed_types: list[str] = Field(
+        default=["image/jpeg", "image/png", "image/webp"], 
+        description="Allowed image MIME types"
+    )
+    
+    # Family Management Settings
+    family_invitation_expire_days: int = Field(
+        default=10, 
+        description="Family invitation expiry in days"
+    )
+    
+    # OTP Settings
+    otp_expire_minutes: int = Field(
+        default=10, 
+        description="OTP expiry time in minutes"
+    )
+    otp_max_attempts: int = Field(
+        default=3, 
+        description="Maximum OTP attempts"
+    )
+    
+    # MSG91 SMS Settings
+    msg91_api_key: str = Field(
+        default="", 
+        description="MSG91 API key"
+    )
+    msg91_template_id: str = Field(
+        default="", 
+        description="MSG91 template ID"
+    )
+    msg91_sender_id: str = Field(
+        default="WOOFZO", 
+        description="MSG91 sender ID"
+    )
+    
+    # S3 Settings
+    s3_bucket_name: str = Field(
+        default="woofzoo-pet-photos", 
+        description="S3 bucket for pet photos"
+    )
+    s3_region: str = Field(
+        default="us-east-1", 
+        description="S3 region"
+    )
+    s3_access_key: str = Field(
+        default="", 
+        description="S3 access key"
+    )
+    s3_secret_key: str = Field(
+        default="", 
+        description="S3 secret key"
+    )
+    
     class Config:
         """Pydantic configuration."""
         env_file = ".env"

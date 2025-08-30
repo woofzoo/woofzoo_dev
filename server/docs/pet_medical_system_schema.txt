@@ -1,0 +1,143 @@
+-- Owners table: Stores pet owner information
+CREATE TABLE owners (
+    owner_id UUID PRIMARY KEY,
+    phone_number VARCHAR(15) UNIQUE NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(100),
+    address TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX idx_owners_phone ON owners(phone_number);
+
+-- Pets table: Stores pet profile details
+CREATE TABLE pets (
+    pet_id VARCHAR(20) PRIMARY KEY,
+    owner_id UUID REFERENCES owners(owner_id),
+    name VARCHAR(50) NOT NULL,
+    breed VARCHAR(50),
+    age INTEGER,
+    gender VARCHAR(10) CHECK (gender IN ('Male', 'Female', 'Unknown')),
+    weight FLOAT,
+    photos JSONB,
+    emergency_contacts JSONB,
+    insurance_info JSONB,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX idx_pets_owner_id ON pets(owner_id);
+
+-- Family Members table: Links family members to pets
+CREATE TABLE family_members (
+    family_member_id UUID PRIMARY KEY,
+    owner_id UUID REFERENCES owners(owner_id),
+    pet_id VARCHAR(20) REFERENCES pets(pet_id),
+    phone_number VARCHAR(15) UNIQUE NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    access_level VARCHAR(20) CHECK (access_level IN ('Full', 'Read-Only')),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX idx_family_members_pet_id ON family_members(pet_id);
+
+-- Clinics table: Stores vet clinic information
+CREATE TABLE clinics (
+    clinic_id UUID PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    address TEXT,
+    phone_number VARCHAR(15),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Vets table: Stores vet information (no direct clinic_id)
+CREATE TABLE vets (
+    vet_id UUID PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    license_number VARCHAR(50),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Vet_Clinics table: Manages many-to-many relationship between vets and clinics
+CREATE TABLE vet_clinics (
+    vet_clinic_id UUID PRIMARY KEY,
+    vet_id UUID REFERENCES vets(vet_id),
+    clinic_id UUID REFERENCES clinics(clinic_id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(vet_id, clinic_id)
+);
+CREATE INDEX idx_vet_clinics_vet_id ON vet_clinics(vet_id);
+CREATE INDEX idx_vet_clinics_clinic_id ON vet_clinics(clinic_id);
+
+-- Medical Records table: Stores pet medical history (partitioned by visit_date)
+CREATE TABLE medical_records (
+    record_id UUID PRIMARY KEY,
+    pet_id VARCHAR(20) REFERENCES pets(pet_id),
+    vet_id UUID REFERENCES vets(vet_id),
+    clinic_id UUID REFERENCES clinics(clinic_id),
+    visit_date TIMESTAMP NOT NULL,
+    diagnosis TEXT,
+    treatment TEXT,
+    prescriptions JSONB,
+    test_results JSONB,
+    follow_up_instructions TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by UUID REFERENCES vets(vet_id)
+) PARTITION BY RANGE (visit_date);
+
+-- Create partitions for medical_records (yearly)
+CREATE TABLE medical_records_2025 PARTITION OF medical_records
+    FOR VALUES FROM ('2025-01-01') TO ('2026-01-01');
+CREATE INDEX idx_medical_records_pet_id ON medical_records(pet_id);
+CREATE INDEX idx_medical_records_visit_date ON medical_records(visit_date);
+
+-- Pet_Clinic_Access table: Tracks pet visits and doctor assignments (partitioned by access_date)
+CREATE TABLE pet_clinic_access (
+    access_id UUID PRIMARY KEY,
+    pet_id VARCHAR(20) REFERENCES pets(pet_id),
+    clinic_id UUID REFERENCES clinics(clinic_id),
+    vet_id UUID REFERENCES vets(vet_id),
+    access_date TIMESTAMP NOT NULL,
+    status VARCHAR(20) CHECK (status IN ('Active', 'Expired')),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) PARTITION BY RANGE (access_date);
+
+-- Create partitions for pet_clinic_access (monthly)
+CREATE TABLE pet_clinic_access_2025_01 PARTITION OF pet_clinic_access
+    FOR VALUES FROM ('2025-01-01') TO ('2025-02-01');
+CREATE TABLE pet_clinic_access_2025_02 PARTITION OF pet_clinic_access
+    FOR VALUES FROM ('2025-02-01') TO ('2025-03-01');
+-- Additional partitions created monthly
+CREATE INDEX idx_pet_clinic_access_pet_id ON pet_clinic_access(pet_id);
+CREATE INDEX idx_pet_clinic_access_access_date ON pet_clinic_access(access_date);
+
+-- OTP table: Manages OTPs for secure access
+CREATE TABLE otp (
+    otp_id UUID PRIMARY KEY,
+    pet_id VARCHAR(20) REFERENCES pets(pet_id),
+    phone_number VARCHAR(15) NOT NULL,
+    otp_code VARCHAR(6) NOT NULL,
+    clinic_id UUID REFERENCES clinics(clinic_id),
+    expires_at TIMESTAMP NOT NULL,
+    status VARCHAR(20) CHECK (status IN ('Pending', 'Used', 'Expired')),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX idx_otp_otp_code ON otp(otp_code);
+
+-- Trusted Clinics table: Tracks clinics with ongoing access
+CREATE TABLE trusted_clinics (
+    trusted_id UUID PRIMARY KEY,
+    pet_id VARCHAR(20) REFERENCES pets(pet_id),
+    clinic_id UUID REFERENCES clinics(clinic_id),
+    granted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    expires_at TIMESTAMP
+);
+CREATE INDEX idx_trusted_clinics_pet_id ON trusted_clinics(pet_id);
+
+-- Audit Logs table: Tracks record access
+CREATE TABLE audit_logs (
+    log_id UUID PRIMARY KEY,
+    pet_id VARCHAR(20) REFERENCES pets(pet_id),
+    user_id UUID, -- References vets or owners
+    action VARCHAR(50) NOT NULL,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

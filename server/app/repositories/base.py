@@ -1,11 +1,12 @@
 """
-Base repository class with common CRUD operations.
+Base repository for database operations.
 
-This module provides a base repository class that implements common
-database operations using SQLAlchemy synchronous session.
+This module provides the BaseRepository class that serves as the foundation
+for all repository classes, providing common database operations.
 """
 
-from typing import Any, Generic, List, Optional, Type, TypeVar
+import uuid
+from typing import Any, Generic, List, Optional, TypeVar
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -17,15 +18,15 @@ ModelType = TypeVar("ModelType", bound=Base)
 
 class BaseRepository(Generic[ModelType]):
     """
-    Base repository class with common CRUD operations.
+    Base repository for common database operations.
     
-    This class provides a foundation for all repository classes with
-    common database operations like create, read, update, delete.
+    This class provides basic CRUD operations that can be extended
+    by specific repository classes for domain-specific operations.
     """
     
-    def __init__(self, model: Type[ModelType], session: Session) -> None:
+    def __init__(self, model: type[ModelType], session: Session) -> None:
         """
-        Initialize the repository.
+        Initialize the base repository.
         
         Args:
             model: SQLAlchemy model class
@@ -50,20 +51,28 @@ class BaseRepository(Generic[ModelType]):
         self.session.refresh(instance)
         return instance
     
-    def get_by_id(self, id: int) -> Optional[ModelType]:
+    def get_by_id(self, id: str) -> Optional[ModelType]:
         """
         Get a record by ID.
         
         Args:
-            id: Record ID
+            id: Record ID (UUID string)
             
         Returns:
             Model instance or None if not found
         """
-        result = self.session.execute(
-            select(self.model).where(self.model.id == id)
-        )
-        return result.scalar_one_or_none()
+        try:
+            # Convert string ID to UUID if needed
+            if isinstance(id, str):
+                id = uuid.UUID(id)
+            
+            result = self.session.execute(
+                select(self.model).where(self.model.id == id)
+            )
+            return result.scalar_one_or_none()
+        except (ValueError, AttributeError):
+            # Invalid UUID format
+            return None
     
     def get_all(self, skip: int = 0, limit: int = 100) -> List[ModelType]:
         """
@@ -83,42 +92,58 @@ class BaseRepository(Generic[ModelType]):
         )
         return result.scalars().all()
     
-    def update(self, id: int, **kwargs: Any) -> Optional[ModelType]:
+    def update(self, id: str, **kwargs: Any) -> Optional[ModelType]:
         """
         Update a record by ID.
         
         Args:
-            id: Record ID
+            id: Record ID (UUID string)
             **kwargs: Model attributes to update
             
         Returns:
             Updated model instance or None if not found
         """
-        instance = self.get_by_id(id)
-        if instance:
-            for key, value in kwargs.items():
-                if hasattr(instance, key):
-                    setattr(instance, key, value)
-            self.session.commit()
-            self.session.refresh(instance)
-        return instance
+        try:
+            # Convert string ID to UUID if needed
+            if isinstance(id, str):
+                id = uuid.UUID(id)
+            
+            instance = self.get_by_id(id)
+            if instance:
+                for key, value in kwargs.items():
+                    if hasattr(instance, key):
+                        setattr(instance, key, value)
+                self.session.commit()
+                self.session.refresh(instance)
+            return instance
+        except (ValueError, AttributeError):
+            # Invalid UUID format
+            return None
     
-    def delete(self, id: int) -> bool:
+    def delete(self, id: str) -> bool:
         """
         Delete a record by ID.
         
         Args:
-            id: Record ID
+            id: Record ID (UUID string)
             
         Returns:
             True if deleted, False if not found
         """
-        instance = self.get_by_id(id)
-        if instance:
-            self.session.delete(instance)
-            self.session.commit()
-            return True
-        return False
+        try:
+            # Convert string ID to UUID if needed
+            if isinstance(id, str):
+                id = uuid.UUID(id)
+            
+            instance = self.get_by_id(id)
+            if instance:
+                self.session.delete(instance)
+                self.session.commit()
+                return True
+            return False
+        except (ValueError, AttributeError):
+            # Invalid UUID format
+            return False
     
     def count(self) -> int:
         """
