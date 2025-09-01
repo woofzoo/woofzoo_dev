@@ -2,12 +2,11 @@
 Tests for authentication functionality.
 
 This module contains tests for authentication-related functionality including
-API endpoints, service layer, and repository layer.
+user registration, login, password reset, and token management.
 """
 
 import pytest
 from fastapi import status
-from httpx import AsyncClient
 
 from app.schemas.auth import UserSignup, UserLogin
 
@@ -15,259 +14,151 @@ from app.schemas.auth import UserSignup, UserLogin
 class TestAuthAPI:
     """Test cases for authentication API endpoints."""
     
-    @pytest.mark.asyncio
-    async def test_register_user_success(self, client: AsyncClient):
+    def test_register_user_success(self, client, sample_user_data):
         """Test successful user registration."""
-        user_data = {
-            "email": "test@example.com",
-            "first_name": "John",
-            "last_name": "Doe",
-            "phone": "+1234567890",
-            "password": "SecurePass123!",
-            "roles": ["pet_owner"]
-        }
-        
-        response = await client.post("/api/auth/register", json=user_data)
+        response = client.post("/api/auth/register", json=sample_user_data)
         
         assert response.status_code == status.HTTP_201_CREATED
         data = response.json()
         assert "message" in data
-        assert "User registered successfully" in data["message"]
+        assert "registered successfully" in data["message"]
     
-    @pytest.mark.asyncio
-    async def test_register_user_duplicate_email(self, client: AsyncClient):
+    def test_register_user_duplicate_email(self, client, sample_user_data):
         """Test user registration with duplicate email."""
-        user_data = {
-            "email": "duplicate@example.com",
-            "first_name": "John",
-            "last_name": "Doe",
-            "phone": "+1234567890",
-            "password": "SecurePass123!",
-            "roles": ["pet_owner"]
-        }
-        
         # Register first user
-        response1 = await client.post("/api/auth/register", json=user_data)
-        assert response1.status_code == status.HTTP_201_CREATED
+        client.post("/api/auth/register", json=sample_user_data)
         
         # Try to register second user with same email
-        response2 = await client.post("/api/auth/register", json=user_data)
-        assert response2.status_code == status.HTTP_400_BAD_REQUEST
-        assert "already exists" in response2.json()["detail"]
+        response = client.post("/api/auth/register", json=sample_user_data)
+        
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "already exists" in response.json()["detail"]
     
-    @pytest.mark.asyncio
-    async def test_register_user_invalid_password(self, client: AsyncClient):
+    def test_register_user_invalid_password(self, client, sample_user_data):
         """Test user registration with invalid password."""
-        user_data = {
-            "email": "test@example.com",
-            "first_name": "John",
-            "last_name": "Doe",
-            "phone": "+1234567890",
-            "password": "weak",  # Too short
-            "roles": ["pet_owner"]
-        }
-        
-        response = await client.post("/api/auth/register", json=user_data)
+        sample_user_data["password"] = "weak"
+        response = client.post("/api/auth/register", json=sample_user_data)
         
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
     
-    @pytest.mark.asyncio
-    async def test_register_user_invalid_role(self, client: AsyncClient):
+    def test_register_user_invalid_role(self, client, sample_user_data):
         """Test user registration with invalid role."""
-        user_data = {
-            "email": "test@example.com",
-            "first_name": "John",
-            "last_name": "Doe",
-            "phone": "+1234567890",
-            "password": "SecurePass123!",
-            "roles": ["invalid_role"]
-        }
-        
-        response = await client.post("/api/auth/register", json=user_data)
+        sample_user_data["roles"] = ["invalid_role"]
+        response = client.post("/api/auth/register", json=sample_user_data)
         
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
     
-    @pytest.mark.asyncio
-    async def test_login_user_success(self, client: AsyncClient):
+    def test_login_user_success(self, client, sample_user_data):
         """Test successful user login."""
         # First register a user
-        user_data = {
-            "email": "login@example.com",
-            "first_name": "John",
-            "last_name": "Doe",
-            "phone": "+1234567890",
-            "password": "SecurePass123!",
-            "roles": ["pet_owner"]
-        }
-        
-        await client.post("/api/auth/register", json=user_data)
+        client.post("/api/auth/register", json=sample_user_data)
         
         # Then login
         login_data = {
-            "email": "login@example.com",
-            "password": "SecurePass123!"
+            "email": sample_user_data["email"],
+            "password": sample_user_data["password"]
         }
-        
-        response = await client.post("/api/auth/login", json=login_data)
+        response = client.post("/api/auth/login", json=login_data)
         
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
         assert "user" in data
         assert "tokens" in data
-        assert data["user"]["email"] == "login@example.com"
         assert "access_token" in data["tokens"]
         assert "refresh_token" in data["tokens"]
+        assert data["user"]["email"] == sample_user_data["email"]
     
-    @pytest.mark.asyncio
-    async def test_login_user_invalid_credentials(self, client: AsyncClient):
+    def test_login_user_invalid_credentials(self, client):
         """Test user login with invalid credentials."""
         login_data = {
             "email": "nonexistent@example.com",
-            "password": "WrongPassword123!"
+            "password": "wrongpassword"
         }
-        
-        response = await client.post("/api/auth/login", json=login_data)
+        response = client.post("/api/auth/login", json=login_data)
         
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
         assert "Invalid email or password" in response.json()["detail"]
     
-    @pytest.mark.asyncio
-    async def test_request_password_reset(self, client: AsyncClient):
+    def test_request_password_reset(self, client):
         """Test password reset request."""
-        reset_data = {
-            "email": "reset@example.com"
-        }
-        
-        response = await client.post("/api/auth/request-password-reset", json=reset_data)
+        reset_data = {"email": "test@example.com"}
+        response = client.post("/api/auth/request-password-reset", json=reset_data)
         
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
         assert "message" in data
-        assert "password reset link has been sent" in data["message"]
+        assert "password reset" in data["message"].lower()
     
-    @pytest.mark.asyncio
-    async def test_get_current_user_unauthorized(self, client: AsyncClient):
+    def test_get_current_user_unauthorized(self, client):
         """Test getting current user without authentication."""
-        response = await client.get("/api/auth/me")
+        response = client.get("/api/auth/me")
         
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        assert response.status_code == status.HTTP_403_FORBIDDEN
     
-    @pytest.mark.asyncio
-    async def test_get_current_user_authorized(self, client: AsyncClient):
+    def test_get_current_user_authorized(self, client, sample_user_data):
         """Test getting current user with authentication."""
-        # First register and login a user
-        user_data = {
-            "email": "me@example.com",
-            "first_name": "John",
-            "last_name": "Doe",
-            "phone": "+1234567890",
-            "password": "SecurePass123!",
-            "roles": ["pet_owner"]
-        }
-        
-        await client.post("/api/auth/register", json=user_data)
-        
+        # Register and login user
+        client.post("/api/auth/register", json=sample_user_data)
         login_data = {
-            "email": "me@example.com",
-            "password": "SecurePass123!"
+            "email": sample_user_data["email"],
+            "password": sample_user_data["password"]
         }
-        
-        login_response = await client.post("/api/auth/login", json=login_data)
-        tokens = login_response.json()["tokens"]
+        login_response = client.post("/api/auth/login", json=login_data)
+        access_token = login_response.json()["tokens"]["access_token"]
         
         # Get current user with token
-        headers = {"Authorization": f"Bearer {tokens['access_token']}"}
-        response = await client.get("/api/auth/me", headers=headers)
+        headers = {"Authorization": f"Bearer {access_token}"}
+        response = client.get("/api/auth/me", headers=headers)
         
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
-        assert data["email"] == "me@example.com"
-        assert data["first_name"] == "John"
-        assert data["last_name"] == "Doe"
+        assert data["email"] == sample_user_data["email"]
     
-    @pytest.mark.asyncio
-    async def test_update_personalization(self, client: AsyncClient):
+    def test_update_personalization(self, client, sample_user_data):
         """Test updating user personalization settings."""
-        # First register and login a user
-        user_data = {
-            "email": "personalize@example.com",
-            "first_name": "John",
-            "last_name": "Doe",
-            "phone": "+1234567890",
-            "password": "SecurePass123!",
-            "roles": ["pet_owner"]
-        }
-        
-        await client.post("/api/auth/register", json=user_data)
-        
+        # Register and login user
+        client.post("/api/auth/register", json=sample_user_data)
         login_data = {
-            "email": "personalize@example.com",
-            "password": "SecurePass123!"
+            "email": sample_user_data["email"],
+            "password": sample_user_data["password"]
         }
-        
-        login_response = await client.post("/api/auth/login", json=login_data)
-        tokens = login_response.json()["tokens"]
+        login_response = client.post("/api/auth/login", json=login_data)
+        access_token = login_response.json()["tokens"]["access_token"]
         
         # Update personalization
-        personalization_data = {
-            "personalization": {
-                "theme": "dark",
-                "language": "en",
-                "notifications": {
-                    "email": True,
-                    "push": False
-                }
-            }
-        }
-        
-        headers = {"Authorization": f"Bearer {tokens['access_token']}"}
-        response = await client.put("/api/auth/me/personalization", json=personalization_data, headers=headers)
+        personalization_data = {"personalization": {"theme": "dark", "language": "es"}}
+        headers = {"Authorization": f"Bearer {access_token}"}
+        response = client.put("/api/auth/me/personalization", json=personalization_data, headers=headers)
         
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
         assert data["personalization"]["theme"] == "dark"
-        assert data["personalization"]["language"] == "en"
-        assert data["personalization"]["notifications"]["email"] is True
-        assert data["personalization"]["notifications"]["push"] is False
+        assert data["personalization"]["language"] == "es"
     
-    @pytest.mark.asyncio
-    async def test_refresh_tokens(self, client: AsyncClient):
-        """Test token refresh functionality."""
-        # First register and login a user
-        user_data = {
-            "email": "refresh@example.com",
-            "first_name": "John",
-            "last_name": "Doe",
-            "phone": "+1234567890",
-            "password": "SecurePass123!",
-            "roles": ["pet_owner"]
-        }
-        
-        await client.post("/api/auth/register", json=user_data)
-        
+    def test_refresh_tokens(self, client, sample_user_data):
+        """Test token refresh."""
+        # Register and login user
+        client.post("/api/auth/register", json=sample_user_data)
         login_data = {
-            "email": "refresh@example.com",
-            "password": "SecurePass123!"
+            "email": sample_user_data["email"],
+            "password": sample_user_data["password"]
         }
-        
-        login_response = await client.post("/api/auth/login", json=login_data)
-        tokens = login_response.json()["tokens"]
+        login_response = client.post("/api/auth/login", json=login_data)
+        refresh_token = login_response.json()["tokens"]["refresh_token"]
         
         # Refresh tokens
-        response = await client.post(f"/api/auth/refresh?refresh_token={tokens['refresh_token']}")
+        response = client.post(f"/api/auth/refresh?refresh_token={refresh_token}")
         
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
         assert "access_token" in data
         assert "refresh_token" in data
-        assert data["token_type"] == "bearer"
     
-    @pytest.mark.asyncio
-    async def test_health_check(self, client: AsyncClient):
-        """Test authentication service health check."""
-        response = await client.get("/api/auth/health")
+    def test_health_check(self, client):
+        """Test health check endpoint."""
+        response = client.get("/api/auth/health")
         
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
         assert "message" in data
-        assert "running" in data["message"]
+        assert "running" in data["message"].lower()

@@ -10,10 +10,35 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db_session
 from app.repositories.user import UserRepository
+from app.repositories.owner import OwnerRepository
+from app.repositories.pet import PetRepository
+from app.repositories.family import FamilyRepository
+from app.repositories.family_member import FamilyMemberRepository
+from app.repositories.family_invitation import FamilyInvitationRepository
+from app.repositories.photo import PhotoRepository
 from app.services.auth import AuthService
 from app.services.email import EmailService
 from app.services.jwt import JWTService
+from app.services.owner import OwnerService
+from app.services.pet import PetService
+from app.services.pet_id import PetIDService
+from app.services.pet_types import PetTypesService
+from app.services.family import FamilyService
+from app.services.family_member import FamilyMemberService
+from app.services.family_invitation import FamilyInvitationService
+from app.services.photo import PhotoService
+from app.services.storage import StorageService
+from app.services.auth_service import AuthenticationService
+from app.middleware.auth import AuthMiddleware
 from app.controllers.auth import AuthController
+from app.controllers.owner import OwnerController
+from app.controllers.pet import PetController
+from app.controllers.pet_types import PetTypesController
+from app.controllers.family import FamilyController
+from app.controllers.family_member import FamilyMemberController
+from app.controllers.family_invitation import FamilyInvitationController
+from app.controllers.photo import PhotoController
+from app.controllers.auth_controller import AuthenticationController
 
 # Security scheme
 security = HTTPBearer()
@@ -34,6 +59,71 @@ def get_user_repository(session: Session = Depends(get_db_session)) -> UserRepos
         UserRepository instance
     """
     return UserRepository(session)
+
+
+def get_owner_repository(session: Session = Depends(get_db_session)) -> OwnerRepository:
+    """
+    Dependency to get owner repository.
+    
+    Args:
+        session: Database session
+        
+    Returns:
+        OwnerRepository instance
+    """
+    return OwnerRepository(session)
+
+
+def get_pet_repository(session: Session = Depends(get_db_session)) -> PetRepository:
+    """
+    Dependency to get pet repository.
+    
+    Args:
+        session: Database session
+        
+    Returns:
+        PetRepository instance
+    """
+    return PetRepository(session)
+
+
+def get_family_repository(session: Session = Depends(get_db_session)) -> FamilyRepository:
+    """
+    Dependency to get family repository.
+    
+    Args:
+        session: Database session
+        
+    Returns:
+        FamilyRepository instance
+    """
+    return FamilyRepository(session)
+
+
+def get_family_member_repository(session: Session = Depends(get_db_session)) -> FamilyMemberRepository:
+    """
+    Dependency to get family member repository.
+    
+    Args:
+        session: Database session
+        
+    Returns:
+        FamilyMemberRepository instance
+    """
+    return FamilyMemberRepository(session)
+
+
+def get_family_invitation_repository(session: Session = Depends(get_db_session)) -> FamilyInvitationRepository:
+    """
+    Dependency to get family invitation repository.
+    
+    Args:
+        session: Database session
+        
+    Returns:
+        FamilyInvitationRepository instance
+    """
+    return FamilyInvitationRepository(session)
 
 
 # =============================================================================
@@ -60,6 +150,29 @@ def get_jwt_service() -> JWTService:
     return JWTService()
 
 
+def get_pet_id_service(session: Session = Depends(get_db_session)) -> PetIDService:
+    """
+    Dependency to get pet ID service.
+    
+    Args:
+        session: Database session
+        
+    Returns:
+        PetIDService instance
+    """
+    return PetIDService(session)
+
+
+def get_pet_types_service() -> PetTypesService:
+    """
+    Dependency to get pet types service.
+    
+    Returns:
+        PetTypesService instance
+    """
+    return PetTypesService()
+
+
 def get_auth_service(
     user_repository: UserRepository = Depends(get_user_repository),
     email_service: EmailService = Depends(get_email_service),
@@ -77,6 +190,119 @@ def get_auth_service(
         AuthService instance
     """
     return AuthService(user_repository, email_service, jwt_service)
+
+
+def get_owner_service(
+    owner_repository: OwnerRepository = Depends(get_owner_repository)
+) -> OwnerService:
+    """
+    Dependency to get owner service.
+    
+    Args:
+        owner_repository: Owner repository instance
+        
+    Returns:
+        OwnerService instance
+    """
+    return OwnerService(owner_repository)
+
+
+def get_pet_service(
+    pet_repository: PetRepository = Depends(get_pet_repository),
+    pet_id_service: PetIDService = Depends(get_pet_id_service)
+) -> PetService:
+    """
+    Dependency to get pet service.
+    
+    Args:
+        pet_repository: Pet repository instance
+        pet_id_service: Pet ID service instance
+        
+    Returns:
+        PetService instance
+    """
+    return PetService(pet_repository, pet_id_service)
+
+
+def get_family_service(
+    family_repository: FamilyRepository = Depends(get_family_repository)
+) -> FamilyService:
+    """
+    Dependency to get family service.
+    
+    Args:
+        family_repository: Family repository instance
+        
+    Returns:
+        FamilyService instance
+    """
+    return FamilyService(family_repository)
+
+
+def get_family_member_service(
+    family_member_repository: FamilyMemberRepository = Depends(get_family_member_repository)
+) -> FamilyMemberService:
+    """
+    Dependency to get family member service.
+    
+    Args:
+        family_member_repository: Family member repository instance
+        
+    Returns:
+        FamilyMemberService instance
+    """
+    return FamilyMemberService(family_member_repository)
+
+
+def get_family_invitation_service(
+    family_invitation_repository: FamilyInvitationRepository = Depends(get_family_invitation_repository)
+) -> FamilyInvitationService:
+    """
+    Dependency to get family invitation service.
+    
+    Args:
+        family_invitation_repository: Family invitation repository instance
+        
+    Returns:
+        FamilyInvitationService instance
+    """
+    return FamilyInvitationService(family_invitation_repository)
+
+
+def get_authentication_service(
+    user_repository: UserRepository = Depends(get_user_repository),
+    jwt_service: JWTService = Depends(get_jwt_service),
+    email_service: EmailService = Depends(get_email_service)
+) -> AuthenticationService:
+    """
+    Dependency to get authentication service.
+    
+    Args:
+        user_repository: User repository instance
+        jwt_service: JWT service instance
+        email_service: Email service instance
+        
+    Returns:
+        AuthenticationService instance
+    """
+    return AuthenticationService(user_repository, jwt_service, email_service)
+
+
+def get_auth_middleware(
+    jwt_service: JWTService = Depends(get_jwt_service),
+    user_repository: UserRepository = Depends(get_user_repository)
+) -> AuthMiddleware:
+    """
+    Dependency to get authentication middleware.
+    
+    Args:
+        jwt_service: JWT service instance
+        user_repository: User repository instance
+        
+    Returns:
+        AuthMiddleware instance
+    """
+    return AuthMiddleware(jwt_service, user_repository)
 
 
 # =============================================================================
@@ -98,6 +324,111 @@ def get_auth_controller(
         AuthController instance
     """
     return AuthController(auth_service, jwt_service)
+
+
+def get_owner_controller(
+    owner_service: OwnerService = Depends(get_owner_service)
+) -> OwnerController:
+    """
+    Dependency to get owner controller.
+    
+    Args:
+        owner_service: Owner service instance
+        
+    Returns:
+        OwnerController instance
+    """
+    return OwnerController(owner_service)
+
+
+def get_pet_controller(
+    pet_service: PetService = Depends(get_pet_service)
+) -> PetController:
+    """
+    Dependency to get pet controller.
+    
+    Args:
+        pet_service: Pet service instance
+        
+    Returns:
+        PetController instance
+    """
+    return PetController(pet_service)
+
+
+def get_pet_types_controller(
+    pet_types_service: PetTypesService = Depends(get_pet_types_service)
+) -> PetTypesController:
+    """
+    Dependency to get pet types controller.
+    
+    Args:
+        pet_types_service: Pet types service instance
+        
+    Returns:
+        PetTypesController instance
+    """
+    return PetTypesController(pet_types_service)
+
+
+def get_family_controller(
+    family_service: FamilyService = Depends(get_family_service)
+) -> FamilyController:
+    """
+    Dependency to get family controller.
+    
+    Args:
+        family_service: Family service instance
+        
+    Returns:
+        FamilyController instance
+    """
+    return FamilyController(family_service)
+
+
+def get_family_member_controller(
+    family_member_service: FamilyMemberService = Depends(get_family_member_service)
+) -> FamilyMemberController:
+    """
+    Dependency to get family member controller.
+    
+    Args:
+        family_member_service: Family member service instance
+        
+    Returns:
+        FamilyMemberController instance
+    """
+    return FamilyMemberController(family_member_service)
+
+
+def get_family_invitation_controller(
+    family_invitation_service: FamilyInvitationService = Depends(get_family_invitation_service)
+) -> FamilyInvitationController:
+    """
+    Dependency to get family invitation controller.
+    
+    Args:
+        family_invitation_service: Family invitation service instance
+        
+    Returns:
+        FamilyInvitationController instance
+    """
+    return FamilyInvitationController(family_invitation_service)
+
+
+def get_auth_controller(
+    auth_service: AuthenticationService = Depends(get_authentication_service)
+) -> AuthenticationController:
+    """
+    Dependency to get authentication controller.
+    
+    Args:
+        auth_service: Authentication service instance
+        
+    Returns:
+        AuthenticationController instance
+    """
+    return AuthenticationController(auth_service)
 
 
 # =============================================================================
@@ -217,3 +548,62 @@ def require_roles(required_roles: list[str]):
         return current_user
     
     return check_roles
+
+
+# =============================================================================
+# PHOTO DEPENDENCIES
+# =============================================================================
+
+def get_photo_repository(session: Session = Depends(get_db_session)) -> PhotoRepository:
+    """
+    Dependency to get photo repository.
+    
+    Args:
+        session: Database session
+        
+    Returns:
+        PhotoRepository instance
+    """
+    return PhotoRepository(session)
+
+
+def get_storage_service() -> StorageService:
+    """
+    Dependency to get storage service.
+    
+    Returns:
+        StorageService instance
+    """
+    return StorageService()
+
+
+def get_photo_service(
+    photo_repository: PhotoRepository = Depends(get_photo_repository),
+    storage_service: StorageService = Depends(get_storage_service)
+) -> PhotoService:
+    """
+    Dependency to get photo service.
+    
+    Args:
+        photo_repository: Photo repository instance
+        storage_service: Storage service instance
+        
+    Returns:
+        PhotoService instance
+    """
+    return PhotoService(photo_repository, storage_service)
+
+
+def get_photo_controller(
+    photo_service: PhotoService = Depends(get_photo_service)
+) -> PhotoController:
+    """
+    Dependency to get photo controller.
+    
+    Args:
+        photo_service: Photo service instance
+        
+    Returns:
+        PhotoController instance
+    """
+    return PhotoController(photo_service)
