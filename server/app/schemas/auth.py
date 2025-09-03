@@ -7,7 +7,7 @@ This module defines Pydantic models for authentication-related API operations.
 from datetime import datetime
 from typing import Optional, List
 
-from pydantic import BaseModel, Field, EmailStr, validator, ConfigDict
+from pydantic import BaseModel, Field, EmailStr, field_validator, ConfigDict
 from app.models.user import UserRole
 
 
@@ -37,8 +37,9 @@ class UserSignup(UserBase):
     password: str = Field(..., min_length=8, description="User password")
     roles: List[str] = Field(..., description="User roles")
     
-    @validator('password')
-    def validate_password(cls, v):
+    @field_validator('password')
+    @classmethod
+    def validate_password(cls, v: str) -> str:
         """Validate password strength."""
         if len(v) < 8:
             raise ValueError('Password must be at least 8 characters long')
@@ -52,8 +53,9 @@ class UserSignup(UserBase):
             raise ValueError('Password must contain at least one special character')
         return v
     
-    @validator('roles')
-    def validate_roles(cls, v):
+    @field_validator('roles')
+    @classmethod
+    def validate_roles(cls, v: List[str]) -> List[str]:
         """Validate user roles."""
         valid_roles = [role.value for role in UserRole]
         for role in v:
@@ -125,8 +127,9 @@ class PasswordReset(BaseModel):
     token: str = Field(..., description="Password reset token")
     new_password: str = Field(..., min_length=8, description="New password")
     
-    @validator('new_password')
-    def validate_new_password(cls, v):
+    @field_validator('new_password')
+    @classmethod
+    def validate_new_password(cls, v: str) -> str:
         """Validate new password strength."""
         if len(v) < 8:
             raise ValueError('Password must be at least 8 characters long')
