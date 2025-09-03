@@ -151,6 +151,44 @@ class JWTService:
             "refresh_token": refresh_token
         }
     
+    def create_tokens_for_user(self, user) -> Dict[str, Any]:
+        """
+        Create tokens for a user object.
+        
+        Args:
+            user: User model instance
+            
+        Returns:
+            Dictionary with tokens and metadata
+        """
+        # Get user data
+        user_id = getattr(user, 'id', None)
+        email = getattr(user, 'email', '')
+        roles = getattr(user, 'roles', [])
+        
+        if not user_id or not email:
+            raise ValueError("User must have id and email")
+        
+        # Create tokens
+        access_token = self.create_access_token({
+            "sub": str(user_id),
+            "email": email,
+            "roles": roles
+        })
+        
+        refresh_token = self.create_refresh_token({
+            "sub": str(user_id),
+            "email": email
+        })
+        
+        # Return in the format expected by the schema
+        return {
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+            "token_type": "bearer",
+            "expires_in": self.access_token_expire_minutes * 60  # Convert to seconds
+        }
+    
     def refresh_access_token(self, refresh_token: str) -> Optional[str]:
         """
         Create a new access token using a refresh token.

@@ -416,19 +416,7 @@ def get_family_invitation_controller(
     return FamilyInvitationController(family_invitation_service)
 
 
-def get_auth_controller(
-    auth_service: AuthenticationService = Depends(get_authentication_service)
-) -> AuthenticationController:
-    """
-    Dependency to get authentication controller.
-    
-    Args:
-        auth_service: Authentication service instance
-        
-    Returns:
-        AuthenticationController instance
-    """
-    return AuthenticationController(auth_service)
+
 
 
 # =============================================================================
