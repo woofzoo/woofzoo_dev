@@ -13,15 +13,12 @@ from app.config import settings
 from app.database import Base
 from app.models import (
     User, UserRole,
-<<<<<<< HEAD
-=======
     Owner,
     Family,
     FamilyMember, AccessLevel,
     Pet, Gender,
     OTP, OTPPurpose,
     FamilyInvitation
->>>>>>> cbd257bc27ef9e7dc5c5bfef68dc65f634ed1af9
 )  # Import all models
 
 # this is the Alembic Config object, which provides
