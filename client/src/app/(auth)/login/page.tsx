@@ -12,6 +12,8 @@ const LoginPage = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  console.log(email, password, rememberMe);
+
   const handleSubmit = async () => {
     setIsLoading(true);
 
