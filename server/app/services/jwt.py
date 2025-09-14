@@ -1,102 +1,77 @@
 """
-JWT service for the application.
+JWT service for token management.
 
-This module provides JWT token generation and validation functionality
-for authentication and authorization.
+This module provides the JWTService class for generating and validating
+JWT tokens for authentication and authorization.
 """
 
-from datetime import datetime, timedelta, timezone
-from typing import Optional, Dict, Any
-
 import jwt
-from jwt import PyJWTError
+from datetime import datetime, timedelta
+from typing import Optional, Dict, Any
+from jwt.exceptions import InvalidTokenError, ExpiredSignatureError, DecodeError
 
 from app.config import settings
-from app.models.user import User
 
 
 class JWTService:
     """
     JWT service for token management.
     
-    This class handles JWT token generation, validation, and refresh
-    operations for user authentication.
+    This class handles JWT token generation, validation, and management
+    for authentication and authorization purposes.
     """
     
     def __init__(self) -> None:
         """Initialize the JWT service."""
         self.secret_key = settings.secret_key
-        self.algorithm = settings.algorithm
+        self.algorithm = "HS256"
         self.access_token_expire_minutes = settings.access_token_expire_minutes
         self.refresh_token_expire_days = settings.refresh_token_expire_days
     
-    def create_access_token(
-        self,
-        user_id: int,
-        email: str,
-        roles: list[str],
-        personalization: dict,
-        expires_delta: Optional[timedelta] = None
-    ) -> str:
+    def create_access_token(self, data: Dict[str, Any], expires_delta: Optional[timedelta] = None) -> str:
         """
-        Create an access token for a user.
+        Create an access token.
         
         Args:
-            user_id: User ID
-            email: User email
-            roles: User roles
-            personalization: User personalization settings
+            data: Data to encode in the token
             expires_delta: Optional custom expiration time
             
         Returns:
-            str: JWT access token
+            Encoded JWT access token
         """
+        to_encode = data.copy()
+        
         if expires_delta:
-            expire = datetime.now(timezone.utc) + expires_delta
+            expire = datetime.utcnow() + expires_delta
         else:
-            expire = datetime.now(timezone.utc) + timedelta(minutes=self.access_token_expire_minutes)
+            expire = datetime.utcnow() + timedelta(minutes=self.access_token_expire_minutes)
         
-        to_encode = {
-            "sub": str(user_id),
-            "email": email,
-            "roles": roles,
-            "personalization": personalization,
-            "type": "access",
-            "exp": expire,
-            "iat": datetime.now(timezone.utc)
-        }
-        
+        to_encode.update({"exp": expire, "type": "access"})
         encoded_jwt = jwt.encode(to_encode, self.secret_key, algorithm=self.algorithm)
+        
         return encoded_jwt
     
-    def create_refresh_token(
-        self,
-        user_id: int,
-        expires_delta: Optional[timedelta] = None
-    ) -> str:
+    def create_refresh_token(self, data: Dict[str, Any], expires_delta: Optional[timedelta] = None) -> str:
         """
-        Create a refresh token for a user.
+        Create a refresh token.
         
         Args:
-            user_id: User ID
+            data: Data to encode in the token
             expires_delta: Optional custom expiration time
             
         Returns:
-            str: JWT refresh token
+            Encoded JWT refresh token
         """
+        to_encode = data.copy()
+        
         if expires_delta:
-            expire = datetime.now(timezone.utc) + expires_delta
+            expire = datetime.utcnow() + expires_delta
         else:
-            expire = datetime.now(timezone.utc) + timedelta(days=self.refresh_token_expire_days)
+            expire = datetime.utcnow() + timedelta(days=self.refresh_token_expire_days)
         
-        to_encode = {
-            "sub": str(user_id),
-            "type": "refresh",
-            "exp": expire,
-            "iat": datetime.now(timezone.utc)
-        }
-        
+        to_encode.update({"exp": expire, "type": "refresh"})
         encoded_jwt = jwt.encode(to_encode, self.secret_key, algorithm=self.algorithm)
+        
         return encoded_jwt
     
     def verify_token(self, token: str) -> Optional[Dict[str, Any]]:
@@ -107,12 +82,12 @@ class JWTService:
             token: JWT token to verify
             
         Returns:
-            Optional[Dict[str, Any]]: Decoded token payload or None if invalid
+            Decoded token payload or None if invalid
         """
         try:
             payload = jwt.decode(token, self.secret_key, algorithms=[self.algorithm])
             return payload
-        except PyJWTError:
+        except (InvalidTokenError, ExpiredSignatureError, DecodeError):
             return None
     
     def verify_access_token(self, token: str) -> Optional[Dict[str, Any]]:
@@ -123,7 +98,7 @@ class JWTService:
             token: JWT access token to verify
             
         Returns:
-            Optional[Dict[str, Any]]: Decoded token payload or None if invalid
+            Decoded token payload or None if invalid
         """
         payload = self.verify_token(token)
         if payload and payload.get("type") == "access":
@@ -138,32 +113,75 @@ class JWTService:
             token: JWT refresh token to verify
             
         Returns:
-            Optional[Dict[str, Any]]: Decoded token payload or None if invalid
+            Decoded token payload or None if invalid
         """
         payload = self.verify_token(token)
         if payload and payload.get("type") == "refresh":
             return payload
         return None
     
-    def create_tokens_for_user(self, user: User) -> Dict[str, Any]:
+    def create_token_pair(self, user_id: int, email: str, roles: list[str]) -> Dict[str, str]:
         """
-        Create both access and refresh tokens for a user.
+        Create both access and refresh tokens.
         
         Args:
-            user: User object
+            user_id: User ID
+            email: User email
+            roles: User roles
             
         Returns:
-            Dict[str, Any]: Dictionary containing access and refresh tokens
+            Dictionary with access_token and refresh_token
         """
-        access_token = self.create_access_token(
-            user_id=user.id,
-            email=user.email,
-            roles=user.roles,
-            personalization=user.personalization
-        )
+        access_token_data = {
+            "sub": str(user_id),
+            "email": email,
+            "roles": roles
+        }
         
-        refresh_token = self.create_refresh_token(user_id=user.id)
+        refresh_token_data = {
+            "sub": str(user_id),
+            "email": email
+        }
         
+        access_token = self.create_access_token(access_token_data)
+        refresh_token = self.create_refresh_token(refresh_token_data)
+        
+        return {
+            "access_token": access_token,
+            "refresh_token": refresh_token
+        }
+    
+    def create_tokens_for_user(self, user) -> Dict[str, Any]:
+        """
+        Create tokens for a user object.
+        
+        Args:
+            user: User model instance
+            
+        Returns:
+            Dictionary with tokens and metadata
+        """
+        # Get user data
+        user_id = getattr(user, 'id', None)
+        email = getattr(user, 'email', '')
+        roles = getattr(user, 'roles', [])
+        
+        if not user_id or not email:
+            raise ValueError("User must have id and email")
+        
+        # Create tokens
+        access_token = self.create_access_token({
+            "sub": str(user_id),
+            "email": email,
+            "roles": roles
+        })
+        
+        refresh_token = self.create_refresh_token({
+            "sub": str(user_id),
+            "email": email
+        })
+        
+        # Return in the format expected by the schema
         return {
             "access_token": access_token,
             "refresh_token": refresh_token,
@@ -179,26 +197,30 @@ class JWTService:
             refresh_token: Valid refresh token
             
         Returns:
-            Optional[str]: New access token or None if refresh token is invalid
+            New access token or None if refresh token is invalid
         """
         payload = self.verify_refresh_token(refresh_token)
         if not payload:
             return None
         
-        user_id = int(payload.get("sub"))
-        # Note: For a complete implementation, you would need to fetch user data
-        # from the database here. This is a simplified version.
-        return user_id
+        # Create new access token with same user data
+        access_token_data = {
+            "sub": payload.get("sub"),
+            "email": payload.get("email"),
+            "roles": payload.get("roles", [])
+        }
+        
+        return self.create_access_token(access_token_data)
     
     def get_token_expiration(self, token: str) -> Optional[datetime]:
         """
-        Get the expiration time of a token.
+        Get token expiration time.
         
         Args:
             token: JWT token
             
         Returns:
-            Optional[datetime]: Token expiration time or None if invalid
+            Expiration datetime or None if token is invalid
         """
         payload = self.verify_token(token)
         if payload and "exp" in payload:
@@ -207,15 +229,20 @@ class JWTService:
     
     def is_token_expired(self, token: str) -> bool:
         """
-        Check if a token is expired.
+        Check if token is expired.
         
         Args:
             token: JWT token
             
         Returns:
-            bool: True if token is expired, False otherwise
+            True if token is expired, False otherwise
         """
-        expiration = self.get_token_expiration(token)
-        if expiration:
-            return datetime.now(timezone.utc) > expiration
-        return True
+        payload = self.verify_token(token)
+        if not payload:
+            return True
+        
+        exp_timestamp = payload.get("exp")
+        if not exp_timestamp:
+            return True
+        
+        return datetime.utcnow() > datetime.fromtimestamp(exp_timestamp)

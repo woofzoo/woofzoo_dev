@@ -1005,4 +1005,28 @@ app.include_router(feature_router, prefix=settings.api_prefix)
 - Use FastAPI's automatic reload: `uvicorn app.main:app --reload`
 - Enable SQL query logging: `DATABASE_ECHO=true`
 
+## Pydantic v2 Specific Guidelines
+
+### Field Validators
+- Use `@field_validator` instead of `@validator`
+- Always add `@classmethod` decorator
+- Use proper type hints for input and output
+- Example:
+```python
+@field_validator('field_name')
+@classmethod
+def validate_field(cls, v: str) -> str:
+    # validation logic
+    return v
+```
+
+### Model Configuration
+- Use `model_config = ConfigDict(...)` instead of `Config` class
+- `from_attributes=True` is correct for Pydantic v2
+- Use `json_schema_extra` for examples
+
 This cursor rules file ensures consistent code quality, maintainable architecture, and scalable development practices for the WoofZoo FastAPI project.
+description:
+globs:
+alwaysApply: true
+---
