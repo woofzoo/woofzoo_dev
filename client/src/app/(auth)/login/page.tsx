@@ -2,6 +2,7 @@
 
 import ParentLayout from '@/components/layout/ParentLayout';
 import Input from '@/components/ui/Input';
+import { login, setTokens } from '@/lib/api/auth';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 
@@ -11,38 +12,53 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     setIsLoading(true);
+    setError(null);
+
+    try {
+      const data = await login({ email, password });
+
+      if (data && data?.tokens) {
+        setTokens(data.tokens.access_token, data.tokens.refresh_token);
+        router.push('/dashboard/434');
+      } else {
+        setError('Login failed: No authentication token received.');
+      }
+    } catch (err: any) {
+      console.error('Login error:', err);
+      const errorMessage =
+        err.response?.data?.message || 'Invalid credentials. Please try again later';
+      setError(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
 
     await new Promise(resolve => setTimeout(resolve, 1500));
-
     console.log('Login attempt:', { email, password, rememberMe });
-    setIsLoading(false);
   };
+
   return (
     <ParentLayout className="">
       <div className="space-y-6">
+        {/* Logo + Heading */}
         <div className="text-center space-y-5">
           <div className="w-[10rem] rounded-2xl mx-auto mb-4 flex items-center justify-center">
-            <img
-              src="/group-1.svg"
-              alt="TM Logo"
-              className=" object-contain"
-            />
+            <img src="/group-1.svg" alt="TM Logo" className="object-contain" />
           </div>
-          <div className='space-y-2'>
+          <div className="space-y-2">
             <h1 className="text-xl font-bold text-gray-900 tracking-tight">
               Welcome Back
             </h1>
-            <p className="text-gray-600">
-              Sign in to your account to continue
-            </p>
+            <p className="text-gray-600">Sign in to your account to continue</p>
           </div>
         </div>
 
-        {/* Login Form */}
-        <div className="space-y-5">
+        {/* ✅ Login Form */}
+        <form onSubmit={handleSubmit} className="space-y-5">
           <Input
             buttonType="email"
             label="Email Address"
@@ -86,9 +102,9 @@ const LoginPage = () => {
             </button>
           </div>
 
-          {/* Submit Button */}
+          {/* ✅ Submit Button */}
           <button
-            onClick={handleSubmit}
+            type="submit"
             disabled={isLoading}
             className="w-full py-3 px-4 rounded-lg font-semibold text-white transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none bg-gradient-to-r from-primary to-primary/90 hover:shadow-lg hover:shadow-primary/25 cursor-pointer"
           >
@@ -101,7 +117,7 @@ const LoginPage = () => {
               'Sign In'
             )}
           </button>
-        </div>
+        </form>
 
         {/* Divider */}
         <div className="relative flex items-center justify-center my-6">
@@ -121,7 +137,7 @@ const LoginPage = () => {
         </div>
       </div>
     </ParentLayout>
-  )
-}
+  );
+};
 
-export default LoginPage; 
+export default LoginPage;
