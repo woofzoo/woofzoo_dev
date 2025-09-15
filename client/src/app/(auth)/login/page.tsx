@@ -2,6 +2,7 @@
 
 import ParentLayout from '@/components/layout/ParentLayout';
 import Input from '@/components/ui/Input';
+import { useAuth } from '@/context/AuthContext';
 import { login, setTokens } from '@/lib/api/auth';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
