@@ -44,13 +44,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (storedAccessToken) {
         setAccessToken(storedAccessToken);
         try {
-          // If token exists, fetch user data
-          console.log("calling");
           const res = await api.get<User>('/auth/me');
-          console.log(res);
           setUser(res.data);
         } catch (err) {
-          // Token is invalid or expired
           console.error('Failed to authenticate with stored token:', err);
           logout();
         }
