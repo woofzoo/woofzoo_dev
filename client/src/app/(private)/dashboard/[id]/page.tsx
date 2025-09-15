@@ -7,9 +7,7 @@ import React from 'react'
 
 const DashPageById = () => {
    const { user, logout } = useAuth();
-   console.log(user);
 
-   console.log(user);
    return (
       <DashLayout>
 
