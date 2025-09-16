@@ -1,45 +1,28 @@
-'use client'
+'use client';
 
 import ParentLayout from '@/components/layout/ParentLayout';
 import Input from '@/components/ui/Input';
 import { useAuth } from '@/context/AuthContext';
-import { login, setTokens } from '@/lib/api/auth';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 
 const LoginPage = () => {
   const router = useRouter();
+  const { signIn, isLoggingIn, loginError } = useAuth(); 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const data = await login({ email, password });
-
-      if (data && data?.tokens) {
-        setTokens(data.tokens.access_token, data.tokens.refresh_token);
-        router.push('/dashboard/434');
-      } else {
-        setError('Login failed: No authentication token received.');
-      }
-    } catch (err: any) {
-      console.error('Login error:', err);
-      const errorMessage =
-        err.response?.data?.message || 'Invalid credentials. Please try again later';
-      setError(errorMessage);
-    } finally {
-      setIsLoading(false);
+    
+    // Capture the returned user object from the context function
+    const loggedInUser = await signIn({ email, password });
+    
+    // Use the user's ID for a dynamic redirect
+    if (loggedInUser) {
+      router.push(`/dashboard/${loggedInUser.id}`); 
     }
-
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    console.log('Login attempt:', { email, password, rememberMe });
   };
 
   return (
@@ -58,7 +41,7 @@ const LoginPage = () => {
           </div>
         </div>
 
-        {/* ✅ Login Form */}
+        {/* Login Form */}
         <form onSubmit={handleSubmit} className="space-y-5">
           <Input
             buttonType="email"
@@ -102,14 +85,21 @@ const LoginPage = () => {
               Forgot password?
             </button>
           </div>
+          
+          {/* Display error from context */}
+          {loginError && (
+            <div className="text-sm text-center text-red-600 bg-red-100 p-2 rounded-md">
+                {loginError}
+            </div>
+          )}
 
-          {/* ✅ Submit Button */}
+          {/* Submit Button */}
           <button
             type="submit"
-            disabled={isLoading}
+            disabled={isLoggingIn} 
             className="w-full py-3 px-4 rounded-lg font-semibold text-white transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none bg-gradient-to-r from-primary to-primary/90 hover:shadow-lg hover:shadow-primary/25 cursor-pointer"
           >
-            {isLoading ? (
+            {isLoggingIn ? ( 
               <div className="flex items-center justify-center space-x-2">
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 <span>Signing you in...</span>

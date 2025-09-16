@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, createContext, useContext, useEffect } from 'react';
-import { clearTokens, getAccessToken, getRefreshToken, setTokens } from '@/lib/api/auth';
+import { clearTokens, getAccessToken, setTokens, login as apiLogin } from '@/lib/api/auth';
 import api from '@/lib/axios';
 
 type User = {
@@ -22,11 +22,18 @@ type User = {
   last_login: string;
 };
 
+type LoginCredentials = {
+  email: string;
+  password: string;
+};
+
 type AuthContextType = {
   user: User | null;
   accessToken: string | null;
-  isLoading: boolean; // 👈 Add loading state
-  login: (access: string, refresh: string) => void;
+  isLoading: boolean;
+  isLoggingIn: boolean;
+  loginError: string | null;
+  signIn: (credentials: LoginCredentials) => Promise<User | null>;
   logout: () => void;
 };
 
@@ -35,12 +42,13 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true); 
+  const [isLoading, setIsLoading] = useState(true);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [loginError, setLoginError] = useState<string | null>(null);
 
   useEffect(() => {
     const initializeAuth = async () => {
       const storedAccessToken = getAccessToken();
-
       if (storedAccessToken) {
         setAccessToken(storedAccessToken);
         try {
@@ -57,10 +65,30 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     initializeAuth();
   }, []);
 
-  const login = (access: string, refresh: string) => {
-    setTokens(access, refresh);
-    setAccessToken(access);
-    api.get<User>('/auth/me').then(res => setUser(res.data));
+  const signIn = async ({ email, password }: LoginCredentials): Promise<User | null> => {
+    setIsLoggingIn(true);
+    setLoginError(null);
+    try {
+      const data = await apiLogin({ email, password });
+
+      if (data && data?.tokens) {
+        setTokens(data.tokens.access_token, data.tokens.refresh_token);
+        setAccessToken(data.tokens.access_token);
+
+        const userProfile = await api.get<User>('/auth/me');
+        setUser(userProfile.data);
+        setIsLoggingIn(false);
+        return userProfile.data;
+      } else {
+        throw new Error('Login failed: No authentication token received.');
+      }
+    } catch (err: any) {
+      const errorMessage =
+        err.response?.data?.message || 'Invalid credentials. Please try again.';
+      setLoginError(errorMessage);
+      setIsLoggingIn(false);
+      return null; // Return null on failure
+    }
   };
 
   const logout = () => {
@@ -71,7 +99,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <AuthContext.Provider
-      value={{ user, accessToken, isLoading, login, logout }}
+      value={{
+        user,
+        accessToken,
+        isLoading,
+        isLoggingIn,
+        loginError,
+        signIn,
+        logout,
+      }}
     >
       {children}
     </AuthContext.Provider>
