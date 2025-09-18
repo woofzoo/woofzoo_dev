@@ -1,0 +1,61 @@
+// components/Toast/ToastContainer.module.scss
+
+.toastContainer {
+  position: fixed;
+  z-index: 9999;
+  pointer-events: none;
+
+  > * {
+    pointer-events: auto;
+  }
+}
+
+// Position variants
+.topright {
+  top: 20px;
+  right: 20px;
+}
+
+.topleft {
+  top: 20px;
+  left: 20px;
+}
+
+.bottomright {
+  bottom: 20px;
+  right: 20px;
+}
+
+.bottomleft {
+  bottom: 20px;
+  left: 20px;
+}
+
+.topcenter {
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.bottomcenter {
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+// Responsive adjustments
+@media (max-width: 640px) {
+  .toastContainer {
+    left: 16px !important;
+    right: 16px !important;
+    top: 20px !important;
+    transform: none !important;
+    width: auto;
+  }
+
+  .toastContainer > * {
+    width: 100%;
+    min-width: unset;
+    max-width: unset;
+  }
+}

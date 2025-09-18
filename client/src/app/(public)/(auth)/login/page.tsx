@@ -1,6 +1,7 @@
 'use client';
 
 import ParentLayout from '@/components/layout/ParentLayout';
+import { useToast } from '@/components/toast/ToastProvider';
 import Input from '@/components/ui/Input';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
@@ -8,20 +9,21 @@ import React, { useState } from 'react';
 
 const LoginPage = () => {
   const router = useRouter();
-  const { signIn, isLoggingIn, loginError } = useAuth(); 
+  const { signIn, isLoggingIn, loginError } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
+
     // Capture the returned user object from the context function
     const loggedInUser = await signIn({ email, password });
-    
-    // Use the user's ID for a dynamic redirect
+    console.log(loggedInUser);
+
+    // Use the user's ID for a dynamic redirect. Append a query param so the dashboard can show the success toast.
     if (loggedInUser) {
-      router.push(`/dashboard/${loggedInUser.id}`); 
+      router.push(`/dashboard/${loggedInUser.id}?loginSuccess=1`);
     }
   };
 
@@ -85,21 +87,21 @@ const LoginPage = () => {
               Forgot password?
             </button>
           </div>
-          
+
           {/* Display error from context */}
           {loginError && (
             <div className="text-sm text-center text-red-600 bg-red-100 p-2 rounded-md">
-                {loginError}
+              {loginError}
             </div>
           )}
 
           {/* Submit Button */}
           <button
             type="submit"
-            disabled={isLoggingIn} 
+            disabled={isLoggingIn}
             className="w-full py-3 px-4 rounded-lg font-semibold text-white transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none bg-gradient-to-r from-primary to-primary/90 hover:shadow-lg hover:shadow-primary/25 cursor-pointer"
           >
-            {isLoggingIn ? ( 
+            {isLoggingIn ? (
               <div className="flex items-center justify-center space-x-2">
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 <span>Signing you in...</span>

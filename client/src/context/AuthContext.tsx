@@ -3,6 +3,7 @@
 import React, { useState, createContext, useContext, useEffect } from 'react';
 import { clearTokens, getAccessToken, setTokens, login as apiLogin } from '@/lib/api/auth';
 import api from '@/lib/axios';
+import { useToast } from '@/components/toast/ToastProvider';
 
 type User = {
   id: number;
@@ -40,6 +41,7 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  const { showSuccess, showError, showInfo, showWarning } = useToast();
   const [user, setUser] = useState<User | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -78,6 +80,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const userProfile = await api.get<User>('/auth/me');
         setUser(userProfile.data);
         setIsLoggingIn(false);
+        // Don't show success toast here because navigation happens immediately after login.
+        // The dashboard page will read a query param and show the success toast after navigation.
+
         return userProfile.data;
       } else {
         throw new Error('Login failed: No authentication token received.');
@@ -87,7 +92,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         err.response?.data?.message || 'Invalid credentials. Please try again.';
       setLoginError(errorMessage);
       setIsLoggingIn(false);
-      return null; // Return null on failure
+      showError("Login Failed", errorMessage, 5000);
+      return null;
     }
   };
 
@@ -95,6 +101,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     clearTokens();
     setAccessToken(null);
     setUser(null);
+    showSuccess(
+      'Logged Out Successfully !',
+      'You have been logged out successfully.',
+      5000
+    );
   };
 
   return (
