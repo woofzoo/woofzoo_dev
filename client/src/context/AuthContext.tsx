@@ -47,6 +47,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
+  const [signInSuccess, setSignInSuccess] = useState<boolean>(false);
 
   useEffect(() => {
     const initializeAuth = async () => {

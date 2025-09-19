@@ -16,18 +16,15 @@ const LoginPage = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const loggedInUser = await signIn({ email, password });
-    if (loggedInUser) {
-      router.push(`/dashboard/${loggedInUser.id}?loginSuccess=1`);
-    }
+    await signIn({ email, password });
   };
 
   return (
     <ParentLayout className="flex min-h-screen">
       <div className='w-1/2 flex items-center justify-center'>
-        <img src="brandImage.png" alt="Brand" className="w-[30rem] h-[90vh] object-cover rounded-md shadow-lg"/>
+        <img src="brandImage.png" alt="Brand" className="w-[30rem] h-[90vh] object-cover rounded-md shadow-lg" />
       </div>
-      
+
       {/* Right Side - Login Form (50%) */}
       <div className="w-1/2 flex items-center justify-center p-8">
         <div className="w-full max-w-md space-y-6">
