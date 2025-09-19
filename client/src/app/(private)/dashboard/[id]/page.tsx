@@ -18,11 +18,9 @@ const DashPageById = () => {
       console.log(loginSuccess);
       if (loginSuccess === "1") {
          showSuccess('Login Successful!', `Welcome back, ${user?.first_name || 'User'} 🎉`, 5000);
-         // remove the query param without adding a new history entry
          const pathname = window.location.pathname;
          router.replace(pathname);
       }
-   // eslint-disable-next-line react-hooks/exhaustive-deps
    }, []);
 
    return (

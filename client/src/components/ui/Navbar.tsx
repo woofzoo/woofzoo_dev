@@ -478,7 +478,7 @@ const Navbar: React.FC = () => {
                         <div className="border-t border-border-primary my-2" />
 
                         <button
-                           className="w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-error-pastel/20 transition-colors text-left"
+                           className="w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-error-pastel/20 transition-colors text-left cursor-pointer"
                            onClick={() => handleLogout()}
                         >
                            <LogOut className="w-4 h-4" style={{ color: 'var(--error-color)' }} />
