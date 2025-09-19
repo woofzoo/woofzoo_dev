@@ -245,4 +245,4 @@ class JWTService:
         if not exp_timestamp:
             return True
         
-        return datetime.now(timezone.utc).replace(tzinfo=None) > datetime.fromtimestamp(exp_timestamp, tz=timezone.utc).replace(tzinfo=None)
+        return datetime.now(timezone.utc) > datetime.fromtimestamp(exp_timestamp, tz=timezone.utc)

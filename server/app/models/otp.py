@@ -68,7 +68,7 @@ class OTP(Base):
     
     def is_expired(self) -> bool:
         """Check if OTP is expired."""
-        return datetime.now(timezone.utc).replace(tzinfo=None) > self.expires_at
+        return datetime.now(timezone.utc) > self.expires_at.replace(tzinfo=timezone.utc)
     
     def is_valid(self) -> bool:
         """Check if OTP is valid (not used and not expired)."""

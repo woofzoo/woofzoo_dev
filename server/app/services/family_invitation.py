@@ -98,7 +98,7 @@ class FamilyInvitationService:
             raise ValueError("Invitation has already been processed")
         
         # Check if invitation has expired
-        if invitation.expires_at < datetime.now(timezone.utc).replace(tzinfo=None):
+        if invitation.expires_at.replace(tzinfo=timezone.utc) < datetime.now(timezone.utc):
             raise ValueError("Invitation has expired")
         
         # Update invitation status

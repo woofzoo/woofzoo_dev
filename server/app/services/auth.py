@@ -221,7 +221,7 @@ class AuthService:
             return False
         
         # Check if token is expired
-        if user.password_reset_expires and user.password_reset_expires < datetime.now(timezone.utc):
+        if user.password_reset_expires and user.password_reset_expires.replace(tzinfo=timezone.utc) < datetime.now(timezone.utc):
             return False
         
         # Hash new password

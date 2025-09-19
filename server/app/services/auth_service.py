@@ -244,7 +244,7 @@ class AuthenticationService:
         if user.password_reset_token != reset_token:
             return False
         
-        if user.password_reset_expires and user.password_reset_expires < datetime.now(timezone.utc).replace(tzinfo=None):
+        if user.password_reset_expires and user.password_reset_expires.replace(tzinfo=timezone.utc) < datetime.now(timezone.utc):
             return False
         
         # Hash new password
@@ -312,7 +312,7 @@ class AuthenticationService:
         if user.email_verification_token != verification_token:
             return False
         
-        if user.email_verification_expires and user.email_verification_expires < datetime.now(timezone.utc).replace(tzinfo=None):
+        if user.email_verification_expires and user.email_verification_expires.replace(tzinfo=timezone.utc) < datetime.now(timezone.utc):
             return False
         
         # Mark email as verified

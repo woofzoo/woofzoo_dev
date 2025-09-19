@@ -84,7 +84,7 @@ class FamilyInvitationRepository(BaseRepository[FamilyInvitation]):
     
     def get_expired_invitations(self) -> List[FamilyInvitation]:
         """Get expired invitations."""
-        current_time = datetime.now(timezone.utc).replace(tzinfo=None)
+        current_time = datetime.now(timezone.utc)
         result = self.session.execute(
             select(FamilyInvitation)
             .where(FamilyInvitation.expires_at < current_time)
