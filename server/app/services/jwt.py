@@ -6,7 +6,7 @@ JWT tokens for authentication and authorization.
 """
 
 import jwt
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional, Dict, Any
 from jwt.exceptions import InvalidTokenError, ExpiredSignatureError, DecodeError
 
@@ -42,9 +42,9 @@ class JWTService:
         to_encode = data.copy()
         
         if expires_delta:
-            expire = datetime.utcnow() + expires_delta
+            expire = (datetime.now(timezone.utc) + expires_delta).replace(tzinfo=None)
         else:
-            expire = datetime.utcnow() + timedelta(minutes=self.access_token_expire_minutes)
+            expire = (datetime.now(timezone.utc) + timedelta(minutes=self.access_token_expire_minutes)).replace(tzinfo=None)
         
         to_encode.update({"exp": expire, "type": "access"})
         encoded_jwt = jwt.encode(to_encode, self.secret_key, algorithm=self.algorithm)
@@ -65,9 +65,9 @@ class JWTService:
         to_encode = data.copy()
         
         if expires_delta:
-            expire = datetime.utcnow() + expires_delta
+            expire = (datetime.now(timezone.utc) + expires_delta).replace(tzinfo=None)
         else:
-            expire = datetime.utcnow() + timedelta(days=self.refresh_token_expire_days)
+            expire = (datetime.now(timezone.utc) + timedelta(days=self.refresh_token_expire_days)).replace(tzinfo=None)
         
         to_encode.update({"exp": expire, "type": "refresh"})
         encoded_jwt = jwt.encode(to_encode, self.secret_key, algorithm=self.algorithm)
@@ -224,7 +224,7 @@ class JWTService:
         """
         payload = self.verify_token(token)
         if payload and "exp" in payload:
-            return datetime.fromtimestamp(payload["exp"])
+            return datetime.fromtimestamp(payload["exp"], tz=timezone.utc).replace(tzinfo=None)
         return None
     
     def is_token_expired(self, token: str) -> bool:
@@ -245,4 +245,4 @@ class JWTService:
         if not exp_timestamp:
             return True
         
-        return datetime.utcnow() > datetime.fromtimestamp(exp_timestamp)
+        return datetime.now(timezone.utc).replace(tzinfo=None) > datetime.fromtimestamp(exp_timestamp, tz=timezone.utc).replace(tzinfo=None)

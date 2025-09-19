@@ -147,7 +147,7 @@ class AuthService:
         print(f"🔍 DEBUG: Current time: {datetime.now(timezone.utc)}")
         
         # Check if token is expired
-        if user.email_verification_expires and user.email_verification_expires < datetime.now(timezone.utc):
+        if user.email_verification_expires and user.email_verification_expires.replace(tzinfo=timezone.utc) < datetime.now(timezone.utc):
             print(f"❌ DEBUG: Token expired at {user.email_verification_expires}")
             return False
         

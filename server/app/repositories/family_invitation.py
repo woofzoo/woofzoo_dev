@@ -7,7 +7,7 @@ database operations extending the base repository functionality.
 
 from typing import List, Optional
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -84,7 +84,7 @@ class FamilyInvitationRepository(BaseRepository[FamilyInvitation]):
     
     def get_expired_invitations(self) -> List[FamilyInvitation]:
         """Get expired invitations."""
-        current_time = datetime.utcnow()
+        current_time = datetime.now(timezone.utc).replace(tzinfo=None)
         result = self.session.execute(
             select(FamilyInvitation)
             .where(FamilyInvitation.expires_at < current_time)

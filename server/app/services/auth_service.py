@@ -5,7 +5,7 @@ This module provides the AuthenticationService class for handling
 user authentication, registration, and token management.
 """
 
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from typing import Optional, Dict, Any
 from passlib.context import CryptContext
 
@@ -138,7 +138,7 @@ class AuthenticationService:
             raise ValueError("Invalid email or password")
         
         # Update last login
-        self.user_repository.update(user.id, last_login=datetime.utcnow())
+        self.user_repository.update(user.id, last_login=datetime.now(timezone.utc).replace(tzinfo=None))
         
         # Create tokens
         tokens = self.jwt_service.create_token_pair(
@@ -202,14 +202,14 @@ class AuthenticationService:
         # Generate reset token
         reset_token = self.jwt_service.create_access_token(
             {"sub": str(user.id), "type": "password_reset"},
-            expires_delta=datetime.timedelta(minutes=30)  # 30 minutes expiry
+            expires_delta=timedelta(minutes=30)  # 30 minutes expiry
         )
         
         # Update user with reset token
         self.user_repository.update(
             user.id,
             password_reset_token=reset_token,
-            password_reset_expires=datetime.utcnow() + datetime.timedelta(minutes=30)
+            password_reset_expires=(datetime.now(timezone.utc) + timedelta(minutes=30)).replace(tzinfo=None)
         )
         
         # Send reset email
@@ -244,7 +244,7 @@ class AuthenticationService:
         if user.password_reset_token != reset_token:
             return False
         
-        if user.password_reset_expires and user.password_reset_expires < datetime.utcnow():
+        if user.password_reset_expires and user.password_reset_expires < datetime.now(timezone.utc).replace(tzinfo=None):
             return False
         
         # Hash new password
@@ -312,7 +312,7 @@ class AuthenticationService:
         if user.email_verification_token != verification_token:
             return False
         
-        if user.email_verification_expires and user.email_verification_expires < datetime.utcnow():
+        if user.email_verification_expires and user.email_verification_expires < datetime.now(timezone.utc).replace(tzinfo=None):
             return False
         
         # Mark email as verified
@@ -342,14 +342,14 @@ class AuthenticationService:
         # Generate verification token
         verification_token = self.jwt_service.create_access_token(
             {"sub": str(user.id), "type": "email_verification"},
-            expires_delta=datetime.timedelta(hours=24)  # 24 hours expiry
+            expires_delta=timedelta(hours=24)  # 24 hours expiry
         )
         
         # Update user with verification token
         self.user_repository.update(
             user.id,
             email_verification_token=verification_token,
-            email_verification_expires=datetime.utcnow() + datetime.timedelta(hours=24)
+            email_verification_expires=(datetime.now(timezone.utc) + timedelta(hours=24)).replace(tzinfo=None)
         )
         
         # Send verification email
