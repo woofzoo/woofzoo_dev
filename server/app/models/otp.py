@@ -5,7 +5,7 @@ This module defines the OTP SQLAlchemy model for managing OTP codes
 used for authentication and family invitations.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 import uuid
 
 from sqlalchemy import Column, DateTime, String, Boolean, UUID, ForeignKey, Enum
@@ -68,7 +68,7 @@ class OTP(Base):
     
     def is_expired(self) -> bool:
         """Check if OTP is expired."""
-        return datetime.utcnow() > self.expires_at
+        return datetime.now(timezone.utc) > self.expires_at.replace(tzinfo=timezone.utc)
     
     def is_valid(self) -> bool:
         """Check if OTP is valid (not used and not expired)."""

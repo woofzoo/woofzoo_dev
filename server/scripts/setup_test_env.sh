@@ -113,7 +113,7 @@ setup_environment() {
     export AUTO_VERIFY_USERS=true
     
     # Disable external services for testing
-    export MAILGUN_API_KEY="dummy_api_key_for_testing"
+    export SENDGRID_API_KEY="dummy_api_key_for_testing"
     export MSG91_API_KEY="dummy_msg91_key"
     export S3_ACCESS_KEY="dummy_s3_access_key"
     export S3_SECRET_KEY="dummy_s3_secret_key"
@@ -143,10 +143,9 @@ DEBUG=true
 AUTO_VERIFY_USERS=true
 
 # Disable external services for testing
-MAILGUN_API_KEY=dummy_api_key_for_testing
-MAILGUN_DOMAIN=sandbox.test.mailgun.org
-MAILGUN_FROM_EMAIL=test@woofzoo.test
-MAILGUN_FROM_NAME=WoofZoo Test
+SENDGRID_API_KEY=dummy_api_key_for_testing
+EMAIL_FROM_ADDRESS=test@woofzoo.test
+EMAIL_FROM_NAME=Woofzoo Test
 
 # Disable SMS services
 MSG91_API_KEY=dummy_msg91_key

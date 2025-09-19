@@ -5,7 +5,7 @@ This module defines the FamilyInvitation SQLAlchemy model for managing
 family invitations with expiry dates.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 import uuid
 
@@ -70,7 +70,7 @@ class FamilyInvitation(Base):
     
     def is_expired(self) -> bool:
         """Check if invitation is expired."""
-        return datetime.utcnow() > self.expires_at
+        return datetime.now(timezone.utc) > self.expires_at.replace(tzinfo=timezone.utc)
     
     def is_valid(self) -> bool:
         """Check if invitation is valid (not accepted and not expired)."""

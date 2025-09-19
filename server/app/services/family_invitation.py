@@ -7,7 +7,7 @@ acting as an intermediary between controllers and repositories.
 
 import secrets
 import string
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import List, Optional
 import uuid
 
@@ -54,7 +54,7 @@ class FamilyInvitationService:
         token = self._generate_invitation_token()
         
         # Calculate expiration date
-        expires_at = datetime.utcnow() + timedelta(days=settings.family_invitation_expire_days)
+        expires_at = (datetime.now(timezone.utc) + timedelta(days=settings.family_invitation_expire_days)).replace(tzinfo=None)
         
         # Create the invitation
         invitation = self.family_invitation_repository.create(
@@ -98,7 +98,7 @@ class FamilyInvitationService:
             raise ValueError("Invitation has already been processed")
         
         # Check if invitation has expired
-        if invitation.expires_at < datetime.utcnow():
+        if invitation.expires_at.replace(tzinfo=timezone.utc) < datetime.now(timezone.utc):
             raise ValueError("Invitation has expired")
         
         # Update invitation status
@@ -151,7 +151,7 @@ class FamilyInvitationService:
         
         # Generate new token and expiration
         new_token = self._generate_invitation_token()
-        new_expires_at = datetime.utcnow() + timedelta(days=settings.family_invitation_expire_days)
+        new_expires_at = (datetime.now(timezone.utc) + timedelta(days=settings.family_invitation_expire_days)).replace(tzinfo=None)
         
         # Update invitation
         updated_invitation = self.family_invitation_repository.update(
