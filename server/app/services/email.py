@@ -1,7 +1,7 @@
 """
 Email service for the application.
 
-This module provides email functionality using Mailgun API for sending
+This module provides email functionality using SendGrid API for sending
 verification emails, password reset emails, and other notifications.
 """
 
@@ -15,7 +15,7 @@ from app.templates.email_templates import EmailTemplates
 
 class EmailService:
     """
-    Email service for sending emails via Mailgun API.
+    Email service for sending emails via SendGrid API.
     
     This class handles all email operations including verification emails,
     password reset emails, and other notifications.
@@ -23,11 +23,10 @@ class EmailService:
     
     def __init__(self) -> None:
         """Initialize the email service."""
-        self.api_key = settings.mailgun_api_key
-        self.domain = settings.mailgun_domain
-        self.from_email = settings.mailgun_from_email
-        self.from_name = settings.mailgun_from_name
-        self.base_url = f"https://api.mailgun.net/v3/{self.domain}"
+        self.api_key = settings.sendgrid_api_key
+        self.from_email = settings.email_from_address
+        self.from_name = settings.email_from_name
+        self.base_url = "https://api.sendgrid.com/v3"
         self.frontend_url = settings.frontend_url
     
     def send_email(
@@ -39,7 +38,7 @@ class EmailService:
         html_content: Optional[str] = None
     ) -> bool:
         """
-        Send an email via Mailgun API.
+        Send an email via SendGrid API.
         
         Args:
             to_email: Recipient email address
@@ -62,25 +61,35 @@ class EmailService:
             return True
         
         try:
+        
+            headers = {
+                "Authorization": f"Bearer {self.api_key}",
+                "Content-Type": "application/json",
+            }
+            body = {
+                "personalizations": [
+                    {
+                        "to": [{"email": to_email, "name": to_name}],
+                    }
+                ],
+                "from": {"email": self.from_email, "name": self.from_name},
+                "subject": subject,
+                "content": [
+                    {"type": "text/plain", "value": text_content}
+                ],
+            }
+            if html_content:
+                body["content"].append({"type": "text/html", "value": html_content})
+
             with httpx.Client() as client:
-                data = {
-                    "from": f"{self.from_name} <{self.from_email}>",
-                    "to": f"{to_name} <{to_email}>",
-                    "subject": subject,
-                    "text": text_content
-                }
-                
-                if html_content:
-                    data["html"] = html_content
-                
                 response = client.post(
-                    f"{self.base_url}/messages",
-                    data=data,
-                    auth=("api", self.api_key),
-                    timeout=30.0
+                    f"{self.base_url}/mail/send",
+                    headers=headers,
+                    json=body,
+                    timeout=30.0,
                 )
                 
-                if response.status_code == 200:
+                if response.status_code in (200, 202):
                     return True
                 else:
                     print(f"Failed to send email: {response.status_code} - {response.text}")

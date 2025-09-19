@@ -51,22 +51,18 @@ class Settings(BaseSettings):
         description="JWT algorithm"
     )
     
-    # Email settings (Mailgun)
-    mailgun_api_key: str = Field(
-        default="dummy_api_key",
-        description="Mailgun API key"
+    # Email settings (SendGrid)
+    sendgrid_api_key: str = Field(
+        default="",
+        description="SendGrid API key"
     )
-    mailgun_domain: str = Field(
-        default="sandbox25b3d4a0d8f64783982dd7f5770a0851.mailgun.org",
-        description="Mailgun domain"
+    email_from_address: str = Field(
+        default="noreply@woofzoo.com",
+        description="Default from email address"
     )
-    mailgun_from_email: str = Field(
-        default="postmaster@sandbox25b3d4a0d8f64783982dd7f5770a0851.mailgun.org",
-        description="Mailgun from email address"
-    )
-    mailgun_from_name: str = Field(
+    email_from_name: str = Field(
         default="WoofZoo",
-        description="Mailgun from name"
+        description="Default from name"
     )
     
     # Email verification and password reset settings
