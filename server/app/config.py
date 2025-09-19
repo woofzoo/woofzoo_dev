@@ -8,11 +8,19 @@ for type-safe environment variable management.
 from typing import Optional
 
 from pydantic import Field
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
     """Application settings with environment variable support."""
+    
+    # Pydantic settings configuration (v2)
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        case_sensitive=False,
+        extra="ignore",  # Ignore unknown env vars (e.g., legacy MAILGUN_*)
+    )
     
     # Application settings
     app_name: str = Field(default="WoofZoo", description="Application name")
@@ -167,11 +175,7 @@ class Settings(BaseSettings):
         description="S3 secret key"
     )
     
-    class Config:
-        """Pydantic configuration."""
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-        case_sensitive = False
+    # Note: legacy Config class removed in favor of model_config above
 
 
 # Global settings instance
