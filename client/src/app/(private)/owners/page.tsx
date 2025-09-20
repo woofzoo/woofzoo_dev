@@ -6,6 +6,8 @@ import { UserRoundPlus } from "lucide-react"
 import React, { useState, FormEvent } from "react"
 import Input from "@/components/ui/Input"
 import Modal from "@/components/ui/Modal" // ✅ import reusable modal
+import { addPetOwner } from "@/lib/api/owners"
+import { useToast } from "@/components/toast/ToastProvider"
 
 type Owner = {
   id: string
@@ -33,6 +35,7 @@ const initialOwners: Owner[] = [
 ]
 
 const Page: React.FC = () => {
+  const { showSuccess, showError } = useToast();
   const [owners, setOwners] = useState<Owner[]>(initialOwners)
   const [showAddModal, setShowAddModal] = useState(false)
   const [form, setForm] = useState<Omit<Owner, "id">>({
@@ -56,17 +59,25 @@ const Page: React.FC = () => {
     setForm((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
-    if (!form.name.trim() || !form.email.trim()) return
+    try {
+      if (!form.name.trim() || !form.email.trim()) return
 
-    const newOwner: Owner = {
-      id: Date.now().toString(),
-      ...form,
+      const newOwner: Owner = {
+        id: Date.now().toString(),
+        ...form,
+      }
+
+      setOwners((prev) => [newOwner, ...prev])
+      const response = await addPetOwner(form);
+      if (response?.id) {
+        showSuccess('Added Successfully!', `${response.name} pet owner added`, 5000);
+      }
+      closeAdd()
+    } catch (error) {
+      showError('Not added', `Try again !`, 5000);
     }
-
-    setOwners((prev) => [newOwner, ...prev])
-    closeAdd()
   }
 
   const getInitials = (name: string) => {
