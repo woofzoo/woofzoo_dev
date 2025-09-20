@@ -1,14 +1,14 @@
 "use client"
 
 import DashLayout from "@/components/layout/DashLayout"
-import { PlayfairDisplay } from "@/components/ui/Fonts/Font"
-import { UserRoundPlus } from "lucide-react"
-import React, { useState, FormEvent, useEffect } from "react"
-import Input from "@/components/ui/Input"
-import Modal from "@/components/ui/Modal" // ✅ import reusable modal
-import { addPetOwner, getPetOwners } from "@/lib/api/owners"
 import { useToast } from "@/components/toast/ToastProvider"
-import { useAuth } from "@/context/AuthContext"
+import { PlayfairDisplay } from "@/components/ui/Fonts/Font"
+import Input from "@/components/ui/Input"
+import Modal from "@/components/ui/Modal"; // ✅ import reusable modal
+import { addPetOwner, getPetOwners } from "@/lib/api/owners"
+import { UserRoundPlus } from "lucide-react";
+import { useRouter } from 'next/navigation';
+import React, { FormEvent, useEffect, useState } from "react"
 
 type Owner = {
   id: string
@@ -19,6 +19,7 @@ type Owner = {
 }
 
 const Page: React.FC = () => {
+  const router = useRouter();
   const { showSuccess, showError } = useToast();
   const [owners, setOwners] = useState<Owner[]>([]);
   const [showAddModal, setShowAddModal] = useState(false)
@@ -61,6 +62,10 @@ const Page: React.FC = () => {
     } catch (error) {
       showError('Not added', `Try again !`, 5000);
     }
+  }
+
+  const handleOwnerClick = (id: string) => {
+    router.push(`/owners/${id}`);
   }
 
   const getInitials = (name: string) => {
@@ -112,7 +117,8 @@ const Page: React.FC = () => {
             {owners.map((owner) => (
               <div
                 key={owner.id}
-                className="bg-background-secondary rounded-lg shadow-md border border-border-primary p-5 transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+                className="bg-background-secondary rounded-lg shadow-md border border-border-primary p-5 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 cursor-pointer"
+                onClick={() => handleOwnerClick(owner.id)}
               >
                 <div className="flex items-center">
                   <div className="w-12 h-12 rounded-full bg-primary-pastel text-primary flex items-center justify-center font-bold text-xl mr-4 flex-shrink-0">

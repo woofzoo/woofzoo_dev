@@ -16,3 +16,9 @@ export const getPetOwners = async (payload: GetType) => {
   console.log(data);
   return data;
 };
+
+export const getPetOwnerById = async (id: string) => {
+  const { data } = await api.get(`/owners/${id}`);
+  console.log(data);
+  return data;
+};
