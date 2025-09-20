@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useRef, useEffect } from 'react';
+import { cn } from '@/utils/cn';
 import {
    Search,
    Bell,
@@ -13,6 +14,7 @@ import {
    Settings,
    LogOut,
    UserCheck,
+   Menu,
    X
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
@@ -26,7 +28,17 @@ interface Notification {
    isRead: boolean;
 }
 
-const Navbar: React.FC = () => {
+interface NavbarProps {
+   onToggleSidebar?: () => void;
+   isSidebarCollapsed?: boolean;
+   className?: string;
+}
+
+const Navbar: React.FC<NavbarProps> = ({ 
+   onToggleSidebar, 
+   isSidebarCollapsed = false,
+   className 
+}) => {
    const { logout } = useAuth();
    const [isSearchFocused, setIsSearchFocused] = useState(false);
    const [searchQuery, setSearchQuery] = useState('');
@@ -141,12 +153,36 @@ const Navbar: React.FC = () => {
    ];
 
    return (
-      <nav className="h-16 bg-background-secondary/80 backdrop-blur-md border-b border-border-primary flex items-center justify-between px-6 relative z-20">
-         {/* Left Section - Search */}
-         <div className="flex items-center flex-1 max-w-lg">
+      <nav className={cn(
+         "h-16 bg-background-secondary/80 backdrop-blur-md border-b border-border-primary flex items-center justify-between px-6 relative z-20",
+         className
+      )}>
+         {/* Left Section - Mobile Toggle + Search */}
+         <div className="flex items-center flex-1 max-w-lg space-x-4">
+            {/* Mobile Menu Button */}
+            {onToggleSidebar && (
+               <button
+                  onClick={onToggleSidebar}
+                  className="md:hidden p-2.5 rounded-xl transition-all duration-200 border-2 border-transparent bg-background-primary/60 hover:bg-primary-pastel/30"
+               >
+                  <Menu className="w-5 h-5" style={{ color: 'var(--text-secondary)' }} />
+               </button>
+            )}
+
+            {/* Desktop Toggle Button (tablet size) */}
+            {onToggleSidebar && (
+               <button
+                  onClick={onToggleSidebar}
+                  className="hidden md:block lg:hidden p-2.5 rounded-xl transition-all duration-200 border-2 border-transparent bg-background-primary/60 hover:bg-primary-pastel/30"
+               >
+                  <Menu className="w-5 h-5" style={{ color: 'var(--text-secondary)' }} />
+               </button>
+            )}
+
+            {/* Search */}
             <div
                ref={searchRef}
-               className={`relative w-full transition-all duration-200 ${isSearchFocused ? 'transform scale-105' : ''
+               className={`relative flex-1 transition-all duration-200 ${isSearchFocused ? 'transform scale-105' : ''
                   }`}
             >
                <div className="relative">

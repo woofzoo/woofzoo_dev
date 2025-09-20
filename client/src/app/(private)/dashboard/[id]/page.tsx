@@ -8,7 +8,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { useToast } from '@/components/toast/ToastProvider';
 
 const DashPageById = () => {
-   const { user, logout } = useAuth();
+   const { user } = useAuth();
    const searchParams = useSearchParams();
    const router = useRouter();
    const { showSuccess } = useToast();
