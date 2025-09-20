@@ -120,6 +120,7 @@ my-nextjs-app/
     │   │       ├── layout.tsx
     │   │       ├── page.tsx
     │   │       └── [id]/page.tsx
+    │   │       └── owners/page.tsx
     │   │
     │   └── api/                  # API routes (unaffected)
     │       ├── auth/route.ts

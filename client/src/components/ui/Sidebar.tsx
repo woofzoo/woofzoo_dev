@@ -5,7 +5,9 @@ import {
    ChevronDown,
    ChevronRight
 } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
 
 interface ExpandedSections {
    [key: string]: boolean;
@@ -17,7 +19,10 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ isCollapsed = false, onToggle }) => {
-   const [activeItem, setActiveItem] = useState<string>('dashboard');
+   const router = useRouter();
+   const pathname = usePathname();
+   const { user } = useAuth();
+   const [activeItem, setActiveItem] = useState<string>(pathname.split("/")[1]);
    const [expandedSections, setExpandedSections] = useState<ExpandedSections>({
       patients: false,
       medical: false
@@ -32,20 +37,24 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed = false, onToggle }) => {
    };
 
    const handleItemClick = (itemId: string): void => {
-      setActiveItem(itemId);
+      if (user) {
+         if (itemId == 'dashboard') {
+            router.replace(`/${itemId}/${user.id}`);
+         } else {
+            router.replace(`/${itemId}`);
+         }
+      }
    };
 
    return (
       <div
-         className={`h-screen bg-background-secondary/95 backdrop-blur-sm border-r border-border-primary flex flex-col transition-all duration-300 ease-in-out ${
-            isCollapsed ? 'w-16' : 'w-80'
-         }`}
+         className={`h-screen bg-background-secondary/95 backdrop-blur-sm border-r border-border-primary flex flex-col transition-all duration-300 ease-in-out ${isCollapsed ? 'w-16' : 'w-80'
+            }`}
       >
          {/* Header */}
          <div className="p-3 border-b border-border-primary mt-4">
-            <div className={`rounded-2xl mb-4 flex items-center justify-center transition-all duration-300 ${
-               isCollapsed ? 'w-10 h-10' : 'w-[13rem]'
-            }`}>
+            <div className={`rounded-2xl mb-4 flex items-center justify-center transition-all duration-300 ${isCollapsed ? 'w-10 h-10' : 'w-[13rem]'
+               }`}>
                <img
                   src="/tm-logo.svg"
                   alt="TM Logo"
@@ -72,24 +81,20 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed = false, onToggle }) => {
                               handleItemClick(item.id);
                            }
                         }}
-                        className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition-all duration-200 group relative ${
-                           activeItem === item.id
-                              ? 'shadow-md bg-primary-pastel border-l-[3px] border-solid border-primary'
-                              : 'hover:shadow-sm bg-transparent border-l-[3px] border-solid border-transparent hover:bg-background-primary/30'
-                        }`}
+                        className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition-all duration-200 group relative ${activeItem === item.id
+                           ? 'shadow-md bg-primary-pastel border-l-[3px] border-solid border-primary'
+                           : 'hover:shadow-sm bg-transparent border-l-[3px] border-solid border-transparent hover:bg-background-primary/30'
+                           }`}
                         title={isCollapsed ? item.label : undefined}
                      >
-                        <div className={`flex items-center transition-all duration-300 ${
-                           isCollapsed ? 'justify-center w-full' : 'space-x-3'
-                        }`}>
+                        <div className={`flex items-center transition-all duration-300 ${isCollapsed ? 'justify-center w-full' : 'space-x-3'
+                           }`}>
                            <item.icon
-                              className={`transition-colors ${
-                                 isCollapsed ? 'w-6 h-6' : 'w-5 h-5'
-                              } ${
-                                 activeItem === item.id
+                              className={`transition-colors ${isCollapsed ? 'w-6 h-6' : 'w-5 h-5'
+                                 } ${activeItem === item.id
                                     ? 'text-primary'
                                     : 'text-text-secondary group-hover:text-primary'
-                              }`}
+                                 }`}
                               style={{
                                  color: activeItem === item.id
                                     ? 'var(--primary-color)'
@@ -99,11 +104,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed = false, onToggle }) => {
                            {!isCollapsed && (
                               <div className="text-left">
                                  <div
-                                    className={`font-medium cursor-pointer ${
-                                       activeItem === item.id
-                                          ? 'text-primary'
-                                          : 'text-text-primary'
-                                    }`}
+                                    className={`font-medium cursor-pointer ${activeItem === item.id
+                                       ? 'text-primary'
+                                       : 'text-text-primary'
+                                       }`}
                                     style={{
                                        color: activeItem === item.id
                                           ? 'var(--primary-color)'
@@ -149,11 +153,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed = false, onToggle }) => {
                               <button
                                  key={subItem.id}
                                  onClick={() => handleItemClick(subItem.id)}
-                                 className={`w-full flex items-center space-x-3 px-4 py-2 rounded-md transition-all duration-200 group ${
-                                    activeItem === subItem.id
-                                       ? 'shadow-sm'
-                                       : 'hover:shadow-sm hover:bg-background-primary/30'
-                                 }`}
+                                 className={`w-full flex items-center space-x-3 px-4 py-2 rounded-md transition-all duration-200 group ${activeItem === subItem.id
+                                    ? 'shadow-sm'
+                                    : 'hover:shadow-sm hover:bg-background-primary/30'
+                                    }`}
                                  style={{
                                     backgroundColor: activeItem === subItem.id
                                        ? 'var(--secondary-color-pastel)'
@@ -198,11 +201,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed = false, onToggle }) => {
                                  <button
                                     key={`collapsed-${subItem.id}`}
                                     onClick={() => handleItemClick(subItem.id)}
-                                    className={`w-full flex items-center justify-center p-2 rounded-lg transition-all duration-200 group relative ${
-                                       activeItem === subItem.id
-                                          ? 'bg-secondary-pastel border-l-[3px] border-solid border-secondary'
-                                          : 'hover:bg-background-primary/30 border-l-[3px] border-solid border-transparent'
-                                    }`}
+                                    className={`w-full flex items-center justify-center p-2 rounded-lg transition-all duration-200 group relative ${activeItem === subItem.id
+                                       ? 'bg-secondary-pastel border-l-[3px] border-solid border-secondary'
+                                       : 'hover:bg-background-primary/30 border-l-[3px] border-solid border-transparent'
+                                       }`}
                                     title={subItem.label}
                                  >
                                     <subItem.icon
