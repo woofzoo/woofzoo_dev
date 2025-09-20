@@ -3,11 +3,12 @@
 import DashLayout from "@/components/layout/DashLayout"
 import { PlayfairDisplay } from "@/components/ui/Fonts/Font"
 import { UserRoundPlus } from "lucide-react"
-import React, { useState, FormEvent } from "react"
+import React, { useState, FormEvent, useEffect } from "react"
 import Input from "@/components/ui/Input"
 import Modal from "@/components/ui/Modal" // ✅ import reusable modal
-import { addPetOwner } from "@/lib/api/owners"
+import { addPetOwner, getPetOwners } from "@/lib/api/owners"
 import { useToast } from "@/components/toast/ToastProvider"
+import { useAuth } from "@/context/AuthContext"
 
 type Owner = {
   id: string
@@ -17,26 +18,9 @@ type Owner = {
   address: string
 }
 
-const initialOwners: Owner[] = [
-  {
-    id: "1",
-    name: "John Doe",
-    email: "john.doe@example.com",
-    phone_number: "+1234567890",
-    address: "123 Main St, City, State 12345",
-  },
-  {
-    id: "2",
-    name: "Jane Smith",
-    email: "jane.smith@example.com",
-    phone_number: "+1987654321",
-    address: "456 Oak Ave, Town, State 54321",
-  },
-]
-
 const Page: React.FC = () => {
   const { showSuccess, showError } = useToast();
-  const [owners, setOwners] = useState<Owner[]>(initialOwners)
+  const [owners, setOwners] = useState<Owner[]>([]);
   const [showAddModal, setShowAddModal] = useState(false)
   const [form, setForm] = useState<Omit<Owner, "id">>({
     name: "",
@@ -68,13 +52,12 @@ const Page: React.FC = () => {
         id: Date.now().toString(),
         ...form,
       }
-
-      setOwners((prev) => [newOwner, ...prev])
       const response = await addPetOwner(form);
       if (response?.id) {
+        setOwners((prev) => [newOwner, ...prev])
         showSuccess('Added Successfully!', `${response.name} pet owner added`, 5000);
       }
-      closeAdd()
+      closeAdd();
     } catch (error) {
       showError('Not added', `Try again !`, 5000);
     }
@@ -87,6 +70,20 @@ const Page: React.FC = () => {
     }
     return name.substring(0, 2).toUpperCase()
   }
+
+  useEffect(() => {
+    const fetchOwners = async () => {
+      try {
+        const data = await getPetOwners({ skip: 0, limit: 10 });
+        setOwners(data?.owners || data?.pets || []);
+      } catch (error) {
+        console.error("Failed to fetch owners:", error);
+      }
+    };
+
+    fetchOwners();
+  }, []);
+
 
   return (
     <DashLayout>

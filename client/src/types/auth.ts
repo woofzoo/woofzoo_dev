@@ -13,3 +13,8 @@ export interface PetOwnerPayload {
   phone_number: string;
   address: string;
 }
+
+export interface GetType {
+  skip: number;
+  limit: number;
+}
