@@ -1,5 +1,5 @@
 import api from "../axios";
-import { LoginPayload } from "@/types/auth";
+import { LoginPayload, ResetPasswordPayload } from "@/types/auth";
 
 export const setTokens = (access: string, refresh: string) => {
   localStorage.setItem("access_token", access);
@@ -18,3 +18,8 @@ export const login = async (payload: LoginPayload) => {
   const { data } = await api.post("/auth/login", payload);
   return data;
 };
+
+export const resetPassword = async(payload: ResetPasswordPayload) => {
+   const { data } = await api.post("/auth/request-reset-password", payload);
+   return data;
+}
