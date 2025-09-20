@@ -1,13 +1,13 @@
 'use client'
 
+import { useAuth } from '@/context/AuthContext';
 import { menuItems } from '@/utils/content';
 import {
    ChevronDown,
    ChevronRight
 } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useAuth } from '@/context/AuthContext';
+import { usePathname, useRouter } from 'next/navigation';
+import React, { useState } from 'react';
 
 interface ExpandedSections {
    [key: string]: boolean;
