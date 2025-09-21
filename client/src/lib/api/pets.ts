@@ -1,17 +1,6 @@
+import { PetPayload } from "@/types/pets";
 import api from "../axios";
-
-export type PetPayload = {
-  name: string;
-  age?: number;
-  breed?: string;
-  gender?: string;
-  pet_type?: string;
-  owner_id?: string;
-  weight?: number;
-  photos?: string[];
-  emergency_contacts?: any;
-  insurance_info?: any;
-};
+import { GetType } from "@/types/global";
 
 export const addPet = async (payload: PetPayload) => {
   const { data } = await api.post(`/pets/`, payload);
@@ -20,6 +9,18 @@ export const addPet = async (payload: PetPayload) => {
 
 export const petTypes = async () => {
   const { data } = await api.get(`/pet-types`);
+  return data;
+};
+
+export const getBreedTypeByPetCategory = async (pet_type: string) => {
+  const { data } = await api.get(`/pet-types/${pet_type}/breeds`);
+
+  return data;
+};
+
+export const getAllPets = async (payload: GetType) => {
+  const { data } = await api.get(`/pets`);
+  console.log(data);
   return data;
 };
 

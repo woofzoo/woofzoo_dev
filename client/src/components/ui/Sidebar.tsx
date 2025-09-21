@@ -153,7 +153,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed = false, onToggle }) => {
                               <button
                                  key={subItem.id}
                                  onClick={() => handleItemClick(subItem.id)}
-                                 className={`w-full flex items-center space-x-3 px-4 py-2 rounded-md transition-all duration-200 group ${activeItem === subItem.id
+                                 className={`w-full flex items-center space-x-3 px-4 py-2 rounded-md transition-all duration-200 group cursor-pointer ${activeItem === subItem.id
                                     ? 'shadow-sm'
                                     : 'hover:shadow-sm hover:bg-background-primary/30'
                                     }`}

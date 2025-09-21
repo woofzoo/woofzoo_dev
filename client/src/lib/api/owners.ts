@@ -1,5 +1,6 @@
-import { GetType, PetOwnerPayload } from "@/types/auth";
+import { PetOwnerPayload } from "@/types/auth";
 import api from "../axios";
+import { GetType } from "@/types/global";
 
 export const addPetOwner = async (payload: PetOwnerPayload) => {
   const { data } = await api.post("/owners", payload);
@@ -13,12 +14,11 @@ export const getPetOwners = async (payload: GetType) => {
       limit: payload.limit,
     },
   });
-  console.log(data);
+
   return data;
 };
 
 export const getPetOwnerById = async (id: string) => {
   const { data } = await api.get(`/owners/${id}`);
-  console.log(data);
   return data;
 };

@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation';
 const Page: React.FC = () => {
    const router = useRouter();
    const { showSuccess, showError } = useToast();
+   const [allPetTypes, setAllPetTypes] = useState([]);
 
    const [form, setForm] = useState({
       name: '',
@@ -71,7 +72,14 @@ const Page: React.FC = () => {
    };
 
    useEffect(() => {
-      console.log(petTypes());
+      const fetchPetTypes = async () => {
+         const data = await petTypes();
+         if (data) {
+            setAllPetTypes(data);
+         }
+      };
+
+      fetchPetTypes();
    }, []);
 
    return (
@@ -82,7 +90,7 @@ const Page: React.FC = () => {
                <div className="bg-background-secondary rounded-2xl p-6 border border-border-primary shadow-sm">
                   <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                      <div>
-                        <h1 className={`${PlayfairDisplay.className} text-3xl md:text-4xl font-bold text-primary`}>
+                        <h1 className={`${PlayfairDisplay.className} text-3xl md:text-2xl font-bold text-primary`}>
                            Add New Patient
                         </h1>
                         <p className="text-text-secondary mt-2 text-base">
