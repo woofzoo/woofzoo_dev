@@ -136,14 +136,16 @@ class FamilyMemberResponse(FamilyMemberBase):
 class FamilyInvitationBase(BaseModel):
     """Base Family Invitation schema with common fields."""
     
-    email: str = Field(..., description="Invitee's email address")
+    invited_email: str = Field(..., description="Invitee's email address")
+    invited_name: Optional[str] = Field(None, description="Invitee's name (optional, will be extracted from email if not provided)")
     access_level: AccessLevel = Field(..., description="Invited access level")
     message: Optional[str] = Field(None, max_length=500, description="Invitation message")
     
     model_config = ConfigDict(
         json_schema_extra={
             "example": {
-                "email": "jane.doe@example.com",
+                "invited_email": "jane.doe@example.com",
+                "invited_name": "Jane Doe",
                 "access_level": "MEMBER",
                 "message": "Join our family to help care for our pets!"
             }
@@ -172,7 +174,7 @@ class FamilyInvitationResponse(FamilyInvitationBase):
             "example": {
                 "id": "123e4567-e89b-12d3-a456-426614174003",
                 "family_id": "123e4567-e89b-12d3-a456-426614174000",
-                "email": "jane.doe@example.com",
+                "invited_email": "jane.doe@example.com",
                 "access_level": "MEMBER",
                 "message": "Join our family to help care for our pets!",
                 "invited_by": "123e4567-e89b-12d3-a456-426614174001",

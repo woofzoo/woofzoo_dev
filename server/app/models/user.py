@@ -53,7 +53,7 @@ class User(Base):
     password_hash: str = Column(String(255), nullable=False)
     first_name: str = Column(String(100), nullable=False)
     last_name: str = Column(String(100), nullable=False)
-    phone: Optional[str] = Column(String(20), nullable=True)
+    phone: Optional[str] = Column(String(20), nullable=True, unique=True, index=True)
     
     # Roles - stored as JSON array to support multiple roles
     roles: list[str] = Column(JSON, nullable=False, default=list)

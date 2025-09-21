@@ -49,7 +49,7 @@ class FamilyInvitationRepository(BaseRepository[FamilyInvitation]):
         """Get family invitations by email."""
         result = self.session.execute(
             select(FamilyInvitation)
-            .where(FamilyInvitation.email == email)
+            .where(FamilyInvitation.invited_email == email)
             .where(FamilyInvitation.is_active == True)
             .order_by(FamilyInvitation.created_at.desc())
             .offset(skip)
@@ -75,7 +75,7 @@ class FamilyInvitationRepository(BaseRepository[FamilyInvitation]):
         
         result = self.session.execute(
             select(FamilyInvitation)
-            .where(FamilyInvitation.email == email)
+            .where(FamilyInvitation.invited_email == email)
             .where(FamilyInvitation.family_id == family_id_uuid)
             .where(FamilyInvitation.status == "PENDING")
             .where(FamilyInvitation.is_active == True)
@@ -111,7 +111,7 @@ class FamilyInvitationRepository(BaseRepository[FamilyInvitation]):
         """Count pending invitations by email."""
         result = self.session.execute(
             select(FamilyInvitation)
-            .where(FamilyInvitation.email == email)
+            .where(FamilyInvitation.invited_email == email)
             .where(FamilyInvitation.status == "PENDING")
             .where(FamilyInvitation.is_active == True)
         )

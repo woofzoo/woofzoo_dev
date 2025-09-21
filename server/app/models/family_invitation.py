@@ -36,7 +36,7 @@ class FamilyInvitation(Base):
     
     id: uuid.UUID = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     family_id: uuid.UUID = Column(UUID(as_uuid=True), ForeignKey("families.id"), nullable=False)
-    invited_phone: str = Column(String(15), nullable=False, index=True)
+    invited_email: str = Column(String(255), nullable=False, index=True)
     invited_name: str = Column(String(100), nullable=False)
     invited_by: uuid.UUID = Column(UUID(as_uuid=True), ForeignKey("owners.id"), nullable=False)
     invite_code: str = Column(String(10), unique=True, nullable=False, index=True)
@@ -51,14 +51,14 @@ class FamilyInvitation(Base):
     
     def __repr__(self) -> str:
         """String representation of the FamilyInvitation model."""
-        return f"<FamilyInvitation(id={self.id}, invited_phone='{self.invited_phone}', invite_code='{self.invite_code}')>"
+        return f"<FamilyInvitation(id={self.id}, invited_email='{self.invited_email}', invite_code='{self.invite_code}')>"
     
     def to_dict(self) -> dict:
         """Convert model instance to dictionary."""
         return {
             "id": str(self.id),
             "family_id": str(self.family_id),
-            "invited_phone": self.invited_phone,
+            "invited_email": self.invited_email,
             "invited_name": self.invited_name,
             "invited_by": str(self.invited_by),
             "invite_code": self.invite_code,

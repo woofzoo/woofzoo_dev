@@ -34,6 +34,13 @@ class UserRepository(BaseRepository[User]):
         )
         return result.scalar_one_or_none()
     
+    def get_by_phone(self, phone: str) -> Optional[User]:
+        """Get a user by phone number."""
+        result = self.session.execute(
+            select(User).where(User.phone == phone)
+        )
+        return result.scalar_one_or_none()
+    
     def get_by_verification_token(self, token: str) -> Optional[User]:
         """Get a user by email verification token."""
         print(f"🔍 DEBUG: Searching for user with verification token: {token[:10]}...")
