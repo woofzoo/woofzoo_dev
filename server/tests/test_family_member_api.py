@@ -16,13 +16,13 @@ class TestFamilyMemberAPI:
     
     def test_add_family_member_success(self, client, sample_family, sample_user, sample_family_member_data):
         """Test successful family member addition."""
-        member_data = {**sample_family_member_data, "user_id": str(sample_user.id)}
+        member_data = {**sample_family_member_data, "user_id": str(sample_user.public_id)}
         response = client.post("/api/family-members/", json=member_data, params={"family_id": str(sample_family.id)})
         
         assert response.status_code == status.HTTP_201_CREATED
         data = response.json()
         assert data["family_id"] == str(sample_family.id)
-        assert data["user_id"] == str(sample_user.id)
+        assert data["user_id"] == str(sample_user.public_id)
         assert data["access_level"] == sample_family_member_data["access_level"]
         assert "id" in data
         assert "joined_at" in data
@@ -81,7 +81,7 @@ class TestFamilyMemberAPI:
     
     def test_get_user_families_success(self, client, sample_user, sample_family_member):
         """Test successful retrieval of user's families."""
-        response = client.get(f"/api/family-members/user/{sample_user.id}")
+        response = client.get(f"/api/family-members/user/{str(sample_user.public_id)}")
         
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
@@ -92,7 +92,7 @@ class TestFamilyMemberAPI:
     
     def test_get_user_families_pagination(self, client, sample_user, sample_family_member):
         """Test pagination for user's families."""
-        response = client.get(f"/api/family-members/user/{sample_user.id}?skip=0&limit=1")
+        response = client.get(f"/api/family-members/user/{str(sample_user.public_id)}?skip=0&limit=1")
         
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
@@ -136,7 +136,7 @@ class TestFamilyMemberAPI:
     
     def test_remove_user_from_family_not_member(self, client, sample_family, sample_user):
         """Test removing user who is not a member of the family."""
-        response = client.delete(f"/api/family-members/family/{sample_family.id}/user/{sample_user.id}")
+        response = client.delete(f"/api/family-members/family/{sample_family.id}/user/{str(sample_user.public_id)}")
         
         assert response.status_code == status.HTTP_404_NOT_FOUND
         assert "not a member" in response.json()["detail"]

@@ -22,7 +22,7 @@ class TestFamilyInvitationAPI:
             json=invitation_data, 
             params={
                 "family_id": str(sample_family.id),
-                "invited_by": str(sample_user.id)
+                "invited_by": str(sample_user.public_id)
             }
         )
         
@@ -31,7 +31,7 @@ class TestFamilyInvitationAPI:
         assert data["family_id"] == str(sample_family.id)
         assert data["email"] == sample_family_invitation_data["email"]
         assert data["access_level"] == sample_family_invitation_data["access_level"]
-        assert data["invited_by"] == str(sample_user.id)
+        assert data["invited_by"] == str(sample_user.public_id)
         assert data["status"] == "PENDING"
         assert "id" in data
         assert "token" in data
@@ -46,7 +46,7 @@ class TestFamilyInvitationAPI:
             json=invitation_data, 
             params={
                 "family_id": str(sample_family_invitation.family_id),
-                "invited_by": str(sample_user.id)
+                "invited_by": str(sample_user.public_id)
             }
         )
         
@@ -61,7 +61,7 @@ class TestFamilyInvitationAPI:
             json=invalid_data, 
             params={
                 "family_id": str(sample_family.id),
-                "invited_by": str(sample_user.id)
+                "invited_by": str(sample_user.public_id)
             }
         )
         

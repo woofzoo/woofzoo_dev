@@ -14,15 +14,15 @@ from app.schemas.photo import PhotoCreate, PhotoUpdate, PhotoUploadRequest
 class TestPhotoAPI:
     """Test cases for photo API endpoints."""
     
-    def test_create_photo_upload_request_success(self, client, sample_pet, sample_user, sample_photo_upload_data):
+    def test_create_photo_upload_request_success(self, authenticated_client, sample_pet, sample_user, sample_photo_upload_data):
         """Test successful photo upload request creation."""
         upload_data = {**sample_photo_upload_data}
-        response = client.post(
+        response = authenticated_client.post(
             "/api/photos/upload-request", 
             json=upload_data, 
             params={
                 "pet_id": str(sample_pet.id),
-                "uploaded_by": sample_user.id
+                "uploaded_by": str(sample_user.public_id)
             }
         )
         
@@ -33,42 +33,42 @@ class TestPhotoAPI:
         assert "expires_in" in data
         assert data["photo"]["pet_id"] == str(sample_pet.id)
         assert data["photo"]["filename"] == sample_photo_upload_data["filename"]
-        assert data["photo"]["uploaded_by"] == sample_user.id
+        assert data["photo"]["uploaded_by"] == str(sample_user.public_id)
     
-    def test_create_photo_upload_request_invalid_data(self, client, sample_pet, sample_user):
+    def test_create_photo_upload_request_invalid_data(self, authenticated_client, sample_pet, sample_user):
         """Test photo upload request with invalid data."""
         invalid_data = {
             "filename": "",
             "file_size": 0,
             "mime_type": "invalid/type"
         }
-        response = client.post(
+        response = authenticated_client.post(
             "/api/photos/upload-request", 
             json=invalid_data, 
             params={
                 "pet_id": str(sample_pet.id),
-                "uploaded_by": sample_user.id
+                "uploaded_by": str(sample_user.public_id)
             }
         )
         
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
     
-    def test_create_photo_success(self, client, sample_pet, sample_user, sample_photo_data):
+    def test_create_photo_success(self, authenticated_client, sample_pet, sample_user, sample_photo_data):
         """Test successful photo creation."""
-        photo_data = {**sample_photo_data, "pet_id": str(sample_pet.id), "uploaded_by": sample_user.id}
-        response = client.post("/api/photos/", json=photo_data)
+        photo_data = {**sample_photo_data, "pet_id": str(sample_pet.id), "uploaded_by": str(sample_user.public_id)}
+        response = authenticated_client.post("/api/photos/", json=photo_data)
         
         assert response.status_code == status.HTTP_201_CREATED
         data = response.json()
         assert data["pet_id"] == str(sample_pet.id)
         assert data["filename"] == sample_photo_data["filename"]
-        assert data["uploaded_by"] == sample_user.id
+        assert data["uploaded_by"] == str(sample_user.public_id)
         assert "id" in data
         assert "file_path" in data
         assert "created_at" in data
         assert "updated_at" in data
     
-    def test_create_photo_invalid_data(self, client):
+    def test_create_photo_invalid_data(self, authenticated_client):
         """Test photo creation with invalid data."""
         invalid_data = {
             "pet_id": "invalid-uuid",
@@ -76,7 +76,7 @@ class TestPhotoAPI:
             "file_size": 0,
             "mime_type": "invalid/type"
         }
-        response = client.post("/api/photos/", json=invalid_data)
+        response = authenticated_client.post("/api/photos/", json=invalid_data)
         
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
     
@@ -134,7 +134,7 @@ class TestPhotoAPI:
     
     def test_get_photos_by_uploader_success(self, client, sample_user, sample_photo):
         """Test successful retrieval of photos by uploader."""
-        response = client.get(f"/api/photos/uploader/{sample_user.id}")
+        response = client.get(f"/api/photos/uploader/{str(sample_user.public_id)}")
         
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
@@ -145,7 +145,7 @@ class TestPhotoAPI:
     
     def test_get_photos_by_uploader_pagination(self, client, sample_user, sample_photo):
         """Test pagination for photos by uploader."""
-        response = client.get(f"/api/photos/uploader/{sample_user.id}?skip=0&limit=1")
+        response = client.get(f"/api/photos/uploader/{str(sample_user.public_id)}?skip=0&limit=1")
         
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
