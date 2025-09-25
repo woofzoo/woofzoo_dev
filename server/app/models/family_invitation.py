@@ -38,7 +38,8 @@ class FamilyInvitation(Base):
     family_id: uuid.UUID = Column(UUID(as_uuid=True), ForeignKey("families.id"), nullable=False)
     invited_email: str = Column(String(255), nullable=False, index=True)
     invited_name: str = Column(String(100), nullable=False)
-    invited_by: uuid.UUID = Column(UUID(as_uuid=True), ForeignKey("owners.id"), nullable=False)
+    # Inviter user (UUID) references users.public_id
+    invited_by: uuid.UUID = Column(UUID(as_uuid=True), ForeignKey("users.public_id"), nullable=False)
     invite_code: str = Column(String(10), unique=True, nullable=False, index=True)
     expires_at: datetime = Column(DateTime, nullable=False)
     is_accepted: bool = Column(Boolean, default=False, nullable=False)

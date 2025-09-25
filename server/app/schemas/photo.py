@@ -38,8 +38,8 @@ class PhotoBase(BaseModel):
 class PhotoCreate(PhotoBase):
     """Schema for creating a new photo."""
     
-    pet_id: str = Field(..., description="Pet's unique identifier")
-    uploaded_by: Optional[int] = Field(None, description="User's unique identifier who uploaded the photo")
+    pet_id: str = Field(..., description="Pet's unique identifier (UUID)")
+    uploaded_by: Optional[str] = Field(None, description="Uploader user's public_id (UUID)")
     
     model_config = ConfigDict(
         json_schema_extra={
@@ -51,7 +51,7 @@ class PhotoCreate(PhotoBase):
                 "width": 1920,
                 "height": 1080,
                 "is_primary": False,
-                "uploaded_by": 1
+                "uploaded_by": "123e4567-e89b-12d3-a456-426614174009"
             }
         }
     )
@@ -80,7 +80,7 @@ class PhotoResponse(PhotoBase):
     pet_id: str = Field(..., description="Pet's unique identifier")
     file_path: str = Field(..., description="Path in cloud storage")
     is_active: bool = Field(..., description="Whether the photo is active/visible")
-    uploaded_by: Optional[int] = Field(None, description="User's unique identifier who uploaded the photo")
+    uploaded_by: Optional[str] = Field(None, description="Uploader user's public_id (UUID)")
     created_at: datetime = Field(..., description="Photo creation timestamp")
     updated_at: datetime = Field(..., description="Photo last update timestamp")
     
@@ -98,7 +98,7 @@ class PhotoResponse(PhotoBase):
                 "height": 1080,
                 "is_primary": False,
                 "is_active": True,
-                "uploaded_by": 1,
+                "uploaded_by": "123e4567-e89b-12d3-a456-426614174009",
                 "created_at": "2024-01-01T12:00:00Z",
                 "updated_at": "2024-01-01T12:00:00Z"
             }
@@ -127,7 +127,7 @@ class PhotoUploadResponse(BaseModel):
                     "height": 1080,
                     "is_primary": False,
                     "is_active": True,
-                    "uploaded_by": 1,
+                    "uploaded_by": "123e4567-e89b-12d3-a456-426614174009",
                     "created_at": "2024-01-01T12:00:00Z",
                     "updated_at": "2024-01-01T12:00:00Z"
                 },

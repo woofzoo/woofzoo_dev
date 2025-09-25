@@ -6,8 +6,10 @@ This module defines the User SQLAlchemy model representing users in the system.
 
 from datetime import datetime
 from typing import Optional
+import uuid
 
 from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text, JSON, Enum
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 import enum
 
@@ -49,6 +51,8 @@ class User(Base):
     __tablename__ = "users"
     
     id: int = Column(Integer, primary_key=True, index=True)
+    # Stable external identifier for cross-table references and APIs
+    public_id: uuid.UUID = Column(UUID(as_uuid=True), unique=True, nullable=False, index=True, default=uuid.uuid4)
     email: str = Column(String(255), unique=True, nullable=False, index=True)
     password_hash: str = Column(String(255), nullable=False)
     first_name: str = Column(String(100), nullable=False)

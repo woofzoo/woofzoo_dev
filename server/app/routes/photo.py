@@ -25,7 +25,7 @@ router = APIRouter(prefix="/photos", tags=["photos"])
 )
 def create_photo_upload_request(
     pet_id: str = Query(..., description="Pet's unique identifier"),
-    uploaded_by: int = Query(None, description="User's unique identifier who is uploading"),
+    uploaded_by: str = Query(None, description="Uploader user's public_id (UUID)"),
     upload_request: PhotoUploadRequest = None,
     user_id: int = Depends(get_current_user_id),
     controller: PhotoController = Depends(get_photo_controller)
@@ -89,7 +89,7 @@ def get_primary_photo(
     description="Retrieve photos uploaded by a specific user with optional pagination"
 )
 def get_photos_by_uploader(
-    uploaded_by: int,
+    uploaded_by: str,
     skip: int = Query(default=0, ge=0, description="Number of records to skip"),
     limit: int = Query(default=100, ge=1, le=1000, description="Maximum number of records to return"),
     user_id: int = Depends(get_current_user_id),

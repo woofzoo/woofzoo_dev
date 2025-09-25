@@ -54,7 +54,7 @@ class FamilyResponse(FamilyBase):
     """Schema for family response."""
     
     id: str = Field(..., description="Family unique identifier")
-    owner_id: str = Field(..., description="Family owner's unique identifier")
+    admin_owner_id: str = Field(..., description="Family admin user's public_id (UUID)")
     created_at: datetime = Field(..., description="Family creation timestamp")
     updated_at: datetime = Field(..., description="Family last update timestamp")
     
@@ -65,7 +65,7 @@ class FamilyResponse(FamilyBase):
                 "id": "123e4567-e89b-12d3-a456-426614174000",
                 "name": "Smith Family",
                 "description": "Our beloved pets family",
-                "owner_id": "123e4567-e89b-12d3-a456-426614174001",
+                "admin_owner_id": "123e4567-e89b-12d3-a456-426614174001",
                 "created_at": "2024-01-01T12:00:00Z",
                 "updated_at": "2024-01-01T12:00:00Z"
             }
