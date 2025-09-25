@@ -166,3 +166,42 @@ class EmailService:
         subject = "Welcome to WoofZoo! 🐾"
         
         return self.send_email(to_email, to_name, subject, text_content, html_content)
+    
+    def send_family_invitation_email(
+        self, 
+        to_email: str, 
+        to_name: str, 
+        family_name: str, 
+        inviter_name: str, 
+        invitation_token: str, 
+        message: Optional[str] = None
+    ) -> bool:
+        """
+        Send family invitation email.
+        
+        Args:
+            to_email: Recipient email address
+            to_name: Recipient name
+            family_name: Name of the family
+            inviter_name: Name of the person who sent the invitation
+            invitation_token: Invitation token
+            message: Optional invitation message
+            
+        Returns:
+            bool: True if email sent successfully, False otherwise
+        """
+        # Create invitation URL
+        invitation_url = f"{self.frontend_url}/accept-family-invitation?token={invitation_token}"
+        
+        # Get email content from templates
+        text_content, html_content = EmailTemplates.get_family_invitation_email_content(
+            to_name=to_name,
+            family_name=family_name,
+            inviter_name=inviter_name,
+            invitation_url=invitation_url,
+            message=message
+        )
+        
+        subject = f"You're invited to join {family_name} on WoofZoo! 🐾"
+        
+        return self.send_email(to_email, to_name, subject, text_content, html_content)

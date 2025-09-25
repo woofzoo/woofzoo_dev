@@ -65,14 +65,56 @@ class UserSignup(UserBase):
     
     model_config = ConfigDict(
         json_schema_extra={
-            "example": {
-                "email": "john.doe@example.com",
-                "first_name": "John",
-                "last_name": "Doe",
-                "phone": "+1234567890",
-                "password": "SecurePass123!",
-                "roles": ["pet_owner"]
-            }
+            "examples": [
+                {
+                    "summary": "Pet Owner Registration",
+                    "description": "Register as a pet owner",
+                    "value": {
+                        "email": "john.doe@example.com",
+                        "first_name": "John",
+                        "last_name": "Doe",
+                        "phone": "+1234567890",  # Must be unique across all users
+                        "password": "SecurePass123!",
+                        "roles": ["pet_owner"]
+                    }
+                },
+                {
+                    "summary": "Clinic Registration",
+                    "description": "Register as a clinic owner",
+                    "value": {
+                        "email": "clinic@example.com",
+                        "first_name": "Pet",
+                        "last_name": "Clinic",
+                        "phone": "+1234567890",  # Must be unique across all users
+                        "password": "SecurePass123!",
+                        "roles": ["clinic_owner"]
+                    }
+                },
+                {
+                    "summary": "Vet Registration",
+                    "description": "Register as a veterinary doctor",
+                    "value": {
+                        "email": "dr.smith@example.com",
+                        "first_name": "Dr. Jane",
+                        "last_name": "Smith",
+                        "phone": "+1234567890",  # Must be unique across all users
+                        "password": "SecurePass123!",
+                        "roles": ["doctor"]
+                    }
+                },
+                {
+                    "summary": "Multi-Role User",
+                    "description": "Register with multiple roles (clinic owner and doctor)",
+                    "value": {
+                        "email": "dr.owner@example.com",
+                        "first_name": "Dr. John",
+                        "last_name": "Owner",
+                        "phone": "+1234567890",  # Must be unique across all users
+                        "password": "SecurePass123!",
+                        "roles": ["clinic_owner", "doctor"]
+                    }
+                }
+            ]
         }
     )
 

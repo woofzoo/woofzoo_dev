@@ -62,6 +62,12 @@ class AuthService:
         if existing_user:
             raise ValueError(f"User with email '{user_data.email}' already exists")
         
+        # Check if user with phone already exists (if phone is provided)
+        if user_data.phone:
+            existing_phone_user = self.user_repository.get_by_phone(user_data.phone)
+            if existing_phone_user:
+                raise ValueError(f"User with phone number '{user_data.phone}' already exists")
+        
         # Hash password
         hashed_password = self._hash_password(user_data.password)
         

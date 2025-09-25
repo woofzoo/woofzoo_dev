@@ -137,7 +137,7 @@ class TestFullSystemWorkflow:
             "height": 1080,
             "is_primary": False,
             "pet_id": pet_id,
-            "uploaded_by": 1
+            "uploaded_by": str(sample_user.public_id)
         }
         
         response = client.post("/api/photos/", json=photo_data, headers=headers)

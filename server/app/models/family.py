@@ -31,7 +31,8 @@ class Family(Base):
     
     id: uuid.UUID = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name: str = Column(String(100), nullable=False)
-    admin_owner_id: uuid.UUID = Column(UUID(as_uuid=True), ForeignKey("owners.id"), nullable=False)
+    # Admin user (UUID) references users.public_id
+    admin_owner_id: uuid.UUID = Column(UUID(as_uuid=True), ForeignKey("users.public_id"), nullable=False)
     description: Optional[str] = Column(Text, nullable=True)
     created_at: datetime = Column(
         DateTime,

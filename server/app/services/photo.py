@@ -28,7 +28,7 @@ class PhotoService:
         self.photo_repository = photo_repository
         self.storage_service = storage_service
     
-    def create_photo_upload_request(self, pet_id: str, upload_request: PhotoUploadRequest, uploaded_by: Optional[int] = None) -> Tuple[Photo, str]:
+    def create_photo_upload_request(self, pet_id: str, upload_request: PhotoUploadRequest, uploaded_by: Optional[str] = None) -> Tuple[Photo, str]:
         """
         Create a photo record and generate upload URL.
         
@@ -127,7 +127,7 @@ class PhotoService:
         """Get the primary photo for a pet."""
         return self.photo_repository.get_primary_photo(pet_id)
     
-    def get_photos_by_uploader(self, uploaded_by: int, skip: int = 0, limit: int = 100) -> List[Photo]:
+    def get_photos_by_uploader(self, uploaded_by: str, skip: int = 0, limit: int = 100) -> List[Photo]:
         """Get photos by uploader with pagination."""
         return self.photo_repository.get_by_uploaded_by(uploaded_by, skip=skip, limit=limit)
     
@@ -197,7 +197,7 @@ class PhotoService:
         """Get photo count by pet ID."""
         return self.photo_repository.count_by_pet(pet_id)
     
-    def get_photo_count_by_uploader(self, uploaded_by: int) -> int:
+    def get_photo_count_by_uploader(self, uploaded_by: str) -> int:
         """Get photo count by uploader."""
         return self.photo_repository.count_by_uploaded_by(uploaded_by)
     

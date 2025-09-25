@@ -312,7 +312,7 @@ def sample_family_member(db_session, sample_family, sample_user, sample_family_m
         family_member_repository = FamilyMemberRepository(db_session)
         family_member_service = FamilyMemberService(family_member_repository)
         
-        member_data = {**sample_family_member_data, "user_id": str(sample_user.id)}
+        member_data = {**sample_family_member_data, "user_id": str(sample_user.public_id)}
         member_create = FamilyMemberCreate(**member_data)
         member = family_member_service.add_family_member(str(sample_family.id), member_create)
         
@@ -336,7 +336,7 @@ def sample_family_invitation(db_session, sample_family, sample_user, sample_fami
         invitation = family_invitation_service.create_invitation(
             str(sample_family.id), 
             invitation_create, 
-            str(sample_user.id)
+            str(sample_user.public_id)
         )
         
         return invitation
@@ -357,7 +357,7 @@ def sample_photo(db_session, sample_pet, sample_user, sample_photo_data):
         storage_service = StorageService()
         photo_service = PhotoService(photo_repository, storage_service)
         
-        photo_data = {**sample_photo_data, "pet_id": str(sample_pet.id), "uploaded_by": sample_user.id}
+        photo_data = {**sample_photo_data, "pet_id": str(sample_pet.id), "uploaded_by": str(sample_user.public_id)}
         photo_create = PhotoCreate(**photo_data)
         photo = photo_service.create_photo(photo_create)
         
@@ -379,7 +379,7 @@ def sample_primary_photo(db_session, sample_pet, sample_user, sample_photo_data)
         storage_service = StorageService()
         photo_service = PhotoService(photo_repository, storage_service)
         
-        photo_data = {**sample_photo_data, "pet_id": str(sample_pet.id), "uploaded_by": sample_user.id, "is_primary": True}
+        photo_data = {**sample_photo_data, "pet_id": str(sample_pet.id), "uploaded_by": str(sample_user.public_id), "is_primary": True}
         photo_create = PhotoCreate(**photo_data)
         photo = photo_service.create_photo(photo_create)
         

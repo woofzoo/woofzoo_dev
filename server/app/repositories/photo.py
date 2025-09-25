@@ -59,7 +59,7 @@ class PhotoRepository(BaseRepository[Photo]):
         )
         return result.scalar_one_or_none()
     
-    def get_by_uploaded_by(self, uploaded_by: int, skip: int = 0, limit: int = 100) -> List[Photo]:
+    def get_by_uploaded_by(self, uploaded_by: str, skip: int = 0, limit: int = 100) -> List[Photo]:
         """Get photos by uploader."""
         result = self.session.execute(
             select(Photo)
@@ -85,7 +85,7 @@ class PhotoRepository(BaseRepository[Photo]):
         )
         return len(result.scalars().all())
     
-    def count_by_uploaded_by(self, uploaded_by: int) -> int:
+    def count_by_uploaded_by(self, uploaded_by: str) -> int:
         """Count photos by uploader."""
         result = self.session.execute(
             select(Photo)

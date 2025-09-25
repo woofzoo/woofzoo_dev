@@ -49,7 +49,8 @@ class Pet(Base):
     
     id: uuid.UUID = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     pet_id: str = Column(String(50), unique=True, nullable=False, index=True)
-    owner_id: uuid.UUID = Column(UUID(as_uuid=True), ForeignKey("owners.id"), nullable=False)
+    # Reference to users.public_id (UUID), not owners.id
+    owner_id: uuid.UUID = Column(UUID(as_uuid=True), ForeignKey("users.public_id"), nullable=False)
     name: str = Column(String(50), nullable=False)
     pet_type: str = Column(String(20), nullable=False)
     breed: str = Column(String(50), nullable=False)
