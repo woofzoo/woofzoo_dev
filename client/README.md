@@ -36,7 +36,7 @@ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
 
 
-my-nextjs-app/
+<!-- my-nextjs-app/
 ├── .env.local
 ├── .env.example
 ├── next.config.js
@@ -87,5 +87,62 @@ my-nextjs-app/
     │   └── auth-store.ts
     │
     └── types/                   # TypeScript types
+        ├── auth.ts
+        └── global.d.ts -->
+
+my-nextjs-app/
+├── .env.local
+├── .env.example
+├── next.config.js
+├── middleware.ts            # (optional) server-side route protection
+├── package.json
+├── tsconfig.json
+│
+├── public/
+│   ├── images/
+│   └── icons/
+│
+└── src/
+    ├── app/
+    │   ├── globals.css
+    │   ├── layout.tsx
+    │   ├── loading.tsx
+    │   ├── error.tsx
+    │   │
+    │   ├── (public)/             # 👈 Public-only routes
+    │   │   ├── layout.tsx        # wraps children with <PublicRoute>
+    │   │   ├── login/page.tsx
+    │   │   └── register/page.tsx
+    │   │
+    │   ├── (private)/            # 👈 Authenticated-only routes
+    │   │   ├── layout.tsx        # wraps children with <PrivateRoute>
+    │   │   └── dashboard/
+    │   │       ├── layout.tsx
+    │   │       ├── page.tsx
+    │   │       └── [id]/page.tsx
+    │   │       └── owners/page.tsx
+    │   │
+    │   └── api/                  # API routes (unaffected)
+    │       ├── auth/route.ts
+    │       └── users/route.ts
+    │
+    ├── components/
+    │   ├── ui/
+    │   ├── forms/
+    │   └── layout/
+    │
+    ├── lib/
+    │   ├── auth.ts               # token helpers, getUserFromToken
+    │   ├── db.ts
+    │   ├── utils.ts
+    │   └── validations.ts
+    │
+    ├── hooks/
+    │   └── use-auth.ts           # useAuth hook
+    │
+    ├── store/
+    │   └── auth-store.ts         # Zustand or Redux auth store
+    │
+    └── types/
         ├── auth.ts
         └── global.d.ts

@@ -1,5 +1,7 @@
+'use client';
+
 import { cn } from '@/utils/cn';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/ui/Navbar';
 import Sidebar from '@/components/ui/Sidebar';
 
@@ -9,6 +11,42 @@ interface DashLayoutProps {
 }
 
 const DashLayout: React.FC<DashLayoutProps> = ({ className, children }) => {
+   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+   const [isMobile, setIsMobile] = useState(false);
+
+   // Auto-detect screen size
+   useEffect(() => {
+      const checkScreenSize = () => {
+         const mobile = window.innerWidth < 768; // md breakpoint
+         const tablet = window.innerWidth >= 768 && window.innerWidth < 1024; // md to lg
+         setIsMobile(mobile);
+
+         // Auto-collapse on mobile and tablet, auto-expand on desktop
+         if (mobile) {
+            setIsSidebarCollapsed(true);
+         } else if (tablet) {
+            // Keep current state on tablet, but default to collapsed
+            if (!isSidebarCollapsed && window.innerWidth < 900) {
+               setIsSidebarCollapsed(true);
+            }
+         } else if (window.innerWidth >= 1024) {
+            // Auto-expand on large screens
+            setIsSidebarCollapsed(false);
+         }
+      };
+
+      // Check on mount
+      checkScreenSize();
+
+      // Add resize listener
+      window.addEventListener('resize', checkScreenSize);
+      return () => window.removeEventListener('resize', checkScreenSize);
+   }, []);
+
+   const toggleSidebar = () => {
+      setIsSidebarCollapsed(!isSidebarCollapsed);
+   };
+
    return (
       <div className="min-h-screen bg-gradient-to-br from-background-primary via-primary-pastel/20 to-secondary-pastel/30 relative overflow-hidden">
          {/* Animated Background Pattern */}
@@ -38,14 +76,28 @@ const DashLayout: React.FC<DashLayoutProps> = ({ className, children }) => {
 
          {/* Layout Structure */}
          <div className="relative z-10 flex h-screen">
-            {/* Sidebar */}
-            <Sidebar />
-            
+            {/* Sidebar - Fixed z-index for mobile */}
+            <div className={cn(
+               "transition-all duration-300 ease-in-out flex-shrink-0",
+               isMobile ? cn(
+                  "fixed left-0 top-0 h-full z-50",
+                  isSidebarCollapsed ? "-translate-x-full" : "translate-x-0 shadow-2xl"
+               ) : "z-30"
+            )}>
+               <Sidebar
+                  isCollapsed={isSidebarCollapsed}
+                  onToggle={toggleSidebar}
+               />
+            </div>
+
             {/* Main Content Area */}
-            <div className="flex-1 flex flex-col">
+            <div className="flex-1 flex flex-col min-w-0">
                {/* Navbar */}
-               <Navbar />
-               
+               <Navbar
+                  onToggleSidebar={toggleSidebar}
+                  isSidebarCollapsed={isSidebarCollapsed}
+               />
+
                {/* Page Content */}
                <main className={cn(
                   'flex-1 overflow-auto text-text-primary',
@@ -55,6 +107,18 @@ const DashLayout: React.FC<DashLayoutProps> = ({ className, children }) => {
                </main>
             </div>
          </div>
+
+            {/* Mobile Overlay - Behind sidebar, covers full screen
+               Placed after the layout so the sidebar (z-50) stays above this overlay (z-40).
+               Clicking the overlay will close the sidebar; clicks inside the sidebar will not
+               reach this overlay because the sidebar has a higher z-index. */}
+            {isMobile && !isSidebarCollapsed && (
+               <div
+                  className="fixed inset-0 z-40 md:hidden"
+                  onClick={() => setIsSidebarCollapsed(true)}
+                  aria-hidden
+               />
+            )}
       </div>
    );
 };

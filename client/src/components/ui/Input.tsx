@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { cva, type VariantProps } from "class-variance-authority";
+import { PlayfairDisplay } from '@/components/ui/Fonts/Font';
 
 const inputVariants = cva(
    "w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-pastel",
@@ -32,7 +33,7 @@ export default function Input({ buttonType, label, size, ...props }: InputProps)
 
    return (
       <div className="flex flex-col gap-1">
-         {label && <label className="text-sm font-medium text-gray-700">{label}</label>}
+         {label && <label className={`${PlayfairDisplay.className} text-sm font-medium text-gray-900`}>{label}</label>}
          <div className="relative">
             <input
                type={inputType}
@@ -45,7 +46,7 @@ export default function Input({ buttonType, label, size, ...props }: InputProps)
                   onClick={() => setShowPassword((prev) => !prev)}
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-sm text-gray-500"
                >
-                  {showPassword ? "Hide" : "Show"}
+                  <span className="cursor-pointer">{showPassword ? "Hide" : "Show"}</span>
                </button>
             )}
          </div>

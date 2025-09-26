@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useRef, useEffect } from 'react';
+import { cn } from '@/utils/cn';
 import {
    Search,
    Bell,
@@ -13,8 +14,10 @@ import {
    Settings,
    LogOut,
    UserCheck,
+   Menu,
    X
 } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 
 interface Notification {
    id: string;
@@ -25,7 +28,18 @@ interface Notification {
    isRead: boolean;
 }
 
-const Navbar: React.FC = () => {
+interface NavbarProps {
+   onToggleSidebar?: () => void;
+   isSidebarCollapsed?: boolean;
+   className?: string;
+}
+
+const Navbar: React.FC<NavbarProps> = ({ 
+   onToggleSidebar, 
+   isSidebarCollapsed = false,
+   className 
+}) => {
+   const { logout } = useAuth();
    const [isSearchFocused, setIsSearchFocused] = useState(false);
    const [searchQuery, setSearchQuery] = useState('');
    const [showNotifications, setShowNotifications] = useState(false);
@@ -87,9 +101,9 @@ const Navbar: React.FC = () => {
    const unreadCount = notifications.filter(n => !n.isRead).length;
 
    const markAsRead = (id: string) => {
-      setNotifications(prev => 
-         prev.map(notification => 
-            notification.id === id 
+      setNotifications(prev =>
+         prev.map(notification =>
+            notification.id === id
                ? { ...notification, isRead: true }
                : notification
          )
@@ -113,6 +127,10 @@ const Navbar: React.FC = () => {
       }
    };
 
+   const handleLogout = () => {
+      logout();
+   }
+
    const quickActionItems = [
       {
          id: 'appointment',
@@ -135,17 +153,40 @@ const Navbar: React.FC = () => {
    ];
 
    return (
-      <nav className="h-16 bg-background-secondary/80 backdrop-blur-md border-b border-border-primary flex items-center justify-between px-6 relative z-20">
-         {/* Left Section - Search */}
-         <div className="flex items-center flex-1 max-w-lg">
-            <div 
+      <nav className={cn(
+         "h-16 bg-background-secondary/80 backdrop-blur-md border-b border-border-primary flex items-center justify-between px-6 relative z-20",
+         className
+      )}>
+         {/* Left Section - Mobile Toggle + Search */}
+         <div className="flex items-center flex-1 max-w-lg space-x-4">
+            {/* Mobile Menu Button */}
+            {onToggleSidebar && (
+               <button
+                  onClick={onToggleSidebar}
+                  className="md:hidden p-2.5 rounded-xl transition-all duration-200 border-2 border-transparent bg-background-primary/60 hover:bg-primary-pastel/30"
+               >
+                  <Menu className="w-5 h-5" style={{ color: 'var(--text-secondary)' }} />
+               </button>
+            )}
+
+            {/* Desktop Toggle Button (tablet size) */}
+            {onToggleSidebar && (
+               <button
+                  onClick={onToggleSidebar}
+                  className="hidden md:block lg:hidden p-2.5 rounded-xl transition-all duration-200 border-2 border-transparent bg-background-primary/60 hover:bg-primary-pastel/30"
+               >
+                  <Menu className="w-5 h-5" style={{ color: 'var(--text-secondary)' }} />
+               </button>
+            )}
+
+            {/* Search */}
+            <div
                ref={searchRef}
-               className={`relative w-full transition-all duration-200 ${
-                  isSearchFocused ? 'transform scale-105' : ''
-               }`}
+               className={`relative flex-1 transition-all duration-200 ${isSearchFocused ? 'transform scale-105' : ''
+                  }`}
             >
                <div className="relative">
-                  <Search 
+                  <Search
                      className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4"
                      style={{ color: 'var(--text-muted)' }}
                   />
@@ -155,14 +196,13 @@ const Navbar: React.FC = () => {
                      value={searchQuery}
                      onChange={(e) => setSearchQuery(e.target.value)}
                      onFocus={() => setIsSearchFocused(true)}
-                     className={`w-full pl-10 pr-4 py-2.5 rounded-xl transition-all duration-200 border-2 focus:outline-none ${
-                        isSearchFocused 
-                           ? 'border-primary shadow-lg' 
-                           : 'border-transparent bg-background-primary/60'
-                     }`}
-                     style={{ 
-                        backgroundColor: isSearchFocused 
-                           ? 'var(--background-primary)' 
+                     className={`w-full pl-10 pr-4 py-2.5 rounded-xl transition-all duration-200 border-2 focus:outline-none ${isSearchFocused
+                        ? 'border-primary shadow-lg'
+                        : 'border-transparent bg-background-primary/60'
+                        }`}
+                     style={{
+                        backgroundColor: isSearchFocused
+                           ? 'var(--background-primary)'
                            : 'var(--background-primary-60)',
                         color: 'var(--text-primary)'
                      }}
@@ -171,28 +211,28 @@ const Navbar: React.FC = () => {
 
                {/* Search Results Dropdown */}
                {isSearchFocused && searchQuery && (
-                  <div 
+                  <div
                      className="absolute top-full mt-2 w-full rounded-xl shadow-xl border border-border-primary overflow-hidden z-50"
                      style={{ backgroundColor: 'var(--background-secondary)' }}
                   >
                      <div className="p-3">
-                        <div 
+                        <div
                            className="text-xs font-medium mb-2"
                            style={{ color: 'var(--text-muted)' }}
                         >
                            Quick Results
                         </div>
                         <div className="space-y-2">
-                           <div 
+                           <div
                               className="p-2 rounded-lg hover:bg-primary-pastel/20 cursor-pointer transition-colors"
                            >
-                              <div 
+                              <div
                                  className="text-sm font-medium"
                                  style={{ color: 'var(--text-primary)' }}
                               >
                                  Bella (Golden Retriever)
                               </div>
-                              <div 
+                              <div
                                  className="text-xs"
                                  style={{ color: 'var(--text-secondary)' }}
                               >
@@ -212,29 +252,27 @@ const Navbar: React.FC = () => {
             <div className="relative" ref={quickActionsRef}>
                <button
                   onClick={() => setShowQuickActions(!showQuickActions)}
-                  className={`p-2.5 rounded-xl transition-all duration-200 border-2 ${
-                     showQuickActions 
-                        ? 'border-primary bg-primary-pastel shadow-md' 
-                        : 'border-transparent bg-background-primary/60 hover:bg-primary-pastel/30'
-                  }`}
+                  className={`p-2.5 rounded-xl transition-all duration-200 border-2 ${showQuickActions
+                     ? 'border-primary bg-primary-pastel shadow-md'
+                     : 'border-transparent bg-background-primary/60 hover:bg-primary-pastel/30'
+                     }`}
                   title="Quick Actions"
                >
-                  <Plus 
-                     className={`w-5 h-5 transition-transform duration-200 ${
-                        showQuickActions ? 'rotate-45' : ''
-                     }`}
+                  <Plus
+                     className={`w-5 h-5 transition-transform duration-200 ${showQuickActions ? 'rotate-45' : ''
+                        }`}
                      style={{ color: showQuickActions ? 'var(--primary-color)' : 'var(--text-secondary)' }}
                   />
                </button>
 
                {/* Quick Actions Dropdown */}
                {showQuickActions && (
-                  <div 
+                  <div
                      className="absolute right-0 top-full mt-2 w-64 rounded-xl shadow-xl border border-border-primary overflow-hidden z-50"
                      style={{ backgroundColor: 'var(--background-secondary)' }}
                   >
                      <div className="p-3">
-                        <div 
+                        <div
                            className="text-xs font-medium mb-3"
                            style={{ color: 'var(--text-muted)' }}
                         >
@@ -247,18 +285,18 @@ const Navbar: React.FC = () => {
                                  className="w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-primary-pastel/20 transition-colors text-left"
                                  onClick={() => setShowQuickActions(false)}
                               >
-                                 <item.icon 
+                                 <item.icon
                                     className="w-4 h-4"
                                     style={{ color: 'var(--primary-color)' }}
                                  />
                                  <div>
-                                    <div 
+                                    <div
                                        className="text-sm font-medium"
                                        style={{ color: 'var(--text-primary)' }}
                                     >
                                        {item.label}
                                     </div>
-                                    <div 
+                                    <div
                                        className="text-xs"
                                        style={{ color: 'var(--text-secondary)' }}
                                     >
@@ -277,19 +315,18 @@ const Navbar: React.FC = () => {
             <div className="relative" ref={notificationsRef}>
                <button
                   onClick={() => setShowNotifications(!showNotifications)}
-                  className={`relative p-2.5 rounded-xl transition-all duration-200 border-2 ${
-                     showNotifications 
-                        ? 'border-accent bg-accent-pastel shadow-md' 
-                        : 'border-transparent bg-background-primary/60 hover:bg-accent-pastel/30'
-                  }`}
+                  className={`relative p-2.5 rounded-xl transition-all duration-200 border-2 ${showNotifications
+                     ? 'border-accent bg-accent-pastel shadow-md'
+                     : 'border-transparent bg-background-primary/60 hover:bg-accent-pastel/30'
+                     }`}
                   title="Notifications"
                >
-                  <Bell 
+                  <Bell
                      className="w-5 h-5"
                      style={{ color: showNotifications ? 'var(--accent-color)' : 'var(--text-secondary)' }}
                   />
                   {unreadCount > 0 && (
-                     <span 
+                     <span
                         className="absolute -top-1 -right-1 w-5 h-5 rounded-full text-xs font-bold flex items-center justify-center text-white"
                         style={{ backgroundColor: 'var(--error-color)' }}
                      >
@@ -300,13 +337,13 @@ const Navbar: React.FC = () => {
 
                {/* Notifications Dropdown */}
                {showNotifications && (
-                  <div 
+                  <div
                      className="absolute right-0 top-full mt-2 w-80 rounded-xl shadow-xl border border-border-primary overflow-hidden z-50"
                      style={{ backgroundColor: 'var(--background-secondary)' }}
                   >
                      <div className="p-4">
                         <div className="flex items-center justify-between mb-3">
-                           <div 
+                           <div
                               className="text-sm font-medium"
                               style={{ color: 'var(--text-primary)' }}
                            >
@@ -322,9 +359,9 @@ const Navbar: React.FC = () => {
                               </button>
                            )}
                         </div>
-                        
+
                         {notifications.length === 0 ? (
-                           <div 
+                           <div
                               className="text-center py-6 text-sm"
                               style={{ color: 'var(--text-muted)' }}
                            >
@@ -335,34 +372,33 @@ const Navbar: React.FC = () => {
                               {notifications.map((notification) => (
                                  <div
                                     key={notification.id}
-                                    className={`p-3 rounded-lg border cursor-pointer transition-colors ${
-                                       !notification.isRead 
-                                          ? 'bg-accent-pastel/30 border-accent/20' 
-                                          : 'bg-background-primary/30 border-transparent'
-                                    }`}
+                                    className={`p-3 rounded-lg border cursor-pointer transition-colors ${!notification.isRead
+                                       ? 'bg-accent-pastel/30 border-accent/20'
+                                       : 'bg-background-primary/30 border-transparent'
+                                       }`}
                                     onClick={() => markAsRead(notification.id)}
                                  >
                                     <div className="flex items-start space-x-3">
-                                       <div 
+                                       <div
                                           className="p-1.5 rounded-full"
                                           style={{ backgroundColor: 'var(--accent-color-pastel)' }}
                                        >
                                           {getNotificationIcon(notification.type)}
                                        </div>
                                        <div className="flex-1">
-                                          <div 
+                                          <div
                                              className="text-sm font-medium"
                                              style={{ color: 'var(--text-primary)' }}
                                           >
                                              {notification.title}
                                           </div>
-                                          <div 
+                                          <div
                                              className="text-xs mt-1"
                                              style={{ color: 'var(--text-secondary)' }}
                                           >
                                              {notification.message}
                                           </div>
-                                          <div 
+                                          <div
                                              className="text-xs mt-2"
                                              style={{ color: 'var(--text-muted)' }}
                                           >
@@ -370,7 +406,7 @@ const Navbar: React.FC = () => {
                                           </div>
                                        </div>
                                        {!notification.isRead && (
-                                          <div 
+                                          <div
                                              className="w-2 h-2 rounded-full"
                                              style={{ backgroundColor: 'var(--accent-color)' }}
                                           />
@@ -389,11 +425,10 @@ const Navbar: React.FC = () => {
             <div className="relative" ref={userDropdownRef}>
                <button
                   onClick={() => setShowUserDropdown(!showUserDropdown)}
-                  className={`flex items-center space-x-3 p-2 rounded-xl transition-all duration-200 border-2 ${
-                     showUserDropdown 
-                        ? 'border-secondary bg-secondary-pastel shadow-md' 
-                        : 'border-transparent bg-background-primary/60 hover:bg-secondary-pastel/30'
-                  }`}
+                  className={`flex items-center space-x-3 p-2 rounded-xl transition-all duration-200 border-2 ${showUserDropdown
+                     ? 'border-secondary bg-secondary-pastel shadow-md'
+                     : 'border-transparent bg-background-primary/60 hover:bg-secondary-pastel/30'
+                     }`}
                >
                   <div
                      className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium"
@@ -404,17 +439,16 @@ const Navbar: React.FC = () => {
                   >
                      DC
                   </div>
-                  <ChevronDown 
-                     className={`w-4 h-4 transition-transform duration-200 ${
-                        showUserDropdown ? 'rotate-180' : ''
-                     }`}
+                  <ChevronDown
+                     className={`w-4 h-4 transition-transform duration-200 ${showUserDropdown ? 'rotate-180' : ''
+                        }`}
                      style={{ color: 'var(--text-secondary)' }}
                   />
                </button>
 
                {/* User Dropdown Menu */}
                {showUserDropdown && (
-                  <div 
+                  <div
                      className="absolute right-0 top-full mt-2 w-64 rounded-xl shadow-xl border border-border-primary overflow-hidden z-50"
                      style={{ backgroundColor: 'var(--background-secondary)' }}
                   >
@@ -431,13 +465,13 @@ const Navbar: React.FC = () => {
                               DC
                            </div>
                            <div>
-                              <div 
+                              <div
                                  className="text-sm font-medium"
                                  style={{ color: 'var(--text-primary)' }}
                               >
                                  Dr. Sarah Chen
                               </div>
-                              <div 
+                              <div
                                  className="text-xs"
                                  style={{ color: 'var(--text-secondary)' }}
                               >
@@ -451,7 +485,7 @@ const Navbar: React.FC = () => {
                      <div className="p-2">
                         <button className="w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-primary-pastel/20 transition-colors text-left">
                            <User className="w-4 h-4" style={{ color: 'var(--text-secondary)' }} />
-                           <span 
+                           <span
                               className="text-sm"
                               style={{ color: 'var(--text-primary)' }}
                            >
@@ -460,7 +494,7 @@ const Navbar: React.FC = () => {
                         </button>
                         <button className="w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-primary-pastel/20 transition-colors text-left">
                            <UserCheck className="w-4 h-4" style={{ color: 'var(--text-secondary)' }} />
-                           <span 
+                           <span
                               className="text-sm"
                               style={{ color: 'var(--text-primary)' }}
                            >
@@ -469,25 +503,29 @@ const Navbar: React.FC = () => {
                         </button>
                         <button className="w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-primary-pastel/20 transition-colors text-left">
                            <Settings className="w-4 h-4" style={{ color: 'var(--text-secondary)' }} />
-                           <span 
+                           <span
                               className="text-sm"
                               style={{ color: 'var(--text-primary)' }}
                            >
                               Settings
                            </span>
                         </button>
-                        
+
                         <div className="border-t border-border-primary my-2" />
-                        
-                        <button className="w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-error-pastel/20 transition-colors text-left">
+
+                        <button
+                           className="w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-error-pastel/20 transition-colors text-left cursor-pointer"
+                           onClick={() => handleLogout()}
+                        >
                            <LogOut className="w-4 h-4" style={{ color: 'var(--error-color)' }} />
-                           <span 
+                           <span
                               className="text-sm"
                               style={{ color: 'var(--error-color)' }}
                            >
                               Logout
                            </span>
                         </button>
+
                      </div>
                   </div>
                )}

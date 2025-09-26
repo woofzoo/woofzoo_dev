@@ -2,6 +2,7 @@
 
 import ParentLayout from '@/components/layout/ParentLayout';
 import Input from '@/components/ui/Input';
+import { resetPassword } from '@/lib/api/auth';
 import React, { useState } from 'react';
 
 const ForgotPassword = () => {
@@ -15,7 +16,8 @@ const ForgotPassword = () => {
     setIsLoading(true);
 
     try {
-      console.log('Sending OTP to:', email);
+      const response = await resetPassword({ email });
+      console.log(response);
     } catch (error) {
       console.error('Error sending OTP:', error);
     } finally {
@@ -24,8 +26,8 @@ const ForgotPassword = () => {
   };
 
   return (
-    <ParentLayout>
-      <form onSubmit={handleSubmit} className="space-y-6">
+    <ParentLayout className='flex items-center justify-center border-gray-400'>
+      <form onSubmit={handleSubmit} className="space-y-6 w-[30rem]">
         <div className="text-center space-y-5">
           <div className="w-[5rem] rounded-2xl mx-auto mb-4 flex items-center justify-center">
             <img
@@ -46,7 +48,7 @@ const ForgotPassword = () => {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          className="w-full border-gray-200/80 bg-accent-pastel/40 p-2 backdrop-blur-sm focus:border-primary focus:ring-primary/20 placeholder:text-gray-400 outline-none"
+          className="w-full p-2 backdrop-blur-sm focus:ring-primary/20 placeholder:text-gray-400 outline-none border-b border-gray-300 rounded-l-md rounded-r-md"
         />
 
         <button
