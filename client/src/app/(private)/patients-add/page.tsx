@@ -7,11 +7,12 @@ import { useToast } from '@/components/toast/ToastProvider';
 import React, { FormEvent, useEffect, useState } from 'react';
 import { addPet, petTypes } from '@/lib/api/pets';
 import { useRouter } from 'next/navigation';
+import { CustomSelect } from '@/components/ui/CustomSelect';
 
 const Page: React.FC = () => {
    const router = useRouter();
    const { showSuccess, showError } = useToast();
-   const [allPetTypes, setAllPetTypes] = useState([]);
+   const [allPetTypes, setAllPetTypes] = useState<any[]>([]);
 
    const [form, setForm] = useState({
       name: '',
@@ -29,10 +30,12 @@ const Page: React.FC = () => {
       insurance_info: { policy_number: '', provider: '' },
    });
 
-   const handleChange = (
-      e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-   ) => {
-      const { name, value } = e.target;
+   // Accept both native input events and the custom select payload
+   const handleChange = (e: any) => {
+      // CustomSelect calls onChange({ target: { name, value } })
+      const name = e?.target?.name ?? e?.name;
+      const value = e?.target?.value ?? e?.value;
+      if (!name) return;
       setForm((prev) => ({ ...prev, [name]: value }));
    };
 
@@ -81,6 +84,28 @@ const Page: React.FC = () => {
 
       fetchPetTypes();
    }, []);
+
+   // Map API result into options expected by CustomSelect
+   const petTypeOptions = (() => {
+      let list: any[] = [];
+      if (Array.isArray(allPetTypes)) list = allPetTypes;
+      else if (allPetTypes && typeof allPetTypes === 'object' && Array.isArray((allPetTypes as any).types)) list = (allPetTypes as any).types;
+
+      const humanize = (s: string) => {
+         if (!s) return '';
+         const str = String(s).toLowerCase().replace(/_/g, ' ');
+         return str.charAt(0).toUpperCase() + str.slice(1);
+      };
+
+   return list.map((t) => {
+         if (!t) return { value: String(t), label: '' };
+         if (typeof t === 'string') return { value: t, label: humanize(t) };
+         if (typeof t === 'object' && (t.value || t.label)) {
+            return { value: t.value ?? t.id ?? String(t), label: t.label ?? humanize(t.value ?? t.id ?? String(t)) };
+         }
+         return { value: String(t), label: humanize(String(t)) };
+      });
+   })();
 
    return (
       <DashLayout>
@@ -134,12 +159,12 @@ const Page: React.FC = () => {
                                  className='w-full border border-border-primary rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary-pastel focus:border-primary-pastel transition-all'
                               />
                            </div>
-                           <Input
+                           <CustomSelect
                               label="Pet Type *"
-                              buttonType="text"
                               name="pet_type"
                               value={form.pet_type}
                               onChange={handleChange}
+                              options={petTypeOptions}
                               placeholder="e.g., Dog, Cat, Bird"
                               className='w-full border border-border-primary rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary-pastel focus:border-primary-pastel transition-all'
                            />

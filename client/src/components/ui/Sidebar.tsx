@@ -55,7 +55,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed = false, onToggle }) => {
          <div className="p-3 border-b border-border-primary mt-4">
             <div className={`rounded-2xl mb-4 flex items-center justify-center transition-all duration-300 ${isCollapsed ? 'w-10 h-10' : 'w-[13rem]'
                }`}>
-               <img
+               {/* <img
                   src="/tm-logo.svg"
                   alt="TM Logo"
                   className="object-contain"
@@ -63,7 +63,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed = false, onToggle }) => {
                      width: isCollapsed ? '40px' : 'auto',
                      height: isCollapsed ? '40px' : 'auto'
                   }}
-               />
+               /> */}
             </div>
          </div>
 
