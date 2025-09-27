@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { PlayfairDisplay } from './Fonts/Font';
 
 type Option = {
    value: string;
@@ -49,13 +50,13 @@ export const CustomSelect: React.FC<SelectProps> = ({
 
    return (
       <div className="relative w-full font-sans" ref={selectRef}>
-         <label className="block text-sm font-medium text-text-primary mb-1">{label}</label>
+         <label className={`${PlayfairDisplay.className} block text-sm font-medium text-text-primary mb-1`}>{label}</label>
          <div className="relative">
             <button
                type="button"
                onClick={() => setIsOpen(!isOpen)}
                className={`
-            w-full bg-background-primary border border-border-primary rounded-xl px-4 py-3 text-left
+            w-full border border-border-primary rounded-xl px-4 py-3 text-left
             focus:outline-none focus:ring-2 focus:ring-primary-pastel focus:border-border-focus
             transition-all flex items-center justify-between
             ${className}

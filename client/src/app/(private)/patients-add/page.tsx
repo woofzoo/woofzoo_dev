@@ -5,14 +5,15 @@ import Input from '@/components/ui/Input';
 import { PlayfairDisplay } from '@/components/ui/Fonts/Font';
 import { useToast } from '@/components/toast/ToastProvider';
 import React, { FormEvent, useEffect, useState } from 'react';
-import { addPet, petTypes } from '@/lib/api/pets';
+import { addPet, getBreedTypeByPetCategory, petTypes } from '@/lib/api/pets';
 import { useRouter } from 'next/navigation';
 import { CustomSelect } from '@/components/ui/CustomSelect';
 
 const Page: React.FC = () => {
    const router = useRouter();
    const { showSuccess, showError } = useToast();
-   const [allPetTypes, setAllPetTypes] = useState<any[]>([]);
+   const [allPetTypes, setAllPetTypes] = useState<string[]>([]);
+   const [breedTypes, setBreedTypes] = useState<string[]>([]);
 
    const [form, setForm] = useState({
       name: '',
@@ -85,6 +86,14 @@ const Page: React.FC = () => {
       fetchPetTypes();
    }, []);
 
+   useEffect(() => {
+      const getPetBreeds = async () => {
+         const data = await getBreedTypeByPetCategory(form.pet_type);
+         setBreedTypes(data?.breeds);
+      };
+      getPetBreeds();
+   }, [form.pet_type]);
+
    // Map API result into options expected by CustomSelect
    const petTypeOptions = (() => {
       let list: any[] = [];
@@ -97,7 +106,27 @@ const Page: React.FC = () => {
          return str.charAt(0).toUpperCase() + str.slice(1);
       };
 
-   return list.map((t) => {
+      return list.map((t) => {
+         if (!t) return { value: String(t), label: '' };
+         if (typeof t === 'string') return { value: t, label: humanize(t) };
+         if (typeof t === 'object' && (t.value || t.label)) {
+            return { value: t.value ?? t.id ?? String(t), label: t.label ?? humanize(t.value ?? t.id ?? String(t)) };
+         }
+         return { value: String(t), label: humanize(String(t)) };
+      });
+   })();
+   const breedOptions = (() => {
+      let list: any[] = [];
+      if (Array.isArray(breedTypes)) list = breedTypes;
+      else if (breedTypes && typeof breedTypes === 'object' && Array.isArray((breedTypes as any).types)) list = (breedTypes as any).types;
+
+      const humanize = (s: string) => {
+         if (!s) return '';
+         const str = String(s).toLowerCase().replace(/_/g, ' ');
+         return str.charAt(0).toUpperCase() + str.slice(1);
+      };
+
+      return list.map((t) => {
          if (!t) return { value: String(t), label: '' };
          if (typeof t === 'string') return { value: t, label: humanize(t) };
          if (typeof t === 'object' && (t.value || t.label)) {
@@ -168,12 +197,12 @@ const Page: React.FC = () => {
                               placeholder="e.g., Dog, Cat, Bird"
                               className='w-full border border-border-primary rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary-pastel focus:border-primary-pastel transition-all'
                            />
-                           <Input
-                              label="Breed"
-                              buttonType="text"
+                           <CustomSelect
+                              label="Breed *"
                               name="breed"
                               value={form.breed}
                               onChange={handleChange}
+                              options={breedOptions}
                               placeholder="e.g., Golden Retriever"
                               className='w-full border border-border-primary rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary-pastel focus:border-primary-pastel transition-all'
                            />
