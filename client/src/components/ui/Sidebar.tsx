@@ -37,6 +37,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed = false, onToggle }) => {
    };
 
    const handleItemClick = (itemId: string): void => {
+      // update active item so UI highlights correctly
+      setActiveItem(itemId);
+
       if (user) {
          if (itemId == 'dashboard') {
             router.replace(`/${itemId}/${user.id}`);
@@ -45,6 +48,20 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed = false, onToggle }) => {
          }
       }
    };
+
+   // keep activeItem in sync with pathname changes (e.g., back/forward navigation)
+   React.useEffect(() => {
+      const seg = pathname?.split("/")[1] || '';
+      setActiveItem(seg);
+   }, [pathname]);
+
+   // Auto-expand the parent section when an active sub-item is set
+   React.useEffect(() => {
+      const parent = menuItems.find(mi => mi.subItems?.some(si => si.id === activeItem));
+      if (parent) {
+         setExpandedSections(prev => ({ ...prev, [parent.id]: true }));
+      }
+   }, [activeItem]);
 
    return (
       <div
@@ -152,7 +169,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed = false, onToggle }) => {
                            {item.subItems?.map((subItem) => (
                               <button
                                  key={subItem.id}
-                                 onClick={() => handleItemClick(subItem.id)}
+                                 onClick={() => {
+                                    // keep parent expanded when selecting a sub-item
+                                    setExpandedSections(prev => ({ ...prev, [item.id]: true }));
+                                    handleItemClick(subItem.id);
+                                 }}
                                  className={`w-full flex items-center space-x-3 px-4 py-2 rounded-md transition-all duration-200 group cursor-pointer ${activeItem === subItem.id
                                     ? 'shadow-sm'
                                     : 'hover:shadow-sm hover:bg-background-primary/30'
@@ -200,7 +221,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed = false, onToggle }) => {
                               {item.subItems.map((subItem) => (
                                  <button
                                     key={`collapsed-${subItem.id}`}
-                                    onClick={() => handleItemClick(subItem.id)}
+                                    onClick={() => {
+                                       // when collapsed, still set parent expanded state for consistency
+                                       setExpandedSections(prev => ({ ...prev, [item.id]: true }));
+                                       handleItemClick(subItem.id);
+                                    }}
                                     className={`w-full flex items-center justify-center p-2 rounded-lg transition-all duration-200 group relative ${activeItem === subItem.id
                                        ? 'bg-secondary-pastel border-l-[3px] border-solid border-secondary'
                                        : 'hover:bg-background-primary/30 border-l-[3px] border-solid border-transparent'

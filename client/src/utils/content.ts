@@ -9,6 +9,7 @@ import {
   List,
   LucideIcon,
   Package,
+  PersonStanding,
   PlusCircle,
   Settings,
   Stethoscope,
@@ -55,6 +56,11 @@ export const menuItems: MenuItem[] = [
     label: "Pet Owners",
     icon: Users,
     description: "Owner details & accounts",
+    expandable: true,
+    subItems: [
+      { id: "pet-owners", label: "Owners", icon: PersonStanding },
+      { id: "pet-family", label: "Family", icon: Users }
+    ]
   },
   {
     id: "medical",

@@ -65,7 +65,7 @@ const Page: React.FC = () => {
   }
 
   const handleOwnerClick = (id: string) => {
-    router.push(`/owners/${id}`);
+    router.push(`/pet-owners/${id}`);
   }
 
   const getInitials = (name: string) => {
