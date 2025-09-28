@@ -29,15 +29,21 @@ class PetController:
     def create_pet(self, pet_data: PetCreate) -> PetResponse:
         """Create a new pet."""
         try:
+            logger.info("Creating new pet", extra={"pet_name": pet_data.name, "pet_type": pet_data.pet_type})
             pet = self.pet_service.create_pet(pet_data)
+            logger.info("Pet created successfully", extra={"pet_id": pet.id, "pet_name": pet.name})
             return PetResponse.model_validate(pet)
         except ValueError as e:
+            logger.warning("Pet creation failed - validation error", extra={"error": str(e), "pet_name": pet_data.name})
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=str(e)
             )
         except Exception as e:
-            logger.exception("Failed to create pet")
+            logger.exception("Pet creation failed - unexpected error", extra={
+                "pet_name": pet_data.name,
+                "pet_type": pet_data.pet_type
+            })
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to create pet"
@@ -74,7 +80,11 @@ class PetController:
             pet_responses = [PetResponse.model_validate(pet) for pet in pets]
             return PetListResponse(pets=pet_responses, total=total)
         except Exception as e:
-            logger.exception("Failed to retrieve pets for owner_id={owner_id}", owner_id=owner_id)
+            logger.exception("Failed to retrieve pets for owner", extra={
+                "owner_id": owner_id,
+                "error": str(e),
+                "error_type": type(e).__name__
+            })
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to retrieve pets"
