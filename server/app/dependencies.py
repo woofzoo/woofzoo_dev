@@ -20,6 +20,7 @@ from app.services.auth import AuthService
 from app.services.email import EmailService
 from app.services.jwt import JWTService
 from app.services.owner import OwnerService
+from app.services.user import UserService
 from app.services.pet import PetService
 from app.services.pet_id import PetIDService
 from app.services.pet_types import PetTypesService
@@ -32,6 +33,7 @@ from app.services.auth_service import AuthenticationService
 from app.middleware.auth import AuthMiddleware
 from app.controllers.auth import AuthController
 from app.controllers.owner import OwnerController
+from app.controllers.user import UserController
 from app.controllers.pet import PetController
 from app.controllers.pet_types import PetTypesController
 from app.controllers.family import FamilyController
@@ -207,6 +209,21 @@ def get_owner_service(
     return OwnerService(owner_repository)
 
 
+def get_user_service(
+    user_repository: UserRepository = Depends(get_user_repository)
+) -> UserService:
+    """
+    Dependency to get user service.
+    
+    Args:
+        user_repository: User repository instance
+        
+    Returns:
+        UserService instance
+    """
+    return UserService(user_repository)
+
+
 def get_pet_service(
     pet_repository: PetRepository = Depends(get_pet_repository),
     pet_id_service: PetIDService = Depends(get_pet_id_service)
@@ -343,6 +360,21 @@ def get_owner_controller(
         OwnerController instance
     """
     return OwnerController(owner_service)
+
+
+def get_user_controller(
+    user_service: UserService = Depends(get_user_service)
+) -> UserController:
+    """
+    Dependency to get user controller.
+    
+    Args:
+        user_service: User service instance
+        
+    Returns:
+        UserController instance
+    """
+    return UserController(user_service)
 
 
 def get_pet_controller(

@@ -33,6 +33,13 @@ class UserRepository(BaseRepository[User]):
             select(User).where(User.email == email)
         )
         return result.scalar_one_or_none()
+
+    def get_by_public_id(self, public_id: str) -> Optional[User]:
+        """Get a user by public_id (UUID)."""
+        result = self.session.execute(
+            select(User).where(User.public_id == public_id)
+        )
+        return result.scalar_one_or_none()
     
     def get_by_phone(self, phone: str) -> Optional[User]:
         """Get a user by phone number."""
