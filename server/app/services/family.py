@@ -25,19 +25,19 @@ class FamilyService:
         """Initialize the family service."""
         self.family_repository = family_repository
     
-    def create_family(self, family_data: FamilyCreate, owner_id: str) -> Family:
+    def create_family(self, family_data: FamilyCreate, admin_owner_id: str) -> Family:
         """Create a new family with business logic validation."""
         # Convert owner_id string to UUID
         try:
-            owner_id_uuid = uuid.UUID(owner_id)
+            admin_owner_id_uuid = uuid.UUID(admin_owner_id)
         except (ValueError, AttributeError):
-            raise ValueError(f"Invalid owner_id format: {owner_id}")
+            raise ValueError(f"Invalid owner_id format: {admin_owner_id}")
         
         # Create the family
         family = self.family_repository.create(
             name=family_data.name,
             description=family_data.description,
-            owner_id=owner_id_uuid
+            admin_owner_id=admin_owner_id_uuid
         )
         
         return family

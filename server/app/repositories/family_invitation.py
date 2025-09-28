@@ -61,8 +61,7 @@ class FamilyInvitationRepository(BaseRepository[FamilyInvitation]):
         """Get family invitation by token."""
         result = self.session.execute(
             select(FamilyInvitation)
-            .where(FamilyInvitation.token == token)
-            .where(FamilyInvitation.is_active == True)
+            .where(FamilyInvitation.invite_code == token)
         )
         return result.scalar_one_or_none()
     
@@ -77,8 +76,7 @@ class FamilyInvitationRepository(BaseRepository[FamilyInvitation]):
             select(FamilyInvitation)
             .where(FamilyInvitation.invited_email == email)
             .where(FamilyInvitation.family_id == family_id_uuid)
-            .where(FamilyInvitation.status == "PENDING")
-            .where(FamilyInvitation.is_active == True)
+            .where(FamilyInvitation.is_accepted == False)
         )
         return result.scalar_one_or_none()
     
@@ -88,8 +86,8 @@ class FamilyInvitationRepository(BaseRepository[FamilyInvitation]):
         result = self.session.execute(
             select(FamilyInvitation)
             .where(FamilyInvitation.expires_at < current_time)
-            .where(FamilyInvitation.status == "PENDING")
-            .where(FamilyInvitation.is_active == True)
+            .where(FamilyInvitation.is_accepted == False)
+
         )
         return result.scalars().all()
     

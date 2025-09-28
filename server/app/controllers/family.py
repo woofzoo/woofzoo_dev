@@ -25,10 +25,10 @@ class FamilyController:
         """Initialize the family controller."""
         self.family_service = family_service
     
-    def create_family(self, family_data: FamilyCreate, owner_id: str) -> FamilyResponse:
+    def create_family(self, family_data: FamilyCreate, admin_owner_id: str) -> FamilyResponse:
         """Create a new family."""
         try:
-            family = self.family_service.create_family(family_data, owner_id)
+            family = self.family_service.create_family(family_data, admin_owner_id)
             return FamilyResponse.model_validate(family)
         except ValueError as e:
             raise HTTPException(

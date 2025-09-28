@@ -50,13 +50,13 @@ class FamilyInvitationService:
         
         # Check if invitation already exists for this email and family
         existing_invitation = self.family_invitation_repository.get_pending_by_email_and_family(
-            invitation_data.email, family_id
+            invitation_data.invited_email, family_id
         )
         if existing_invitation:
             raise ValueError(f"An invitation already exists for this email")
         
         # Check if user already exists in the system
-        existing_user = self.user_repository.get_by_email(invitation_data.email)
+        existing_user = self.user_repository.get_by_email(invitation_data.invited_email)
         
         # Generate invitation token
         token = self._generate_invitation_token()
@@ -67,10 +67,11 @@ class FamilyInvitationService:
         # Create the invitation
         invitation = self.family_invitation_repository.create(
             family_id=family_id_uuid,
-            invited_email=invitation_data.email,
+            invited_email=invitation_data.invited_email,
             invited_name=invitation_data.invited_name or "Family Member",  # Default name if not provided
             invited_by=invited_by_uuid,
             invite_code=token,
+            access_level=invitation_data.access_level,
             expires_at=expires_at
         )
         
@@ -78,7 +79,7 @@ class FamilyInvitationService:
         if existing_user:
             # User exists - send invitation email only
             self.email_service.send_family_invitation_email(
-                to_email=invitation_data.email,
+                to_email=invitation_data.invited_email,
                 to_name=existing_user.full_name,
                 family_name="Family",  # TODO: Get actual family name
                 inviter_name="Pet Owner",  # TODO: Get actual inviter name
@@ -147,7 +148,7 @@ class FamilyInvitationService:
             raise ValueError("Invalid invitation token")
         
         # Check if invitation is still pending
-        if invitation.status != "PENDING":
+        if invitation.is_accepted:
             raise ValueError("Invitation has already been processed")
         
         # Check if invitation has expired
@@ -155,7 +156,7 @@ class FamilyInvitationService:
             raise ValueError("Invitation has expired")
         
         # Update invitation status
-        self.family_invitation_repository.update(str(invitation.id), status="ACCEPTED")
+        self.family_invitation_repository.update(str(invitation.id), is_accepted=True)
         
         return True
     
