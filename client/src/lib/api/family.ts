@@ -2,7 +2,14 @@ import { familyPayload } from "@/types/family";
 import api from "../axios";
 
 export const addFamily = async (payload: familyPayload, owner_id: string) => {
-  const { data } = await api.post(`/families/?owner_id=${owner_id}`, payload);
+  const url = `/families?owner_id=${owner_id}`;
+  console.log("API URL:", url); // This will show you the exact endpoint
+  console.log(
+    "Full URL:",
+    `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:8000/api"}${url}`
+  );
+
+  const { data } = await api.post(url, payload);
   return data;
 };
 

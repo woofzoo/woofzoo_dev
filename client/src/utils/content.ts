@@ -59,7 +59,8 @@ export const menuItems: MenuItem[] = [
     expandable: true,
     subItems: [
       { id: "pet-owners", label: "Owners", icon: PersonStanding },
-      { id: "pet-family", label: "Family", icon: Users }
+      { id: "pet-family", label: "Add Family", icon: Users },
+      { id: "pet-family-list", label: "List Family", icon: List }
     ]
   },
   {
