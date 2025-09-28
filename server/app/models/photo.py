@@ -48,7 +48,8 @@ class Photo(Base):
     height: Optional[int] = Column(Integer, nullable=True)
     is_primary: bool = Column(Boolean, default=False, nullable=False)
     is_active: bool = Column(Boolean, default=True, nullable=False)
-    uploaded_by: Optional[int] = Column(Integer, ForeignKey("users.id"), nullable=True)
+    # Uploaded by user (UUID) via users.public_id for consistency
+    uploaded_by: Optional[uuid.UUID] = Column(UUID(as_uuid=True), ForeignKey("users.public_id"), nullable=True)
     
     # Timestamps
     created_at: datetime = Column(

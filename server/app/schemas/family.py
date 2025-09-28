@@ -53,8 +53,8 @@ class FamilyUpdate(BaseModel):
 class FamilyResponse(FamilyBase):
     """Schema for family response."""
     
-    id: str = Field(..., description="Family unique identifier")
-    owner_id: str = Field(..., description="Family owner's unique identifier")
+    id: UUID = Field(..., description="Family unique identifier")
+    admin_owner_id: UUID = Field(..., description="Family admin user's public_id (UUID)")
     created_at: datetime = Field(..., description="Family creation timestamp")
     updated_at: datetime = Field(..., description="Family last update timestamp")
     
@@ -65,7 +65,7 @@ class FamilyResponse(FamilyBase):
                 "id": "123e4567-e89b-12d3-a456-426614174000",
                 "name": "Smith Family",
                 "description": "Our beloved pets family",
-                "owner_id": "123e4567-e89b-12d3-a456-426614174001",
+                "admin_owner_id": "123e4567-e89b-12d3-a456-426614174001",
                 "created_at": "2024-01-01T12:00:00Z",
                 "updated_at": "2024-01-01T12:00:00Z"
             }
@@ -76,7 +76,7 @@ class FamilyResponse(FamilyBase):
 class FamilyMemberBase(BaseModel):
     """Base Family Member schema with common fields."""
     
-    user_id: str = Field(..., description="User's unique identifier")
+    user_id: UUID = Field(..., description="User's unique identifier")
     access_level: AccessLevel = Field(..., description="Member's access level")
     
     model_config = ConfigDict(
@@ -111,10 +111,8 @@ class FamilyMemberUpdate(BaseModel):
 class FamilyMemberResponse(FamilyMemberBase):
     """Schema for family member response."""
     
-    id: str = Field(..., description="Family member unique identifier")
-    family_id: str = Field(..., description="Family's unique identifier")
-    user_email: str = Field(..., description="User's email address")
-    user_name: str = Field(..., description="User's full name")
+    id: UUID = Field(..., description="Family member unique identifier")
+    family_id: UUID = Field(..., description="Family's unique identifier")
     joined_at: datetime = Field(..., description="Member join timestamp")
     
     model_config = ConfigDict(
@@ -136,14 +134,16 @@ class FamilyMemberResponse(FamilyMemberBase):
 class FamilyInvitationBase(BaseModel):
     """Base Family Invitation schema with common fields."""
     
-    email: str = Field(..., description="Invitee's email address")
+    invited_email: str = Field(..., description="Invitee's email address")
+    invited_name: Optional[str] = Field(None, description="Invitee's name (optional, will be extracted from email if not provided)")
     access_level: AccessLevel = Field(..., description="Invited access level")
     message: Optional[str] = Field(None, max_length=500, description="Invitation message")
     
     model_config = ConfigDict(
         json_schema_extra={
             "example": {
-                "email": "jane.doe@example.com",
+                "invited_email": "jane.doe@example.com",
+                "invited_name": "Jane Doe",
                 "access_level": "MEMBER",
                 "message": "Join our family to help care for our pets!"
             }
@@ -159,10 +159,9 @@ class FamilyInvitationCreate(FamilyInvitationBase):
 class FamilyInvitationResponse(FamilyInvitationBase):
     """Schema for family invitation response."""
     
-    id: str = Field(..., description="Invitation unique identifier")
-    family_id: str = Field(..., description="Family's unique identifier")
-    invited_by: str = Field(..., description="Inviter's unique identifier")
-    status: str = Field(..., description="Invitation status")
+    id: UUID = Field(..., description="Invitation unique identifier")
+    family_id: UUID = Field(..., description="Family's unique identifier")
+    invited_by: UUID = Field(..., description="Inviter's unique identifier")
     expires_at: datetime = Field(..., description="Invitation expiration timestamp")
     created_at: datetime = Field(..., description="Invitation creation timestamp")
     
@@ -172,11 +171,11 @@ class FamilyInvitationResponse(FamilyInvitationBase):
             "example": {
                 "id": "123e4567-e89b-12d3-a456-426614174003",
                 "family_id": "123e4567-e89b-12d3-a456-426614174000",
-                "email": "jane.doe@example.com",
+                "invited_email": "jane.doe@example.com",
                 "access_level": "MEMBER",
                 "message": "Join our family to help care for our pets!",
                 "invited_by": "123e4567-e89b-12d3-a456-426614174001",
-                "status": "PENDING",
+                "is_accepted": False,   
                 "expires_at": "2024-01-11T12:00:00Z",
                 "created_at": "2024-01-01T12:00:00Z"
             }

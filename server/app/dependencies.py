@@ -255,18 +255,22 @@ def get_family_member_service(
 
 
 def get_family_invitation_service(
-    family_invitation_repository: FamilyInvitationRepository = Depends(get_family_invitation_repository)
+    family_invitation_repository: FamilyInvitationRepository = Depends(get_family_invitation_repository),
+    user_repository: UserRepository = Depends(get_user_repository),
+    email_service: EmailService = Depends(get_email_service)
 ) -> FamilyInvitationService:
     """
     Dependency to get family invitation service.
     
     Args:
         family_invitation_repository: Family invitation repository instance
+        user_repository: User repository instance
+        email_service: Email service instance
         
     Returns:
         FamilyInvitationService instance
     """
-    return FamilyInvitationService(family_invitation_repository)
+    return FamilyInvitationService(family_invitation_repository, user_repository, email_service)
 
 
 def get_authentication_service(

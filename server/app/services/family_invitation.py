@@ -12,8 +12,11 @@ from typing import List, Optional
 import uuid
 
 from app.models.family_invitation import FamilyInvitation
+from app.models.user import User
 from app.repositories.family_invitation import FamilyInvitationRepository
+from app.repositories.user import UserRepository
 from app.schemas.family import FamilyInvitationCreate
+from app.services.email import EmailService
 from app.config import settings
 
 
@@ -25,9 +28,11 @@ class FamilyInvitationService:
     validation, business rules, and coordination between repositories.
     """
     
-    def __init__(self, family_invitation_repository: FamilyInvitationRepository) -> None:
+    def __init__(self, family_invitation_repository: FamilyInvitationRepository, user_repository: UserRepository, email_service: EmailService) -> None:
         """Initialize the family invitation service."""
         self.family_invitation_repository = family_invitation_repository
+        self.user_repository = user_repository
+        self.email_service = email_service
     
     def _generate_invitation_token(self) -> str:
         """Generate a secure invitation token."""
@@ -45,10 +50,13 @@ class FamilyInvitationService:
         
         # Check if invitation already exists for this email and family
         existing_invitation = self.family_invitation_repository.get_pending_by_email_and_family(
-            invitation_data.email, family_id
+            invitation_data.invited_email, family_id
         )
         if existing_invitation:
             raise ValueError(f"An invitation already exists for this email")
+        
+        # Check if user already exists in the system
+        existing_user = self.user_repository.get_by_email(invitation_data.invited_email)
         
         # Generate invitation token
         token = self._generate_invitation_token()
@@ -59,14 +67,60 @@ class FamilyInvitationService:
         # Create the invitation
         invitation = self.family_invitation_repository.create(
             family_id=family_id_uuid,
-            email=invitation_data.email,
-            access_level=invitation_data.access_level,
-            message=invitation_data.message,
+            invited_email=invitation_data.invited_email,
+            invited_name=invitation_data.invited_name or "Family Member",  # Default name if not provided
             invited_by=invited_by_uuid,
-            token=token,
-            status="PENDING",
+            invite_code=token,
+            access_level=invitation_data.access_level,
             expires_at=expires_at
         )
+        
+        # Send appropriate email based on whether user exists
+        if existing_user:
+            # User exists - send invitation email only
+            self.email_service.send_family_invitation_email(
+                to_email=invitation_data.invited_email,
+                to_name=existing_user.full_name,
+                family_name="Family",  # TODO: Get actual family name
+                inviter_name="Pet Owner",  # TODO: Get actual inviter name
+                invitation_token=token,
+                message=invitation_data.message
+            )
+        else:
+            # User doesn't exist - create user account and send both password reset and invitation
+            # Generate a temporary password
+            temp_password = secrets.token_urlsafe(12)
+            
+            # Create user account with family_member role
+            new_user = self.user_repository.create(
+                email=invitation_data.email,
+                password_hash=temp_password,  # This will be hashed by the service
+                first_name=invitation_data.invited_name.split()[0] if invitation_data.invited_name else "Family",
+                last_name=invitation_data.invited_name.split()[1] if invitation_data.invited_name and len(invitation_data.invited_name.split()) > 1 else "Member",
+                phone=None,  # No phone for family members created via invitation
+                roles=["family_member"],
+                email_verification_token=None,  # Skip email verification for invited users
+                email_verification_expires=None,
+                personalization={},
+                is_verified=True  # Auto-verify invited users
+            )
+            
+            # Send password reset email
+            self.email_service.send_password_reset_email(
+                to_email=invitation_data.email,
+                to_name=new_user.full_name,
+                reset_token=temp_password  # Use temp password as reset token for now
+            )
+            
+            # Send invitation email
+            self.email_service.send_family_invitation_email(
+                to_email=invitation_data.email,
+                to_name=new_user.full_name,
+                family_name="Family",  # TODO: Get actual family name
+                inviter_name="Pet Owner",  # TODO: Get actual inviter name
+                invitation_token=token,
+                message=invitation_data.message
+            )
         
         return invitation
     
@@ -94,7 +148,7 @@ class FamilyInvitationService:
             raise ValueError("Invalid invitation token")
         
         # Check if invitation is still pending
-        if invitation.status != "PENDING":
+        if invitation.is_accepted:
             raise ValueError("Invitation has already been processed")
         
         # Check if invitation has expired
@@ -102,7 +156,7 @@ class FamilyInvitationService:
             raise ValueError("Invitation has expired")
         
         # Update invitation status
-        self.family_invitation_repository.update(str(invitation.id), status="ACCEPTED")
+        self.family_invitation_repository.update(str(invitation.id), is_accepted=True)
         
         return True
     
