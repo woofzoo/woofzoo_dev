@@ -22,7 +22,7 @@ def upgrade() -> None:
     sa.Column('id', sa.UUID(), nullable=False),
     sa.Column('phone_number', sa.String(length=15), nullable=False),
     sa.Column('otp_code', sa.String(length=6), nullable=False),
-    sa.Column('purpose', sa.Enum('LOGIN', 'FAMILY_INVITE', 'PET_ACCESS', name='otppurpose'), nullable=False),
+    # sa.Column('purpose', sa.Enum('LOGIN', 'FAMILY_INVITE', 'PET_ACCESS', name='otppurpose'), nullable=False),
     sa.Column('expires_at', sa.DateTime(), nullable=False),
     sa.Column('is_used', sa.Boolean(), nullable=False),
     sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
@@ -101,9 +101,9 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id', name=op.f('pk_family_members'))
     )
     op.create_index(op.f('ix_family_members_phone_number'), 'family_members', ['phone_number'], unique=True)
-    op.drop_index(op.f('ix_tasks_id'), table_name='tasks')
-    op.drop_index(op.f('ix_tasks_title'), table_name='tasks')
-    op.drop_table('tasks')
+    # op.drop_index(op.f('ix_tasks_id'), table_name='tasks')
+    # op.drop_index(op.f('ix_tasks_title'), table_name='tasks')
+    # op.drop_table('tasks')
     op.alter_column('users', 'email_verification_expires',
                existing_type=postgresql.TIMESTAMP(timezone=True),
                type_=sa.DateTime(),
@@ -162,8 +162,8 @@ def downgrade() -> None:
     sa.Column('updated_at', postgresql.TIMESTAMP(timezone=True), server_default=sa.text('now()'), autoincrement=False, nullable=False),
     sa.PrimaryKeyConstraint('id', name=op.f('pk_tasks'))
     )
-    op.create_index(op.f('ix_tasks_title'), 'tasks', ['title'], unique=False)
-    op.create_index(op.f('ix_tasks_id'), 'tasks', ['id'], unique=False)
+    # op.create_index(op.f('ix_tasks_title'), 'tasks', ['title'], unique=False)
+    # op.create_index(op.f('ix_tasks_id'), 'tasks', ['id'], unique=False)
     op.drop_index(op.f('ix_family_members_phone_number'), table_name='family_members')
     op.drop_table('family_members')
     op.drop_index(op.f('ix_family_invitations_invited_phone'), table_name='family_invitations')
