@@ -14,6 +14,7 @@ from app.database import get_db_session
 from app.services.jwt import JWTService
 from app.repositories.user import UserRepository
 from app.models.user import User
+from loguru import logger
 
 # Security scheme
 security = HTTPBearer()
@@ -63,7 +64,8 @@ class AuthMiddleware:
                 )
             
             return user_id
-        except (ValueError, TypeError):
+        except (ValueError, TypeError) as e:
+            logger.warning("Invalid authentication credentials in get_current_user_id")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid authentication credentials",
@@ -238,7 +240,8 @@ class AuthMiddleware:
                 return None
             
             return user
-        except (ValueError, TypeError):
+        except (ValueError, TypeError) as e:
+            logger.warning("Invalid authentication credentials in optional_auth")
             return None
     
     def get_user_from_token(self, token: str) -> Optional[User]:
@@ -265,7 +268,8 @@ class AuthMiddleware:
                 return None
             
             return user
-        except (ValueError, TypeError):
+        except (ValueError, TypeError) as e:
+            logger.warning("Invalid token in get_user_from_token")
             return None
     
     def validate_token(self, token: str) -> bool:
