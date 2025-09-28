@@ -30,7 +30,7 @@ class FamilyMemberService:
         # Convert IDs to UUID
         try:
             family_id_uuid = uuid.UUID(family_id)
-            user_id_uuid = uuid.UUID(member_data.user_id)
+            # user_id_uuid = uuid.UUID(member_data.user_id)
         except (ValueError, AttributeError):
             raise ValueError(f"Invalid ID format")
         
@@ -42,7 +42,7 @@ class FamilyMemberService:
         # Create the family member
         member = self.family_member_repository.create(
             family_id=family_id_uuid,
-            user_id=user_id_uuid,
+            user_id=member_data.user_id,
             access_level=member_data.access_level
         )
         

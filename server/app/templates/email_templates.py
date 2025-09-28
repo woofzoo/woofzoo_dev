@@ -5,6 +5,7 @@ This module contains all email templates for verification, password reset,
 and welcome emails in both HTML and plain text formats.
 """
 
+from typing import Optional
 from app.config import settings
 
 
@@ -72,6 +73,94 @@ The WoofZoo Team
             <p><strong>This link will expire in {settings.email_verification_expire_hours} hours.</strong></p>
             
             <p>If you didn't create an account with WoofZoo, please ignore this email.</p>
+        </div>
+        <div class="footer">
+            <p>Best regards,<br>The WoofZoo Team</p>
+        </div>
+    </div>
+</body>
+</html>
+        """
+        
+        return text_content.strip(), html_content.strip()
+    
+    @staticmethod
+    def get_family_invitation_email_content(to_name: str, family_name: str, inviter_name: str, invitation_url: str, message: Optional[str] = None) -> tuple[str, str]:
+        """
+        Get family invitation email content.
+        
+        Args:
+            to_name: Recipient name
+            family_name: Name of the family
+            inviter_name: Name of the person who sent the invitation
+            invitation_url: Family invitation URL
+            message: Optional invitation message
+            
+        Returns:
+            tuple[str, str]: (text_content, html_content)
+        """
+        text_content = f"""
+Hello {to_name},
+
+{inviter_name} has invited you to join the {family_name} on WoofZoo!
+
+{f"Message from {inviter_name}: {message}" if message else ""}
+
+To accept this invitation and help manage the family's pets, click the link below:
+
+{invitation_url}
+
+This invitation will expire in 7 days.
+
+If you don't want to accept this invitation, you can simply ignore this email.
+
+Best regards,
+The WoofZoo Team
+        """
+        
+        html_content = f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Family Invitation - WoofZoo</title>
+    <style>
+        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+        .header {{ background-color: #4CAF50; color: white; padding: 20px; text-align: center; }}
+        .content {{ padding: 20px; background-color: #f9f9f9; }}
+        .invitation-box {{ margin: 20px 0; padding: 20px; background-color: white; border-radius: 5px; border-left: 4px solid #4CAF50; }}
+        .cta-button {{ display: inline-block; padding: 12px 24px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }}
+        .message-box {{ margin: 15px 0; padding: 15px; background-color: #e8f5e8; border-radius: 5px; font-style: italic; }}
+        .footer {{ text-align: center; padding: 20px; color: #666; font-size: 12px; }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🐾 Family Invitation</h1>
+        </div>
+        <div class="content">
+            <h2>Hello {to_name}!</h2>
+            
+            <div class="invitation-box">
+                <h3>You're invited to join {family_name}!</h3>
+                <p><strong>{inviter_name}</strong> has invited you to join their family on WoofZoo to help manage their pets.</p>
+                
+                {f'<div class="message-box"><strong>Message from {inviter_name}:</strong><br>"{message}"</div>' if message else ''}
+                
+                <p>As a family member, you'll be able to:</p>
+                <ul>
+                    <li>🐕 View and manage pet health records</li>
+                    <li>📅 Schedule veterinary appointments</li>
+                    <li>💉 Track vaccinations and medications</li>
+                    <li>👨‍👩‍👧‍👦 Coordinate care with other family members</li>
+                </ul>
+                
+                <a href="{invitation_url}" class="cta-button">Accept Invitation</a>
+            </div>
+            
+            <p><small>This invitation will expire in 7 days. If you don't want to accept this invitation, you can simply ignore this email.</small></p>
         </div>
         <div class="footer">
             <p>Best regards,<br>The WoofZoo Team</p>
@@ -158,6 +247,94 @@ The WoofZoo Team
         return text_content.strip(), html_content.strip()
     
     @staticmethod
+    def get_family_invitation_email_content(to_name: str, family_name: str, inviter_name: str, invitation_url: str, message: Optional[str] = None) -> tuple[str, str]:
+        """
+        Get family invitation email content.
+        
+        Args:
+            to_name: Recipient name
+            family_name: Name of the family
+            inviter_name: Name of the person who sent the invitation
+            invitation_url: Family invitation URL
+            message: Optional invitation message
+            
+        Returns:
+            tuple[str, str]: (text_content, html_content)
+        """
+        text_content = f"""
+Hello {to_name},
+
+{inviter_name} has invited you to join the {family_name} on WoofZoo!
+
+{f"Message from {inviter_name}: {message}" if message else ""}
+
+To accept this invitation and help manage the family's pets, click the link below:
+
+{invitation_url}
+
+This invitation will expire in 7 days.
+
+If you don't want to accept this invitation, you can simply ignore this email.
+
+Best regards,
+The WoofZoo Team
+        """
+        
+        html_content = f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Family Invitation - WoofZoo</title>
+    <style>
+        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+        .header {{ background-color: #4CAF50; color: white; padding: 20px; text-align: center; }}
+        .content {{ padding: 20px; background-color: #f9f9f9; }}
+        .invitation-box {{ margin: 20px 0; padding: 20px; background-color: white; border-radius: 5px; border-left: 4px solid #4CAF50; }}
+        .cta-button {{ display: inline-block; padding: 12px 24px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }}
+        .message-box {{ margin: 15px 0; padding: 15px; background-color: #e8f5e8; border-radius: 5px; font-style: italic; }}
+        .footer {{ text-align: center; padding: 20px; color: #666; font-size: 12px; }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🐾 Family Invitation</h1>
+        </div>
+        <div class="content">
+            <h2>Hello {to_name}!</h2>
+            
+            <div class="invitation-box">
+                <h3>You're invited to join {family_name}!</h3>
+                <p><strong>{inviter_name}</strong> has invited you to join their family on WoofZoo to help manage their pets.</p>
+                
+                {f'<div class="message-box"><strong>Message from {inviter_name}:</strong><br>"{message}"</div>' if message else ''}
+                
+                <p>As a family member, you'll be able to:</p>
+                <ul>
+                    <li>🐕 View and manage pet health records</li>
+                    <li>📅 Schedule veterinary appointments</li>
+                    <li>💉 Track vaccinations and medications</li>
+                    <li>👨‍👩‍👧‍👦 Coordinate care with other family members</li>
+                </ul>
+                
+                <a href="{invitation_url}" class="cta-button">Accept Invitation</a>
+            </div>
+            
+            <p><small>This invitation will expire in 7 days. If you don't want to accept this invitation, you can simply ignore this email.</small></p>
+        </div>
+        <div class="footer">
+            <p>Best regards,<br>The WoofZoo Team</p>
+        </div>
+    </div>
+</body>
+</html>
+        """
+        
+        return text_content.strip(), html_content.strip()
+    
+    @staticmethod
     def get_welcome_email_content(to_name: str) -> tuple[str, str]:
         """
         Get welcome email content.
@@ -222,6 +399,94 @@ The WoofZoo Team
             <div class="feature">🏥 Access professional veterinary services</div>
             
             <p>If you have any questions or need assistance, please don't hesitate to contact our support team.</p>
+        </div>
+        <div class="footer">
+            <p>Best regards,<br>The WoofZoo Team</p>
+        </div>
+    </div>
+</body>
+</html>
+        """
+        
+        return text_content.strip(), html_content.strip()
+    
+    @staticmethod
+    def get_family_invitation_email_content(to_name: str, family_name: str, inviter_name: str, invitation_url: str, message: Optional[str] = None) -> tuple[str, str]:
+        """
+        Get family invitation email content.
+        
+        Args:
+            to_name: Recipient name
+            family_name: Name of the family
+            inviter_name: Name of the person who sent the invitation
+            invitation_url: Family invitation URL
+            message: Optional invitation message
+            
+        Returns:
+            tuple[str, str]: (text_content, html_content)
+        """
+        text_content = f"""
+Hello {to_name},
+
+{inviter_name} has invited you to join the {family_name} on WoofZoo!
+
+{f"Message from {inviter_name}: {message}" if message else ""}
+
+To accept this invitation and help manage the family's pets, click the link below:
+
+{invitation_url}
+
+This invitation will expire in 7 days.
+
+If you don't want to accept this invitation, you can simply ignore this email.
+
+Best regards,
+The WoofZoo Team
+        """
+        
+        html_content = f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Family Invitation - WoofZoo</title>
+    <style>
+        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+        .header {{ background-color: #4CAF50; color: white; padding: 20px; text-align: center; }}
+        .content {{ padding: 20px; background-color: #f9f9f9; }}
+        .invitation-box {{ margin: 20px 0; padding: 20px; background-color: white; border-radius: 5px; border-left: 4px solid #4CAF50; }}
+        .cta-button {{ display: inline-block; padding: 12px 24px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }}
+        .message-box {{ margin: 15px 0; padding: 15px; background-color: #e8f5e8; border-radius: 5px; font-style: italic; }}
+        .footer {{ text-align: center; padding: 20px; color: #666; font-size: 12px; }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🐾 Family Invitation</h1>
+        </div>
+        <div class="content">
+            <h2>Hello {to_name}!</h2>
+            
+            <div class="invitation-box">
+                <h3>You're invited to join {family_name}!</h3>
+                <p><strong>{inviter_name}</strong> has invited you to join their family on WoofZoo to help manage their pets.</p>
+                
+                {f'<div class="message-box"><strong>Message from {inviter_name}:</strong><br>"{message}"</div>' if message else ''}
+                
+                <p>As a family member, you'll be able to:</p>
+                <ul>
+                    <li>🐕 View and manage pet health records</li>
+                    <li>📅 Schedule veterinary appointments</li>
+                    <li>💉 Track vaccinations and medications</li>
+                    <li>👨‍👩‍👧‍👦 Coordinate care with other family members</li>
+                </ul>
+                
+                <a href="{invitation_url}" class="cta-button">Accept Invitation</a>
+            </div>
+            
+            <p><small>This invitation will expire in 7 days. If you don't want to accept this invitation, you can simply ignore this email.</small></p>
         </div>
         <div class="footer">
             <p>Best regards,<br>The WoofZoo Team</p>

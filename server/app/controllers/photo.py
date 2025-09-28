@@ -25,7 +25,7 @@ class PhotoController:
         """Initialize the photo controller."""
         self.photo_service = photo_service
     
-    def create_photo_upload_request(self, pet_id: str, upload_request: PhotoUploadRequest, uploaded_by: Optional[int] = None) -> PhotoUploadResponse:
+    def create_photo_upload_request(self, pet_id: str, upload_request: PhotoUploadRequest, uploaded_by: Optional[str] = None) -> PhotoUploadResponse:
         """Create a photo upload request."""
         try:
             photo, upload_url = self.photo_service.create_photo_upload_request(pet_id, upload_request, uploaded_by)
@@ -97,7 +97,7 @@ class PhotoController:
         
         return PhotoResponse.model_validate(photo)
     
-    def get_photos_by_uploader(self, uploaded_by: int, skip: int = 0, limit: int = 100) -> PhotoListResponse:
+    def get_photos_by_uploader(self, uploaded_by: str, skip: int = 0, limit: int = 100) -> PhotoListResponse:
         """Get photos by uploader with pagination."""
         try:
             photos = self.photo_service.get_photos_by_uploader(uploaded_by, skip=skip, limit=limit)

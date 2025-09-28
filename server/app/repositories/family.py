@@ -36,8 +36,8 @@ class FamilyRepository(BaseRepository[Family]):
         
         result = self.session.execute(
             select(Family)
-            .where(Family.owner_id == owner_id_uuid)
-            .where(Family.is_active == True)
+            .where(Family.admin_owner_id == owner_id_uuid)
+            # .where(Family.is_active == True)
             .offset(skip)
             .limit(limit)
         )
@@ -52,8 +52,8 @@ class FamilyRepository(BaseRepository[Family]):
         
         result = self.session.execute(
             select(Family)
-            .where(Family.owner_id == owner_id_uuid)
-            .where(Family.is_active == True)
+            .where(Family.admin_owner_id == owner_id_uuid)
+            # .where(Family.is_active == True)
         )
         return len(result.scalars().all())
     

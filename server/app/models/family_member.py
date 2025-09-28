@@ -38,11 +38,12 @@ class FamilyMember(Base):
     __tablename__ = "family_members"
     
     id: uuid.UUID = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    phone_number: str = Column(String(15), unique=True, nullable=False, index=True)
-    name: str = Column(String(100), nullable=False)
+    # phone_number: str = Column(String(15), unique=True, nullable=False, index=True)
+    # name: str = Column(String(100), nullable=False)
     family_id: uuid.UUID = Column(UUID(as_uuid=True), ForeignKey("families.id"), nullable=False)
     access_level: str = Column(Enum(AccessLevel), default=AccessLevel.READ_ONLY, nullable=False)
     is_active: bool = Column(Boolean, default=True, nullable=False)
+    user_id: uuid.UUID = Column(UUID(as_uuid=True), ForeignKey("users.public_id"), nullable=False)
     joined_at: datetime = Column(
         DateTime,
         server_default=func.now(),

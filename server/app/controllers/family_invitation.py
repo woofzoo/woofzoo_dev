@@ -29,6 +29,7 @@ class FamilyInvitationController:
         """Create a new family invitation."""
         try:
             invitation = self.family_invitation_service.create_invitation(family_id, invitation_data, invited_by)
+            
             return FamilyInvitationResponse.model_validate(invitation)
         except ValueError as e:
             raise HTTPException(

@@ -25,12 +25,12 @@ router = APIRouter(prefix="/families", tags=["families"])
 )
 def create_family(
     family_data: FamilyCreate,
-    owner_id: str = Query(..., description="Owner's unique identifier"),
+    admin_owner_id: str = Query(..., description="Family admin's unique identifier"),
     user_id: int = Depends(get_current_user_id),
     controller: FamilyController = Depends(get_family_controller)
 ) -> FamilyResponse:
     """Create a new family."""
-    return controller.create_family(family_data, owner_id)
+    return controller.create_family(family_data, admin_owner_id)
 
 
 @router.get(
