@@ -1,0 +1,57 @@
+"""
+Prescription routes for API endpoints.
+"""
+
+from fastapi import APIRouter, Depends, Query, status
+from typing import List
+
+from app.controllers.prescription_controller import PrescriptionController
+from app.dependencies import get_current_user
+from app.models.user import User
+from app.schemas.prescription import PrescriptionCreate, PrescriptionResponse, PrescriptionUpdate
+
+router = APIRouter(prefix="/api/v1/prescriptions", tags=["prescriptions"])
+
+
+@router.post("/", response_model=PrescriptionResponse, status_code=status.HTTP_201_CREATED)
+def create_prescription(
+    prescription_data: PrescriptionCreate,
+    current_user: User = Depends(get_current_user),
+    controller: PrescriptionController = Depends()
+):
+    """Create a new prescription."""
+    return controller.create_prescription(prescription_data, current_user)
+
+
+@router.get("/{prescription_id}", response_model=PrescriptionResponse)
+def get_prescription(
+    prescription_id: str,
+    current_user: User = Depends(get_current_user),
+    controller: PrescriptionController = Depends()
+):
+    """Get a prescription by ID."""
+    return controller.get_prescription(prescription_id, current_user)
+
+
+@router.get("/pet/{pet_id}", response_model=List[PrescriptionResponse])
+def get_prescriptions_by_pet(
+    pet_id: str,
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=100, ge=1, le=1000),
+    current_user: User = Depends(get_current_user),
+    controller: PrescriptionController = Depends()
+):
+    """Get all prescriptions for a pet."""
+    return controller.get_prescriptions_by_pet(pet_id, current_user, skip, limit)
+
+
+@router.put("/{prescription_id}", response_model=PrescriptionResponse)
+def update_prescription(
+    prescription_id: str,
+    prescription_data: PrescriptionUpdate,
+    current_user: User = Depends(get_current_user),
+    controller: PrescriptionController = Depends()
+):
+    """Update a prescription."""
+    return controller.update_prescription(prescription_id, prescription_data, current_user)
+
