@@ -11,6 +11,7 @@ from fastapi import HTTPException, status
 
 from app.schemas.family import FamilyCreate, FamilyListResponse, FamilyResponse, FamilyUpdate
 from app.services.family import FamilyService
+from loguru import logger
 
 
 class FamilyController:
@@ -36,6 +37,7 @@ class FamilyController:
                 detail=str(e)
             )
         except Exception as e:
+            logger.exception("Failed to create family")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to create family"
@@ -61,6 +63,7 @@ class FamilyController:
             family_responses = [FamilyResponse.model_validate(family) for family in families]
             return FamilyListResponse(families=family_responses, total=total)
         except Exception as e:
+            logger.exception("Failed to retrieve families for owner_id={owner_id}", owner_id=owner_id)
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to retrieve families"
@@ -77,7 +80,8 @@ class FamilyController:
                 )
             
             return FamilyResponse.model_validate(family)
-        except HTTPException:
+        except HTTPException as http_exc:
+            logger.warning("Update family failed: {detail}", detail=str(http_exc.detail))
             raise
         except ValueError as e:
             raise HTTPException(
@@ -85,6 +89,7 @@ class FamilyController:
                 detail=str(e)
             )
         except Exception as e:
+            logger.exception("Failed to update family id={family_id}", family_id=family_id)
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to update family"
@@ -101,9 +106,11 @@ class FamilyController:
                 )
             
             return {"message": f"Family with ID {family_id} deleted successfully"}
-        except HTTPException:
+        except HTTPException as http_exc:
+            logger.warning("Delete family failed: {detail}", detail=str(http_exc.detail))
             raise
         except Exception as e:
+            logger.exception("Failed to delete family id={family_id}", family_id=family_id)
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to delete family"
@@ -122,6 +129,7 @@ class FamilyController:
             family_responses = [FamilyResponse.model_validate(family) for family in families]
             return FamilyListResponse(families=family_responses, total=len(family_responses))
         except Exception as e:
+            logger.exception("Failed to search families owner_id={owner_id}", owner_id=owner_id)
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to search families"

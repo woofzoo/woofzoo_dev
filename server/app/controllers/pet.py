@@ -11,6 +11,7 @@ from fastapi import HTTPException, status
 
 from app.schemas.pet import PetCreate, PetListResponse, PetResponse, PetUpdate, PetLookupRequest
 from app.services.pet import PetService
+from loguru import logger
 
 
 class PetController:
@@ -28,14 +29,21 @@ class PetController:
     def create_pet(self, pet_data: PetCreate) -> PetResponse:
         """Create a new pet."""
         try:
+            logger.info("Creating new pet", extra={"pet_name": pet_data.name, "pet_type": pet_data.pet_type})
             pet = self.pet_service.create_pet(pet_data)
+            logger.info("Pet created successfully", extra={"pet_id": pet.id, "pet_name": pet.name})
             return PetResponse.model_validate(pet)
         except ValueError as e:
+            logger.warning("Pet creation failed - validation error", extra={"error": str(e), "pet_name": pet_data.name})
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=str(e)
             )
         except Exception as e:
+            logger.exception("Pet creation failed - unexpected error", extra={
+                "pet_name": pet_data.name,
+                "pet_type": pet_data.pet_type
+            })
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to create pet"
@@ -72,6 +80,11 @@ class PetController:
             pet_responses = [PetResponse.model_validate(pet) for pet in pets]
             return PetListResponse(pets=pet_responses, total=total)
         except Exception as e:
+            logger.exception("Failed to retrieve pets for owner", extra={
+                "owner_id": owner_id,
+                "error": str(e),
+                "error_type": type(e).__name__
+            })
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to retrieve pets"
@@ -88,9 +101,11 @@ class PetController:
                 )
             
             return PetResponse.model_validate(pet)
-        except HTTPException:
+        except HTTPException as http_exc:
+            logger.warning("Update pet failed: {detail}", detail=str(http_exc.detail))
             raise
         except Exception as e:
+            logger.exception("Failed to update pet id={pet_id}", pet_id=pet_id)
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to update pet"
@@ -107,9 +122,11 @@ class PetController:
                 )
             
             return {"message": f"Pet with ID {pet_id} deleted successfully"}
-        except HTTPException:
+        except HTTPException as http_exc:
+            logger.warning("Delete pet failed: {detail}", detail=str(http_exc.detail))
             raise
         except Exception as e:
+            logger.exception("Failed to delete pet id={pet_id}", pet_id=pet_id)
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to delete pet"
@@ -127,6 +144,7 @@ class PetController:
             pet_responses = [PetResponse.model_validate(pet) for pet in pets]
             return PetListResponse(pets=pet_responses, total=len(pet_responses))
         except Exception as e:
+            logger.exception("Failed to search pets")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to search pets"
@@ -140,6 +158,7 @@ class PetController:
             pet_responses = [PetResponse.model_validate(pet) for pet in pets]
             return PetListResponse(pets=pet_responses, total=len(pet_responses))
         except Exception as e:
+            logger.exception("Failed to retrieve pets by type {pet_type}", pet_type=pet_type)
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to retrieve pets by type"
@@ -153,6 +172,7 @@ class PetController:
             pet_responses = [PetResponse.model_validate(pet) for pet in pets]
             return PetListResponse(pets=pet_responses, total=len(pet_responses))
         except Exception as e:
+            logger.exception("Failed to retrieve pets by breed {breed}", breed=breed)
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to retrieve pets by breed"
@@ -169,9 +189,11 @@ class PetController:
                 )
             
             return PetResponse.model_validate(pet)
-        except HTTPException:
+        except HTTPException as http_exc:
+            logger.warning("Lookup pet failed: {detail}", detail=str(http_exc.detail))
             raise
         except Exception as e:
+            logger.exception("Failed to lookup pet id={pet_id}", pet_id=pet_id)
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to lookup pet"
@@ -186,6 +208,7 @@ class PetController:
             pet_responses = [PetResponse.model_validate(pet) for pet in pets]
             return PetListResponse(pets=pet_responses, total=total)
         except Exception as e:
+            logger.exception("Failed to retrieve all pets")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to retrieve pets"

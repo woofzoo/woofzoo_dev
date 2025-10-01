@@ -11,6 +11,7 @@ from fastapi import HTTPException, status
 
 from app.schemas.family import FamilyInvitationAccept, FamilyInvitationCreate, FamilyInvitationListResponse, FamilyInvitationResponse
 from app.services.family_invitation import FamilyInvitationService
+from loguru import logger
 
 
 class FamilyInvitationController:
@@ -37,6 +38,7 @@ class FamilyInvitationController:
                 detail=str(e)
             )
         except Exception as e:
+            logger.exception("Failed to create invitation for family_id={family_id}", family_id=family_id)
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to create invitation"
@@ -62,6 +64,7 @@ class FamilyInvitationController:
             invitation_responses = [FamilyInvitationResponse.model_validate(invitation) for invitation in invitations]
             return FamilyInvitationListResponse(invitations=invitation_responses, total=total)
         except Exception as e:
+            logger.exception("Failed to retrieve invitations for family_id={family_id}", family_id=family_id)
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to retrieve invitations"
@@ -75,6 +78,7 @@ class FamilyInvitationController:
             invitation_responses = [FamilyInvitationResponse.model_validate(invitation) for invitation in invitations]
             return FamilyInvitationListResponse(invitations=invitation_responses, total=len(invitation_responses))
         except Exception as e:
+            logger.exception("Failed to retrieve user invitations for email={email}", email=email)
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to retrieve user invitations"
@@ -97,6 +101,7 @@ class FamilyInvitationController:
                 detail=str(e)
             )
         except Exception as e:
+            logger.exception("Failed to accept invitation")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to accept invitation"
@@ -119,6 +124,7 @@ class FamilyInvitationController:
                 detail=str(e)
             )
         except Exception as e:
+            logger.exception("Failed to decline invitation")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to decline invitation"
@@ -135,7 +141,8 @@ class FamilyInvitationController:
                 )
             
             return {"message": f"Invitation with ID {invitation_id} cancelled successfully"}
-        except HTTPException:
+        except HTTPException as http_exc:
+            logger.warning("Cancel invitation failed: {detail}", detail=str(http_exc.detail))
             raise
         except ValueError as e:
             raise HTTPException(
@@ -143,6 +150,7 @@ class FamilyInvitationController:
                 detail=str(e)
             )
         except Exception as e:
+            logger.exception("Failed to cancel invitation id={invitation_id}", invitation_id=invitation_id)
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to cancel invitation"
@@ -159,7 +167,8 @@ class FamilyInvitationController:
                 )
             
             return FamilyInvitationResponse.model_validate(invitation)
-        except HTTPException:
+        except HTTPException as http_exc:
+            logger.warning("Resend invitation failed: {detail}", detail=str(http_exc.detail))
             raise
         except ValueError as e:
             raise HTTPException(
@@ -167,6 +176,7 @@ class FamilyInvitationController:
                 detail=str(e)
             )
         except Exception as e:
+            logger.exception("Failed to resend invitation id={invitation_id}", invitation_id=invitation_id)
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to resend invitation"
@@ -178,6 +188,7 @@ class FamilyInvitationController:
             cleaned_count = self.family_invitation_service.cleanup_expired_invitations()
             return {"message": f"Cleaned up {cleaned_count} expired invitations"}
         except Exception as e:
+            logger.exception("Failed to cleanup expired invitations")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to cleanup expired invitations"

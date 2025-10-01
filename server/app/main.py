@@ -12,7 +12,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 
 from app.config import settings
+from loguru import logger
+from app.logger import configure_logging
 from app.database import close_db, init_db
+from app.middleware.trace_id import TraceIDMiddleware
+from app.middleware.request_logging import RequestLoggingMiddleware
 from app.routes import auth_router, user_router, owner_router, pet_router, pet_types_router, family_router, family_member_router, family_invitation_router, photo_router
 
 
@@ -27,16 +31,17 @@ async def lifespan(app: FastAPI):
         app: FastAPI application instance
     """
     # Startup
-    print("🚀 Starting WoofZoo API...")
+    configure_logging(debug=settings.debug)
+    logger.info("🚀 Starting WoofZoo API...")
     init_db()
-    print("✅ Database initialized successfully")
+    logger.info("✅ Database initialized successfully")
     
     yield
     
     # Shutdown
-    print("🛑 Shutting down WoofZoo API...")
+    logger.info("🛑 Shutting down WoofZoo API...")
     close_db()
-    print("✅ Database connections closed")
+    logger.info("✅ Database connections closed")
 
 
 # Create FastAPI application
@@ -50,6 +55,12 @@ app = FastAPI(
     lifespan=lifespan,
     debug=settings.debug,
 )
+
+# Add trace ID middleware (should be first to capture all requests)
+app.add_middleware(TraceIDMiddleware)
+
+# Add request logging middleware
+app.add_middleware(RequestLoggingMiddleware)
 
 # Add CORS middleware
 app.add_middleware(
@@ -119,5 +130,5 @@ if __name__ == "__main__":
         host="0.0.0.0",
         port=8000,
         reload=settings.debug,
-        log_level="info"
+        access_log=False,  # Disable access logs (we'll handle this ourselves)
     )

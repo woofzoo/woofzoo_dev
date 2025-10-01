@@ -11,6 +11,7 @@ from fastapi import HTTPException, status
 
 from app.schemas.photo import PhotoCreate, PhotoListResponse, PhotoResponse, PhotoUpdate, PhotoUploadRequest, PhotoUploadResponse
 from app.services.photo import PhotoService
+from loguru import logger
 
 
 class PhotoController:
@@ -40,6 +41,7 @@ class PhotoController:
                 detail=str(e)
             )
         except Exception as e:
+            logger.exception("Failed to create photo upload request for pet_id={pet_id}", pet_id=pet_id)
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to create photo upload request"
@@ -56,6 +58,7 @@ class PhotoController:
                 detail=str(e)
             )
         except Exception as e:
+            logger.exception("Failed to create photo")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to create photo"
@@ -81,6 +84,7 @@ class PhotoController:
             photo_responses = [PhotoResponse.model_validate(photo) for photo in photos]
             return PhotoListResponse(photos=photo_responses, total=total)
         except Exception as e:
+            logger.exception("Failed to retrieve photos for pet_id={pet_id}", pet_id=pet_id)
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to retrieve photos"
@@ -122,7 +126,8 @@ class PhotoController:
                 )
             
             return PhotoResponse.model_validate(photo)
-        except HTTPException:
+        except HTTPException as http_exc:
+            logger.warning("Update photo failed: {detail}", detail=str(http_exc.detail))
             raise
         except ValueError as e:
             raise HTTPException(
@@ -130,6 +135,7 @@ class PhotoController:
                 detail=str(e)
             )
         except Exception as e:
+            logger.exception("Failed to update photo id={photo_id}", photo_id=photo_id)
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to update photo"
@@ -146,9 +152,11 @@ class PhotoController:
                 )
             
             return {"message": f"Photo with ID {photo_id} deleted successfully"}
-        except HTTPException:
+        except HTTPException as http_exc:
+            logger.warning("Delete photo failed: {detail}", detail=str(http_exc.detail))
             raise
         except Exception as e:
+            logger.exception("Failed to delete photo id={photo_id}", photo_id=photo_id)
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to delete photo"
@@ -165,9 +173,11 @@ class PhotoController:
                 )
             
             return {"message": f"Photo with ID {photo_id} permanently deleted"}
-        except HTTPException:
+        except HTTPException as http_exc:
+            logger.warning("Hard delete photo failed: {detail}", detail=str(http_exc.detail))
             raise
         except Exception as e:
+            logger.exception("Failed to hard delete photo id={photo_id}", photo_id=photo_id)
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to delete photo"
@@ -184,9 +194,11 @@ class PhotoController:
                 )
             
             return {"message": f"Photo {photo_id} set as primary for pet {pet_id}"}
-        except HTTPException:
+        except HTTPException as http_exc:
+            logger.warning("Set primary photo failed: {detail}", detail=str(http_exc.detail))
             raise
         except Exception as e:
+            logger.exception("Failed to set primary photo pet_id={pet_id} photo_id={photo_id}", pet_id=pet_id, photo_id=photo_id)
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to set primary photo"
@@ -206,9 +218,11 @@ class PhotoController:
                 "download_url": download_url,
                 "expires_in": expires_in
             }
-        except HTTPException:
+        except HTTPException as http_exc:
+            logger.warning("Get download URL failed: {detail}", detail=str(http_exc.detail))
             raise
         except Exception as e:
+            logger.exception("Failed to generate download URL for photo_id={photo_id}", photo_id=photo_id)
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to generate download URL"

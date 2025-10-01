@@ -11,6 +11,7 @@ from datetime import datetime
 
 from app.config import settings
 from app.templates.email_templates import EmailTemplates
+from loguru import logger
 
 
 class EmailService:
@@ -52,12 +53,12 @@ class EmailService:
         """
         # In debug mode, just log the email instead of sending
         if settings.debug:
-            print(f"🔧 DEBUG MODE - Email would be sent:")
-            print(f"   To: {to_name} <{to_email}>")
-            print(f"   Subject: {subject}")
-            print(f"   Content: {text_content[:100]}...")
+            logger.debug("Email would be sent in DEBUG mode")
+            logger.debug("To: {to_name} <{to_email}>", to_name=to_name, to_email=to_email)
+            logger.debug("Subject: {subject}", subject=subject)
+            logger.debug("Content: {content}", content=text_content[:100] + "...")
             if html_content:
-                print(f"   HTML Content: {html_content[:100]}...")
+                logger.debug("HTML Content: {content}", content=html_content[:100] + "...")
             return True
         
         try:
@@ -92,11 +93,15 @@ class EmailService:
                 if response.status_code in (200, 202):
                     return True
                 else:
-                    print(f"Failed to send email: {response.status_code} - {response.text}")
+                    logger.error(
+                        "Failed to send email status={status} error={text}",
+                        status=response.status_code,
+                        text=response.text,
+                    )
                     return False
                     
         except Exception as e:
-            print(f"Error sending email: {str(e)}")
+            logger.exception("Error sending email: {error}", error=str(e))
             return False
     
     def send_verification_email(self, to_email: str, to_name: str, token: str) -> bool:
