@@ -14,11 +14,8 @@ export default function PublicRoute({ children }: { children: React.ReactNode })
       }
    }, [user, isLoading, router]);
 
-   // While checking for a user, you can show nothing or a loader.
    if (isLoading || user) {
-      return null; // Or a loader, but null is fine as redirect will happen quickly.
+      return null;
    }
-
-   // If no user is found, render the public page (e.g., the login form).
    return <>{children}</>;
 }

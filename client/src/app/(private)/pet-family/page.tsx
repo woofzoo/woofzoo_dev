@@ -1,24 +1,23 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import DashLayout from '@/components/layout/DashLayout';
-import Input from '@/components/ui/Input'; // Your existing Input component
-import { CustomSelect } from '@/components/ui/CustomSelect'; // Import your CustomSelect component
+import { CustomSelect } from '@/components/ui/CustomSelect';
 import { PlayfairDisplay } from '@/components/ui/Fonts/Font';
+import Input from '@/components/ui/Input';
 import { addFamily, getFamily } from '@/lib/api/family';
-import { useAuth } from '@/context/AuthContext';
-import { getPetOwners } from '@/lib/api/owners';
+import { getAllUsers } from '@/lib/api/users';
+import { useEffect, useState } from 'react';
 
 interface FormData {
    name: string;
    description: string;
-   owner_id: string; // Added owner_id field
+   admin_owner_id: string; 
 }
 
 interface FormErrors {
    name?: string;
    description?: string;
-   owner_id?: string; // Added owner_id error field
+   admin_owner_id?: string; 
 }
 
 interface CreatedFamily {
@@ -26,7 +25,7 @@ interface CreatedFamily {
    description: string;
    id: string;
    name: string;
-   owner_id: string;
+   admin_owner_id: string;
    updated_at: string;
 }
 
@@ -41,17 +40,33 @@ interface PetOwner {
    updated_at: string;
 }
 
+interface UserType {
+   created_at: string;
+   email: string;
+   first_name: string;
+   id: number;
+   is_active: boolean;
+   is_verified: boolean;
+   last_login: string;
+   last_name: string;
+   personalization: Record<string, unknown>;
+   phone: string;
+   public_id: string;
+   roles: string[];
+   updated_at: string;
+}
+
 const Page: React.FC = () => {
    const [formData, setFormData] = useState<FormData>({
       name: '',
       description: '',
-      owner_id: '' // Initialize owner_id
+      admin_owner_id: ''
    });
    const [errors, setErrors] = useState<FormErrors>({});
    const [isLoading, setIsLoading] = useState(false);
    const [isSubmitted, setIsSubmitted] = useState(false);
    const [createdFamily, setCreatedFamily] = useState<CreatedFamily | null>(null);
-   const [petOwners, setPetOwners] = useState<PetOwner[]>([]);
+   const [petOwners, setPetOwners] = useState<UserType[]>([]);
 
    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       const { name, value } = e.target;
@@ -101,28 +116,12 @@ const Page: React.FC = () => {
          newErrors.description = 'Description must be at least 10 characters';
       }
 
-      if (!formData.owner_id.trim()) {
-         newErrors.owner_id = 'Please select a pet owner';
+      if (!formData.admin_owner_id.trim()) {
+         newErrors.admin_owner_id = 'Please select a pet owner';
       }
 
       setErrors(newErrors);
       return Object.keys(newErrors).length === 0;
-   };
-
-   const simulateAPICall = (): Promise<CreatedFamily> => {
-      return new Promise((resolve) => {
-         setTimeout(() => {
-            const mockResponse: CreatedFamily = {
-               created_at: new Date().toISOString(),
-               description: formData.description,
-               id: '123e4567-e89b-12d3-a456-426614174000',
-               name: formData.name,
-               owner_id: formData.owner_id,
-               updated_at: new Date().toISOString()
-            };
-            resolve(mockResponse);
-         }, 2000);
-      });
    };
 
    const handleSubmit = async (e: React.FormEvent) => {
@@ -135,11 +134,11 @@ const Page: React.FC = () => {
       setIsLoading(true);
 
       try {
-         const { owner_id, ...bodyData } = formData;
-         const response = await addFamily(bodyData, owner_id);
+         const { admin_owner_id, ...bodyData } = formData;
+         const response = await addFamily(bodyData, admin_owner_id);
          setCreatedFamily(response);
          setIsSubmitted(true);
-         setFormData({ name: '', description: '', owner_id: '' });
+         setFormData({ name: '', description: '', admin_owner_id: '' });
       } catch (error) {
          console.error('Error creating family:', error);
       } finally {
@@ -154,7 +153,7 @@ const Page: React.FC = () => {
    };
 
    const handleReset = () => {
-      setFormData({ name: '', description: '', owner_id: '' });
+      setFormData({ name: '', description: '', admin_owner_id: '' });
       setErrors({});
    };
 
@@ -165,21 +164,19 @@ const Page: React.FC = () => {
          setCreatedFamily(data);
       };
       const getOwners = async () => {
-         const data = await getPetOwners({ skip: 0, limit: 10 });
-         setPetOwners(data?.owners || []);
+         const data = await getAllUsers({ skip: 0, limit: 100 });
+         setPetOwners(data?.users || []);
       }
       getFamilyIfCreated();
       getOwners();
    }, []);
 
-   // Transform petOwners data for CustomSelect component
    const ownerOptions = petOwners.map(owner => ({
-      value: owner.id,
-      label: owner.name
+      value: owner.public_id,
+      label: owner.first_name + " " + owner.last_name
    }));
 
-   // Get selected owner's name for display in success screen
-   const selectedOwnerName = petOwners.find(owner => owner.id === createdFamily?.owner_id)?.name || '';
+   const selectedOwnerName = petOwners.find(owner => owner.public_id === createdFamily?.admin_owner_id)?.first_name || '';
 
    if (isSubmitted && createdFamily) {
       return (
@@ -188,7 +185,7 @@ const Page: React.FC = () => {
                <div className="max-w-2xl mx-auto">
                   <div className="bg-background-primary rounded-xl shadow-xl border border-border-primary overflow-hidden">
                      {/* Success Header */}
-                     <div className="bg-gradient-to-r from-success to-success/80 px-8 py-6">
+                     <div className="bg-secondary/70 px-8 py-6">
                         <div className="flex items-center gap-3">
                            <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
                               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -246,12 +243,12 @@ const Page: React.FC = () => {
                         <div className="flex gap-4 mt-8">
                            <button
                               onClick={handleCreateAnother}
-                              className="inline-flex items-center justify-center px-6 py-3 text-base font-medium rounded-md bg-primary text-text-inverse hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 shadow-md hover:shadow-lg transition-all duration-200"
+                              className="inline-flex items-center justify-center px-6 py-3 text-base font-medium rounded-md bg-secondary/90 text-text-inverse hover:bg-secondary/80 focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2 shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer"
                            >
                               Create Another Family
                            </button>
                            <button
-                              className="inline-flex items-center justify-center px-6 py-3 text-base font-medium rounded-md border-2 border-primary text-primary hover:bg-primary hover:text-text-inverse focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-all duration-200"
+                              className="inline-flex items-center justify-center px-6 py-3 text-base font-medium rounded-md border-2 border-primary text-primary hover:bg-primary/70 hover:text-text-inverse focus:outline-none focus:ring-2 focus:ring-primary/90 focus:ring-offset-2 transition-all duration-200 cursor-pointer"
                            >
                               View All Families
                            </button>
@@ -325,15 +322,15 @@ const Page: React.FC = () => {
                         {/* Pet Owner Selection */}
                         <CustomSelect
                            label="Select Pet Owner"
-                           name="owner_id"
-                           value={formData.owner_id}
+                           name="admin_owner_id"
+                           value={formData.admin_owner_id}
                            options={ownerOptions}
                            onChange={handleSelectChange}
                            placeholder="Choose a pet owner..."
                            className="bg-background-primary text-text-primary"
                         />
-                        {errors.owner_id && (
-                           <p className="text-sm text-error font-medium -mt-4">{errors.owner_id}</p>
+                        {errors.admin_owner_id && (
+                           <p className="text-sm text-error font-medium -mt-4">{errors.admin_owner_id}</p>
                         )}
 
                         <div className="bg-info/10 rounded-lg p-4 border border-info/20">
