@@ -54,7 +54,7 @@ class DoctorClinicAssociationService:
             raise ValueError("Doctor profile not found")
         
         # Check if association already exists
-        existing = self.association_repository.get_by_doctor_and_clinic(
+        existing = self.association_repository.get_association(
             association_data.doctor_id,
             association_data.clinic_id
         )

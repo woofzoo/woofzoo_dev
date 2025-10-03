@@ -11,6 +11,7 @@ from app.services.allergy_service import AllergyService
 from app.services.permission_service import PermissionService
 from app.repositories.allergy import AllergyRepository
 from app.repositories.pet import PetRepository
+from app.repositories.family_member import FamilyMemberRepository
 from app.repositories.pet_clinic_access import PetClinicAccessRepository
 from app.dependencies import get_current_user, get_db_session
 from app.models.user import User
@@ -23,8 +24,9 @@ def get_allergy_controller(db: Session = Depends(get_db_session)) -> AllergyCont
     """Dependency injection for allergy controller."""
     allergy_repo = AllergyRepository(db)
     pet_repo = PetRepository(db)
+    family_member_repo = FamilyMemberRepository(db)
     clinic_access_repo = PetClinicAccessRepository(db)
-    permission_service = PermissionService(pet_repo, clinic_access_repo)
+    permission_service = PermissionService(db, pet_repo, family_member_repo, clinic_access_repo)
     service = AllergyService(allergy_repo, permission_service)
     return AllergyController(service)
 

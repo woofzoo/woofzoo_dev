@@ -19,14 +19,14 @@ from app.schemas.pet_clinic_access import (
     OTPGenerationResponse
 )
 
-router = APIRouter(prefix="/api/v1/clinic-access", tags=["clinic-access"])
+router = APIRouter(prefix="/clinic-access", tags=["clinic-access"])
 
 
 def get_clinic_access_controller(db: Session = Depends(get_db_session)) -> ClinicAccessController:
     """Dependency injection for clinic access controller."""
     clinic_access_repo = PetClinicAccessRepository(db)
     pet_repo = PetRepository(db)
-    service = ClinicAccessService(clinic_access_repo, pet_repo)
+    service = ClinicAccessService(db, clinic_access_repo, pet_repo)
     return ClinicAccessController(service)
 
 

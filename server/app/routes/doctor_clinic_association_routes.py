@@ -19,7 +19,7 @@ from app.repositories.doctor_clinic_association import DoctorClinicAssociationRe
 from app.repositories.doctor_profile import DoctorProfileRepository
 from app.repositories.clinic_profile import ClinicProfileRepository
 
-router = APIRouter(prefix="/api/v1/doctor-clinic-associations", tags=["doctor-clinic-associations"])
+router = APIRouter(prefix="/doctor-clinic-associations", tags=["doctor-clinic-associations"])
 
 
 def get_association_controller(db: Session = Depends(get_db_session)) -> DoctorClinicAssociationController:

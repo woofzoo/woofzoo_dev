@@ -16,6 +16,8 @@ from app.routes.photo import router as photo_router
 from app.routes.doctor_profile_routes import router as doctor_profile_router
 from app.routes.clinic_profile_routes import router as clinic_profile_router
 from app.routes.medical_record_routes import router as medical_record_router
+from app.routes.doctor_clinic_association_routes import router as doctor_clinic_association_router
+from app.routes.clinic_access_routes import router as clinic_access_router
 
 __all__ = [
     "auth_router",
@@ -30,4 +32,6 @@ __all__ = [
     "doctor_profile_router",
     "clinic_profile_router",
     "medical_record_router",
+    "doctor_clinic_association_router",
+    "clinic_access_router",
 ]
