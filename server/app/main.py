@@ -28,6 +28,8 @@ from app.routes import (
     family_invitation_router,
     photo_router,
     doctor_profile_router,
+    clinic_profile_router,
+    medical_record_router,
 )
 
 
@@ -99,6 +101,8 @@ app.include_router(family_member_router, prefix=settings.api_prefix)
 app.include_router(family_invitation_router, prefix=settings.api_prefix)
 app.include_router(photo_router, prefix=settings.api_prefix)
 app.include_router(doctor_profile_router, prefix=settings.api_prefix)
+app.include_router(clinic_profile_router, prefix=settings.api_prefix)
+app.include_router(medical_record_router, prefix=settings.api_prefix)
 
 
 

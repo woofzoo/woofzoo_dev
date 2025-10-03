@@ -17,7 +17,7 @@ from app.controllers.clinic_profile_controller import ClinicProfileController
 from app.services.clinic_profile_service import ClinicProfileService
 from app.repositories.clinic_profile import ClinicProfileRepository
 
-router = APIRouter(prefix="/api/v1/clinic-profiles", tags=["clinic-profiles"])
+router = APIRouter(prefix="/clinic-profiles", tags=["clinic-profiles"])
 
 
 def get_clinic_profile_controller(db: Session = Depends(get_db_session)) -> ClinicProfileController:
