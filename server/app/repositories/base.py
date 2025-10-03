@@ -51,6 +51,21 @@ class BaseRepository(Generic[ModelType]):
         self.session.refresh(instance)
         return instance
     
+    def save(self, instance: ModelType) -> ModelType:
+        """
+        Save an existing model instance.
+        
+        Args:
+            instance: Model instance to save
+            
+        Returns:
+            Saved model instance
+        """
+        self.session.add(instance)
+        self.session.commit()
+        self.session.refresh(instance)
+        return instance
+    
     def get_by_id(self, id: str) -> Optional[ModelType]:
         """
         Get a record by ID.

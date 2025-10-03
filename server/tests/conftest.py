@@ -506,6 +506,324 @@ def pytest_configure(config):
     )
 
 
+# Medical Records Fixtures
+@pytest.fixture
+def doctor_user(db_session):
+    """Create a doctor user for testing."""
+    import uuid
+    from app.models.user import User
+    from passlib.context import CryptContext
+    
+    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+    
+    user = User(
+        public_id=uuid.uuid4(),
+        email="doctor@test.com",
+        password_hash=pwd_context.hash("TestPass123!"),
+        first_name="Dr. Test",
+        last_name="Doctor",
+        phone="+15551234567",
+        roles=["doctor"],
+        is_active=True,
+        is_verified=True
+    )
+    db_session.add(user)
+    db_session.commit()
+    db_session.refresh(user)
+    return user
+
+
+@pytest.fixture
+def owner_user(db_session):
+    """Create a pet owner user for testing."""
+    import uuid
+    from app.models.user import User
+    from passlib.context import CryptContext
+    
+    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+    
+    user = User(
+        public_id=uuid.uuid4(),
+        email="owner@test.com",
+        password_hash=pwd_context.hash("TestPass123!"),
+        first_name="Pet",
+        last_name="Owner",
+        phone="+15559876543",
+        roles=["pet_owner"],
+        is_active=True,
+        is_verified=True
+    )
+    db_session.add(user)
+    db_session.commit()
+    db_session.refresh(user)
+    return user
+
+
+@pytest.fixture
+def other_user(db_session):
+    """Create another user for unauthorized access testing."""
+    import uuid
+    from app.models.user import User
+    from passlib.context import CryptContext
+    
+    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+    
+    user = User(
+        public_id=uuid.uuid4(),
+        email="other@test.com",
+        password_hash=pwd_context.hash("TestPass123!"),
+        first_name="Other",
+        last_name="User",
+        phone="+15555555555",
+        roles=["pet_owner"],
+        is_active=True,
+        is_verified=True
+    )
+    db_session.add(user)
+    db_session.commit()
+    db_session.refresh(user)
+    return user
+
+
+@pytest.fixture
+def clinic_profile(db_session):
+    """Create a clinic profile for testing."""
+    import uuid
+    from app.models.clinic_profile import ClinicProfile
+    from app.models.user import User
+    from passlib.context import CryptContext
+    
+    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+    
+    # Create clinic owner user
+    clinic_owner = User(
+        public_id=uuid.uuid4(),
+        email="clinic@test.com",
+        password_hash=pwd_context.hash("TestPass123!"),
+        first_name="Clinic",
+        last_name="Owner",
+        phone="+15551111111",
+        roles=["clinic_owner"],
+        is_active=True,
+        is_verified=True
+    )
+    db_session.add(clinic_owner)
+    db_session.commit()
+    
+    clinic = ClinicProfile(
+        id=uuid.uuid4(),
+        user_id=clinic_owner.public_id,
+        clinic_name="Test Veterinary Clinic",
+        license_number="VET-12345",
+        address="123 Clinic St",
+        phone="+15552222222",
+        email="clinic@test.com",
+        operating_hours={},
+        services_offered=[],
+        is_verified=True,
+        is_active=True
+    )
+    db_session.add(clinic)
+    db_session.commit()
+    db_session.refresh(clinic)
+    return clinic
+
+
+@pytest.fixture
+def doctor_profile(db_session, doctor_user):
+    """Create a doctor profile for testing."""
+    import uuid
+    from app.models.doctor_profile import DoctorProfile
+    
+    doctor = DoctorProfile(
+        id=uuid.uuid4(),
+        user_id=doctor_user.public_id,
+        license_number="DOC-67890",
+        specialization="General Practice",
+        years_of_experience=5,
+        qualifications=[],
+        bio="Test doctor",
+        is_verified=True,
+        is_active=True
+    )
+    db_session.add(doctor)
+    db_session.commit()
+    db_session.refresh(doctor)
+    return doctor
+
+
+@pytest.fixture
+def pet(db_session, owner_user):
+    """Create a pet for testing (uses sample_pet logic but with owner_user)."""
+    import uuid
+    from app.models.pet import Pet, Gender
+    
+    pet_obj = Pet(
+        id=uuid.uuid4(),
+        pet_id=f"PET{uuid.uuid4().hex[:8].upper()}",
+        owner_id=owner_user.public_id,
+        name="Buddy",
+        pet_type="dog",
+        breed="Golden Retriever",
+        age=3,
+        gender=Gender.MALE,
+        weight=30.0,
+        photos=[],
+        emergency_contacts=[],
+        insurance_info={},
+        is_active=True
+    )
+    db_session.add(pet_obj)
+    db_session.commit()
+    db_session.refresh(pet_obj)
+    return pet_obj
+
+
+@pytest.fixture
+def active_clinic_access(db_session, pet, clinic_profile, doctor_profile, owner_user):
+    """Create active clinic access for testing."""
+    import uuid
+    from datetime import datetime, timedelta
+    from app.models.pet_clinic_access import PetClinicAccess, AccessStatus
+    
+    access = PetClinicAccess(
+        id=uuid.uuid4(),
+        pet_id=pet.id,
+        clinic_id=clinic_profile.id,
+        doctor_id=doctor_profile.id,
+        owner_id=owner_user.public_id,
+        access_granted_at=datetime.utcnow(),
+        access_expires_at=datetime.utcnow() + timedelta(hours=24),
+        status=AccessStatus.ACTIVE,
+        purpose="Testing"
+    )
+    db_session.add(access)
+    db_session.commit()
+    db_session.refresh(access)
+    return access
+
+
+@pytest.fixture
+def medical_record(db_session, pet, doctor_profile, clinic_profile, doctor_user):
+    """Create a medical record for testing."""
+    import uuid
+    from datetime import datetime
+    from app.models.medical_record import MedicalRecord, VisitType
+    
+    record = MedicalRecord(
+        id=uuid.uuid4(),
+        pet_id=pet.id,
+        visit_date=datetime.utcnow(),
+        clinic_id=clinic_profile.id,
+        doctor_id=doctor_profile.id,
+        visit_type=VisitType.ROUTINE_CHECKUP,
+        chief_complaint="Annual checkup",
+        diagnosis="Healthy",
+        symptoms={},
+        treatment_plan="Continue regular care",
+        vital_signs={},
+        follow_up_required=False,
+        is_emergency=False,
+        created_by_user_id=doctor_user.public_id,
+        created_by_role="doctor"
+    )
+    db_session.add(record)
+    db_session.commit()
+    db_session.refresh(record)
+    return record
+
+
+@pytest.fixture
+def prescription(db_session, medical_record, pet, doctor_profile):
+    """Create a prescription for testing."""
+    import uuid
+    from datetime import date, timedelta
+    from app.models.prescription import Prescription
+    
+    rx = Prescription(
+        id=uuid.uuid4(),
+        medical_record_id=medical_record.id,
+        pet_id=pet.id,
+        medication_name="Test Medication",
+        dosage="10",
+        dosage_unit="mg",
+        frequency="Twice daily",
+        route="Oral",
+        duration="7 days",
+        prescribed_by_doctor_id=doctor_profile.id,
+        prescribed_date=date.today(),
+        start_date=date.today(),
+        end_date=date.today() + timedelta(days=7),
+        quantity=14.0,
+        refills_allowed=0,
+        is_active=True
+    )
+    db_session.add(rx)
+    db_session.commit()
+    db_session.refresh(rx)
+    return rx
+
+
+@pytest.fixture
+def valid_otp(db_session):
+    """Create a valid OTP for testing."""
+    import uuid
+    from datetime import datetime, timedelta
+    from app.models.otp import OTP, OTPPurpose
+    
+    otp = OTP(
+        id=uuid.uuid4(),
+        phone_number="+15551234567",
+        otp_code="123456",
+        purpose=OTPPurpose.CLINIC_ACCESS,
+        expires_at=datetime.utcnow() + timedelta(minutes=10),
+        is_used=False
+    )
+    db_session.add(otp)
+    db_session.commit()
+    db_session.refresh(otp)
+    return otp
+
+
+@pytest.fixture
+def family_member_readonly(db_session, sample_family, owner_user):
+    """Create a read-only family member for testing."""
+    import uuid
+    from app.models.user import User
+    from app.models.family_member import FamilyMember, AccessLevel
+    from passlib.context import CryptContext
+    
+    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+    
+    # Create user
+    user = User(
+        public_id=uuid.uuid4(),
+        email="familymember@test.com",
+        password_hash=pwd_context.hash("TestPass123!"),
+        first_name="Family",
+        last_name="Member",
+        phone="+15557777777",
+        roles=["family_member"],
+        is_active=True,
+        is_verified=True
+    )
+    db_session.add(user)
+    db_session.commit()
+    
+    # Create family member with read-only access
+    member = FamilyMember(
+        id=uuid.uuid4(),
+        family_id=sample_family.id,
+        user_id=user.public_id,
+        access_level=AccessLevel.READ_ONLY,
+        is_active=True
+    )
+    db_session.add(member)
+    db_session.commit()
+    db_session.refresh(user)
+    return user
+
+
 # Test database setup instructions
 def pytest_collection_modifyitems(config, items):
     """Modify test collection based on database configuration."""
