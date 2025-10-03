@@ -6,7 +6,8 @@ This module defines Pydantic models for pet clinic access-related API operations
 
 from datetime import datetime
 from typing import Optional
-from pydantic import BaseModel, Field, ConfigDict, field_validator
+from uuid import UUID
+from pydantic import BaseModel, Field, ConfigDict, field_validator, field_serializer
 
 
 class PetClinicAccessBase(BaseModel):
@@ -107,16 +108,21 @@ class PetClinicAccessRevoke(BaseModel):
 class PetClinicAccessResponse(PetClinicAccessBase):
     """Schema for pet clinic access response."""
     
-    id: str = Field(..., description="Access record ID")
-    pet_id: str = Field(..., description="Pet's ID")
-    clinic_id: str = Field(..., description="Clinic's ID")
-    doctor_id: Optional[str] = Field(None, description="Assigned doctor's ID")
-    owner_id: str = Field(..., description="Pet owner's ID")
+    id: UUID = Field(..., description="Access record ID")
+    pet_id: UUID = Field(..., description="Pet's ID")
+    clinic_id: UUID = Field(..., description="Clinic's ID")
+    doctor_id: Optional[UUID] = Field(None, description="Assigned doctor's ID")
+    owner_id: UUID = Field(..., description="Pet owner's ID")
     access_granted_at: datetime = Field(..., description="When access was granted")
     access_expires_at: datetime = Field(..., description="When access expires")
     status: str = Field(..., description="Current status")
-    otp_id: Optional[str] = Field(None, description="OTP used for access")
+    otp_id: Optional[UUID] = Field(None, description="OTP used for access")
     created_at: datetime = Field(..., description="Creation timestamp")
+    
+    @field_serializer('id', 'pet_id', 'clinic_id', 'doctor_id', 'owner_id', 'otp_id')
+    def serialize_uuid(self, value: Optional[UUID]) -> Optional[str]:
+        """Serialize UUID to string for JSON response."""
+        return str(value) if value else None
     
     model_config = ConfigDict(from_attributes=True)
 

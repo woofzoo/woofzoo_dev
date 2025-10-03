@@ -6,7 +6,8 @@ This module defines Pydantic models for allergy-related API operations.
 
 from datetime import datetime, date
 from typing import Optional
-from pydantic import BaseModel, Field, ConfigDict, field_validator
+from uuid import UUID
+from pydantic import BaseModel, Field, ConfigDict, field_validator, field_serializer
 
 
 class AllergyBase(BaseModel):
@@ -102,13 +103,18 @@ class AllergyUpdate(BaseModel):
 class AllergyResponse(AllergyBase):
     """Schema for allergy response."""
     
-    id: str = Field(..., description="Allergy ID")
-    pet_id: str = Field(..., description="Pet's ID")
-    diagnosed_by_doctor_id: Optional[str] = Field(None, description="Doctor who diagnosed")
+    id: UUID = Field(..., description="Allergy ID")
+    pet_id: UUID = Field(..., description="Pet's ID")
+    diagnosed_by_doctor_id: Optional[UUID] = Field(None, description="Doctor who diagnosed")
     is_active: bool = Field(..., description="Whether allergy is currently relevant")
-    created_by_user_id: str = Field(..., description="User who added this")
+    created_by_user_id: UUID = Field(..., description="User who added this")
     created_at: datetime = Field(..., description="Creation timestamp")
     updated_at: datetime = Field(..., description="Last update timestamp")
+    
+    @field_serializer('id', 'pet_id', 'diagnosed_by_doctor_id', 'created_by_user_id')
+    def serialize_uuid(self, value: Optional[UUID]) -> Optional[str]:
+        """Serialize UUID to string for JSON response."""
+        return str(value) if value else None
     
     model_config = ConfigDict(from_attributes=True)
 

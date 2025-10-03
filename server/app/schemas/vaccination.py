@@ -6,7 +6,8 @@ This module defines Pydantic models for vaccination-related API operations.
 
 from datetime import datetime, date
 from typing import Optional
-from pydantic import BaseModel, Field, ConfigDict, field_validator
+from uuid import UUID
+from pydantic import BaseModel, Field, ConfigDict, field_validator, field_serializer
 
 
 class VaccinationBase(BaseModel):
@@ -76,13 +77,18 @@ class VaccinationUpdate(BaseModel):
 class VaccinationResponse(VaccinationBase):
     """Schema for vaccination response."""
     
-    id: str = Field(..., description="Vaccination ID")
-    pet_id: str = Field(..., description="Pet's ID")
-    medical_record_id: Optional[str] = Field(None, description="Associated medical record ID")
-    administered_by_doctor_id: str = Field(..., description="Doctor who administered")
-    clinic_id: str = Field(..., description="Clinic where administered")
+    id: UUID = Field(..., description="Vaccination ID")
+    pet_id: UUID = Field(..., description="Pet's ID")
+    medical_record_id: Optional[UUID] = Field(None, description="Associated medical record ID")
+    administered_by_doctor_id: UUID = Field(..., description="Doctor who administered")
+    clinic_id: UUID = Field(..., description="Clinic where administered")
     created_at: datetime = Field(..., description="Creation timestamp")
     updated_at: datetime = Field(..., description="Last update timestamp")
+    
+    @field_serializer('id', 'pet_id', 'medical_record_id', 'administered_by_doctor_id', 'clinic_id')
+    def serialize_uuid(self, value: Optional[UUID]) -> Optional[str]:
+        """Serialize UUID to string for JSON response."""
+        return str(value) if value else None
     
     model_config = ConfigDict(from_attributes=True)
 

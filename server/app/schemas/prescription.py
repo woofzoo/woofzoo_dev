@@ -6,7 +6,8 @@ This module defines Pydantic models for prescription-related API operations.
 
 from datetime import datetime, date
 from typing import Optional
-from pydantic import BaseModel, Field, ConfigDict, field_validator
+from uuid import UUID
+from pydantic import BaseModel, Field, ConfigDict, field_validator, field_serializer
 
 
 class PrescriptionBase(BaseModel):
@@ -85,13 +86,18 @@ class PrescriptionUpdate(BaseModel):
 class PrescriptionResponse(PrescriptionBase):
     """Schema for prescription response."""
     
-    id: str = Field(..., description="Prescription ID")
-    medical_record_id: str = Field(..., description="Associated medical record ID")
-    pet_id: str = Field(..., description="Pet's ID")
-    prescribed_by_doctor_id: str = Field(..., description="Prescribing doctor's ID")
+    id: UUID = Field(..., description="Prescription ID")
+    medical_record_id: UUID = Field(..., description="Associated medical record ID")
+    pet_id: UUID = Field(..., description="Pet's ID")
+    prescribed_by_doctor_id: UUID = Field(..., description="Prescribing doctor's ID")
     is_active: bool = Field(..., description="Whether prescription is active")
     created_at: datetime = Field(..., description="Creation timestamp")
     updated_at: datetime = Field(..., description="Last update timestamp")
+    
+    @field_serializer('id', 'medical_record_id', 'pet_id', 'prescribed_by_doctor_id')
+    def serialize_uuid(self, value: UUID) -> str:
+        """Serialize UUID to string for JSON response."""
+        return str(value)
     
     model_config = ConfigDict(from_attributes=True)
 

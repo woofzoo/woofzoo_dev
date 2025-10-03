@@ -6,7 +6,8 @@ This module defines Pydantic models for medical record-related API operations.
 
 from datetime import datetime, date
 from typing import Optional
-from pydantic import BaseModel, Field, ConfigDict, field_validator
+from uuid import UUID
+from pydantic import BaseModel, Field, ConfigDict, field_validator, field_serializer
 
 
 class MedicalRecordBase(BaseModel):
@@ -91,14 +92,19 @@ class MedicalRecordUpdate(BaseModel):
 class MedicalRecordResponse(MedicalRecordBase):
     """Schema for medical record response."""
     
-    id: str = Field(..., description="Medical record ID")
-    pet_id: str = Field(..., description="Pet's ID")
-    clinic_id: str = Field(..., description="Clinic's ID")
-    doctor_id: str = Field(..., description="Doctor's ID")
-    created_by_user_id: str = Field(..., description="User who created the record")
+    id: UUID = Field(..., description="Medical record ID")
+    pet_id: UUID = Field(..., description="Pet's ID")
+    clinic_id: UUID = Field(..., description="Clinic's ID")
+    doctor_id: UUID = Field(..., description="Doctor's ID")
+    created_by_user_id: UUID = Field(..., description="User who created the record")
     created_by_role: str = Field(..., description="Role at time of creation")
     created_at: datetime = Field(..., description="Creation timestamp")
     updated_at: datetime = Field(..., description="Last update timestamp")
+    
+    @field_serializer('id', 'pet_id', 'clinic_id', 'doctor_id', 'created_by_user_id')
+    def serialize_uuid(self, value: UUID) -> str:
+        """Serialize UUID to string for JSON response."""
+        return str(value)
     
     model_config = ConfigDict(from_attributes=True)
 
