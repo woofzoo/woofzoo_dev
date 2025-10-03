@@ -6,7 +6,8 @@ This module defines Pydantic models for doctor profile-related API operations.
 
 from datetime import datetime
 from typing import Optional
-from pydantic import BaseModel, Field, ConfigDict, field_validator
+from uuid import UUID
+from pydantic import BaseModel, Field, ConfigDict, field_validator, field_serializer
 
 
 class DoctorProfileBase(BaseModel):
@@ -66,12 +67,17 @@ class DoctorProfileUpdate(BaseModel):
 class DoctorProfileResponse(DoctorProfileBase):
     """Schema for doctor profile response."""
     
-    id: str = Field(..., description="Doctor profile ID")
-    user_id: str = Field(..., description="User ID of the doctor")
+    id: UUID = Field(..., description="Doctor profile ID")
+    user_id: UUID = Field(..., description="User ID of the doctor")
     is_verified: bool = Field(..., description="Whether license is verified")
     is_active: bool = Field(..., description="Whether doctor is active")
     created_at: datetime = Field(..., description="Creation timestamp")
     updated_at: datetime = Field(..., description="Last update timestamp")
+    
+    @field_serializer('id', 'user_id')
+    def serialize_uuid(self, value: UUID) -> str:
+        """Serialize UUID to string for JSON response."""
+        return str(value)
     
     model_config = ConfigDict(from_attributes=True)
 
