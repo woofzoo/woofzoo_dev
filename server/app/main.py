@@ -17,7 +17,18 @@ from app.logger import configure_logging
 from app.database import close_db, init_db
 from app.middleware.trace_id import TraceIDMiddleware
 from app.middleware.request_logging import RequestLoggingMiddleware
-from app.routes import auth_router, user_router, owner_router, pet_router, pet_types_router, family_router, family_member_router, family_invitation_router, photo_router
+from app.routes import (
+    auth_router,
+    user_router,
+    owner_router,
+    pet_router,
+    pet_types_router,
+    family_router,
+    family_member_router,
+    family_invitation_router,
+    photo_router,
+    doctor_profile_router,
+)
 
 
 @asynccontextmanager
@@ -87,6 +98,7 @@ app.include_router(family_router, prefix=settings.api_prefix)
 app.include_router(family_member_router, prefix=settings.api_prefix)
 app.include_router(family_invitation_router, prefix=settings.api_prefix)
 app.include_router(photo_router, prefix=settings.api_prefix)
+app.include_router(doctor_profile_router, prefix=settings.api_prefix)
 
 
 

@@ -17,7 +17,7 @@ from app.controllers.doctor_profile_controller import DoctorProfileController
 from app.services.doctor_profile_service import DoctorProfileService
 from app.repositories.doctor_profile import DoctorProfileRepository
 
-router = APIRouter(prefix="/api/v1/doctor-profiles", tags=["doctor-profiles"])
+router = APIRouter(prefix="/doctor-profiles", tags=["doctor-profiles"])
 
 
 def get_doctor_profile_controller(db: Session = Depends(get_db_session)) -> DoctorProfileController:

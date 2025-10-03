@@ -29,7 +29,7 @@ class DoctorClinicAssociationController:
         """Create doctor-clinic association."""
         try:
             association = self.service.create_association(current_user, association_data)
-            return DoctorClinicAssociationResponse.from_orm(association)
+            return DoctorClinicAssociationResponse.model_validate(association)
         except ValueError as e:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -88,7 +88,7 @@ class DoctorClinicAssociationController:
                 skip=skip,
                 limit=limit
             )
-            return [DoctorClinicAssociationResponse.from_orm(a) for a in associations]
+            return [DoctorClinicAssociationResponse.model_validate(a) for a in associations]
         except ValueError:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -114,7 +114,7 @@ class DoctorClinicAssociationController:
                 assoc_uuid,
                 association_data
             )
-            return DoctorClinicAssociationResponse.from_orm(association)
+            return DoctorClinicAssociationResponse.model_validate(association)
         except ValueError as e:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,

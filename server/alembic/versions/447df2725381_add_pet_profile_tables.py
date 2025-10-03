@@ -101,9 +101,7 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id', name=op.f('pk_family_members'))
     )
     op.create_index(op.f('ix_family_members_phone_number'), 'family_members', ['phone_number'], unique=True)
-    op.drop_index(op.f('ix_tasks_id'), table_name='tasks')
-    op.drop_index(op.f('ix_tasks_title'), table_name='tasks')
-    op.drop_table('tasks')
+    
     op.alter_column('users', 'email_verification_expires',
                existing_type=postgresql.TIMESTAMP(timezone=True),
                type_=sa.DateTime(),

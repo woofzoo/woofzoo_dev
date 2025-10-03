@@ -29,7 +29,7 @@ class ClinicProfileController:
         """Create clinic profile for authenticated user."""
         try:
             profile = self.service.create_profile(current_user, profile_data)
-            return ClinicProfileResponse.from_orm(profile)
+            return ClinicProfileResponse.model_validate(profile)
         except ValueError as e:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -50,7 +50,7 @@ class ClinicProfileController:
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail="Clinic profile not found. Please create your profile first."
                 )
-            return ClinicProfileResponse.from_orm(profile)
+            return ClinicProfileResponse.model_validate(profile)
         except HTTPException:
             raise
         except Exception as e:
@@ -73,7 +73,7 @@ class ClinicProfileController:
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail="Clinic profile not found"
                 )
-            return ClinicProfileResponse.from_orm(profile)
+            return ClinicProfileResponse.model_validate(profile)
         except ValueError:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -95,7 +95,7 @@ class ClinicProfileController:
         """Update authenticated clinic owner's profile."""
         try:
             profile = self.service.update_profile(current_user, profile_data)
-            return ClinicProfileResponse.from_orm(profile)
+            return ClinicProfileResponse.model_validate(profile)
         except ValueError as e:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -122,7 +122,7 @@ class ClinicProfileController:
                 skip=skip,
                 limit=limit
             )
-            return [ClinicProfileResponse.from_orm(p) for p in profiles]
+            return [ClinicProfileResponse.model_validate(p) for p in profiles]
         except Exception as e:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

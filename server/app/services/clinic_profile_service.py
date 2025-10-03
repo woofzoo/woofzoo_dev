@@ -53,7 +53,7 @@ class ClinicProfileService:
             is_active=True
         )
         
-        return self.repository.create(profile)
+        return self.repository.save(profile)
     
     def get_profile_by_id(self, clinic_id: uuid.UUID) -> Optional[ClinicProfile]:
         """Get clinic profile by ID (public information)."""

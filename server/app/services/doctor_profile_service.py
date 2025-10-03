@@ -52,7 +52,7 @@ class DoctorProfileService:
             is_active=True
         )
         
-        return self.repository.create(profile)
+        return self.repository.save(profile)
     
     def get_profile_by_id(self, doctor_id: uuid.UUID) -> Optional[DoctorProfile]:
         """Get doctor profile by ID."""

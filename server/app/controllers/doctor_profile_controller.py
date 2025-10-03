@@ -5,7 +5,7 @@ Doctor Profile Controller - HTTP layer for doctor profile management.
 from typing import List
 from fastapi import HTTPException, status
 import uuid
-
+from loguru import logger
 from app.services.doctor_profile_service import DoctorProfileService
 from app.models.user import User
 from app.schemas.doctor_profile import (
@@ -29,13 +29,14 @@ class DoctorProfileController:
         """Create doctor profile for authenticated user."""
         try:
             profile = self.service.create_profile(current_user, profile_data)
-            return DoctorProfileResponse.from_orm(profile)
+            return DoctorProfileResponse.model_validate(profile)
         except ValueError as e:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=str(e)
             )
         except Exception as e:
+            logger.exception(f"Failed to create doctor profile: {str(e)}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"Failed to create doctor profile: {str(e)}"
@@ -50,7 +51,7 @@ class DoctorProfileController:
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail="Doctor profile not found. Please create your profile first."
                 )
-            return DoctorProfileResponse.from_orm(profile)
+            return DoctorProfileResponse.model_validate(profile)
         except HTTPException:
             raise
         except Exception as e:
@@ -73,7 +74,7 @@ class DoctorProfileController:
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail="Doctor profile not found"
                 )
-            return DoctorProfileResponse.from_orm(profile)
+            return DoctorProfileResponse.model_validate(profile)
         except ValueError:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -95,7 +96,7 @@ class DoctorProfileController:
         """Update authenticated doctor's profile."""
         try:
             profile = self.service.update_profile(current_user, profile_data)
-            return DoctorProfileResponse.from_orm(profile)
+            return DoctorProfileResponse.model_validate(profile)
         except ValueError as e:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -123,7 +124,7 @@ class DoctorProfileController:
                 skip=skip,
                 limit=limit
             )
-            return [DoctorProfileResponse.from_orm(p) for p in profiles]
+            return [DoctorProfileResponse.model_validate(p) for p in profiles]
         except Exception as e:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

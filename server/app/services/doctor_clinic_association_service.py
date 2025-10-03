@@ -78,7 +78,7 @@ class DoctorClinicAssociationService:
             joined_at=datetime.utcnow()
         )
         
-        return self.association_repository.create(association)
+        return self.association_repository.save(association)
     
     def get_clinic_doctors(
         self,

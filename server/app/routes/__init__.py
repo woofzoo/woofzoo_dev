@@ -13,6 +13,7 @@ from app.routes.family import router as family_router
 from app.routes.family_member import router as family_member_router
 from app.routes.family_invitation import router as family_invitation_router
 from app.routes.photo import router as photo_router
+from app.routes.doctor_profile_routes import router as doctor_profile_router
 
 
 __all__ = [
@@ -25,5 +26,5 @@ __all__ = [
     "family_member_router",
     "family_invitation_router",
     "photo_router",
-
+    "doctor_profile_router",
 ]
