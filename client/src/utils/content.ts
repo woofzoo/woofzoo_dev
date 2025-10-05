@@ -9,6 +9,7 @@ import {
   List,
   LucideIcon,
   Package,
+  PawPrint,
   PersonStanding,
   PlusCircle,
   Settings,
@@ -38,6 +39,12 @@ export const menuItems: MenuItem[] = [
     label: "Dashboard",
     icon: Home,
     description: "Overview & alerts",
+  },
+  {
+    id: "assigned-patients",
+    label: "Assigned Patients",
+    icon: PawPrint,
+    description: "Patients in queue",
   },
   {
     id: "patients",
