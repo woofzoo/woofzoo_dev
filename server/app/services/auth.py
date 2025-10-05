@@ -18,6 +18,7 @@ from app.services.email import EmailService
 from app.services.jwt import JWTService
 from app.schemas.auth import UserSignup, UserLogin, PasswordResetRequest, PasswordReset, EmailVerification
 from app.config import settings
+from loguru import logger
 
 
 class AuthService:
@@ -139,39 +140,45 @@ class AuthService:
         Returns:
             bool: True if verification successful, False otherwise
         """
-        print(f"🔍 DEBUG: Starting email verification for token: {verification_data.token[:10]}...")
+        logger.debug(
+            "Starting email verification for token prefix={token_prefix}",
+            token_prefix=verification_data.token[:10],
+        )
         
         # Get user by verification token
         user = self.user_repository.get_by_verification_token(verification_data.token)
         if not user:
-            print(f"❌ DEBUG: No user found with verification token: {verification_data.token[:10]}...")
+            logger.debug(
+                "No user found with verification token prefix={token_prefix}",
+                token_prefix=verification_data.token[:10],
+            )
             return False
         
-        print(f"✅ DEBUG: Found user: {user.email} (ID: {user.id})")
-        print(f"🔍 DEBUG: User verification status: {user.is_verified}")
-        print(f"🔍 DEBUG: Token expires at: {user.email_verification_expires}")
-        print(f"🔍 DEBUG: Current time: {datetime.now(timezone.utc)}")
+        logger.debug("Found user email={email} id={id}", email=user.email, id=user.id)
+        logger.debug("User verification status {status}", status=user.is_verified)
+        logger.debug("Token expires at {expires}", expires=user.email_verification_expires)
+        logger.debug("Current time {now}", now=datetime.now(timezone.utc))
         
         # Check if token is expired
         if user.email_verification_expires and user.email_verification_expires.replace(tzinfo=timezone.utc) < datetime.now(timezone.utc):
-            print(f"❌ DEBUG: Token expired at {user.email_verification_expires}")
+            logger.debug("Token expired at {expires}", expires=user.email_verification_expires)
             return False
         
-        print(f"✅ DEBUG: Token is valid, proceeding with verification...")
+        logger.debug("Token is valid, proceeding with verification")
         
         # Clear verification token and mark as verified
         success = self.user_repository.clear_verification_token(user.id)
         
         if success:
-            print(f"✅ DEBUG: Successfully cleared verification token and marked user as verified")
+            logger.debug("Successfully cleared verification token and marked user as verified")
             # Send welcome email
             self.email_service.send_welcome_email(
                 to_email=user.email,
                 to_name=user.full_name
             )
-            print(f"✅ DEBUG: Welcome email sent to {user.email}")
+            logger.debug("Welcome email sent to {email}", email=user.email)
         else:
-            print(f"❌ DEBUG: Failed to clear verification token")
+            logger.error("Failed to clear verification token")
         
         return success
     

@@ -11,6 +11,7 @@ from fastapi import HTTPException, status
 
 from app.schemas.owner import OwnerCreate, OwnerListResponse, OwnerResponse, OwnerUpdate
 from app.services.owner import OwnerService
+from loguru import logger
 
 
 class OwnerController:
@@ -31,11 +32,13 @@ class OwnerController:
             owner = self.owner_service.create_owner(owner_data)
             return OwnerResponse.model_validate(owner)
         except ValueError as e:
+            logger.warning("Create owner failed: {message}", message=str(e))
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=str(e)
             )
         except Exception as e:
+            logger.exception("Unexpected error creating owner")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to create owner"
@@ -72,6 +75,7 @@ class OwnerController:
             owner_responses = [OwnerResponse.model_validate(owner) for owner in owners]
             return OwnerListResponse(owners=owner_responses, total=total)
         except Exception as e:
+            logger.exception("Unexpected error retrieving owners")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to retrieve owners"
@@ -89,8 +93,10 @@ class OwnerController:
             
             return OwnerResponse.model_validate(owner)
         except HTTPException:
+            logger.error("Update owner failed: not found")
             raise
         except Exception as e:
+            logger.exception("Unexpected error updating owner")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to update owner"
@@ -108,8 +114,10 @@ class OwnerController:
             
             return {"message": f"Owner with ID {owner_id} deleted successfully"}
         except HTTPException:
+            logger.error("Delete owner failed: not found")
             raise
         except Exception as e:
+            logger.exception("Unexpected error deleting owner")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to delete owner"
@@ -127,6 +135,7 @@ class OwnerController:
             owner_responses = [OwnerResponse.model_validate(owner) for owner in owners]
             return OwnerListResponse(owners=owner_responses, total=len(owner_responses))
         except Exception as e:
+            logger.exception("Unexpected error searching owners")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to search owners"

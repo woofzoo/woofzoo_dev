@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 
 from app.models.user import User
 from app.repositories.base import BaseRepository
+from loguru import logger
 
 
 class UserRepository(BaseRepository[User]):
@@ -50,15 +51,18 @@ class UserRepository(BaseRepository[User]):
     
     def get_by_verification_token(self, token: str) -> Optional[User]:
         """Get a user by email verification token."""
-        print(f"🔍 DEBUG: Searching for user with verification token: {token[:10]}...")
+        logger.debug(
+            "Searching for user with verification token prefix={token_prefix}",
+            token_prefix=token[:10],
+        )
         result = self.session.execute(
             select(User).where(User.email_verification_token == token)
         )
         user = result.scalar_one_or_none()
         if user:
-            print(f"✅ DEBUG: Found user {user.email} with verification token")
+            logger.debug("Found user with verification token email={email}", email=user.email)
         else:
-            print(f"❌ DEBUG: No user found with verification token")
+            logger.debug("No user found with verification token")
         return user
     
     def get_by_reset_token(self, token: str) -> Optional[User]:

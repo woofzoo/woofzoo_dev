@@ -11,6 +11,7 @@ from fastapi import HTTPException, status
 
 from app.schemas.family import FamilyMemberCreate, FamilyMemberListResponse, FamilyMemberResponse, FamilyMemberUpdate
 from app.services.family_member import FamilyMemberService
+from loguru import logger
 
 
 class FamilyMemberController:
@@ -36,6 +37,7 @@ class FamilyMemberController:
                 detail=str(e)
             )
         except Exception as e:
+            logger.exception("Failed to add family member to family_id={family_id}", family_id=family_id)
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to add family member"
@@ -61,6 +63,7 @@ class FamilyMemberController:
             member_responses = [FamilyMemberResponse.model_validate(member) for member in members]
             return FamilyMemberListResponse(members=member_responses, total=total)
         except Exception as e:
+            logger.exception("Failed to retrieve family members for family_id={family_id}", family_id=family_id)
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to retrieve family members"
@@ -75,6 +78,7 @@ class FamilyMemberController:
             membership_responses = [FamilyMemberResponse.model_validate(membership) for membership in memberships]
             return FamilyMemberListResponse(members=membership_responses, total=total)
         except Exception as e:
+            logger.exception("Failed to retrieve user families for user_id={user_id}", user_id=user_id)
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to retrieve user families"
@@ -91,7 +95,8 @@ class FamilyMemberController:
                 )
             
             return FamilyMemberResponse.model_validate(member)
-        except HTTPException:
+        except HTTPException as http_exc:
+            logger.warning("Update family member failed: {detail}", detail=str(http_exc.detail))
             raise
         except ValueError as e:
             raise HTTPException(
@@ -99,6 +104,7 @@ class FamilyMemberController:
                 detail=str(e)
             )
         except Exception as e:
+            logger.exception("Failed to update family member id={member_id}", member_id=member_id)
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to update family member"
@@ -115,9 +121,11 @@ class FamilyMemberController:
                 )
             
             return {"message": f"Family member with ID {member_id} removed successfully"}
-        except HTTPException:
+        except HTTPException as http_exc:
+            logger.warning("Remove family member failed: {detail}", detail=str(http_exc.detail))
             raise
         except Exception as e:
+            logger.exception("Failed to remove family member id={member_id}", member_id=member_id)
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to remove family member"
@@ -134,9 +142,11 @@ class FamilyMemberController:
                 )
             
             return {"message": f"User removed from family successfully"}
-        except HTTPException:
+        except HTTPException as http_exc:
+            logger.warning("Remove user from family failed: {detail}", detail=str(http_exc.detail))
             raise
         except Exception as e:
+            logger.exception("Failed to remove user_id={user_id} from family_id={family_id}", user_id=user_id, family_id=family_id)
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to remove user from family"

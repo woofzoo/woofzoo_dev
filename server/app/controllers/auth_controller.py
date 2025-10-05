@@ -11,6 +11,7 @@ from fastapi import HTTPException, status
 
 from app.schemas.auth import UserSignup, UserLogin, PasswordResetRequest, RefreshTokenRequest
 from app.services.auth_service import AuthenticationService
+from loguru import logger
 
 
 class AuthenticationController:
@@ -41,11 +42,13 @@ class AuthenticationController:
                 }
             }
         except ValueError as e:
+            logger.warning("User registration failed: {message}", message=str(e))
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=str(e)
             )
         except Exception as e:
+            logger.exception("Unexpected error during user registration")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to register user"
@@ -57,11 +60,13 @@ class AuthenticationController:
             result = self.auth_service.login_user(login_data)
             return result
         except ValueError as e:
+            logger.warning("Login failed: {message}", message=str(e))
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail=str(e)
             )
         except Exception as e:
+            logger.exception("Unexpected error during login")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to login user"
@@ -73,11 +78,13 @@ class AuthenticationController:
             result = self.auth_service.refresh_access_token(refresh_data.refresh_token)
             return result
         except ValueError as e:
+            logger.warning("Token refresh failed: {message}", message=str(e))
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail=str(e)
             )
         except Exception as e:
+            logger.exception("Unexpected error during token refresh")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to refresh token"
@@ -93,6 +100,7 @@ class AuthenticationController:
                 # Don't reveal if email exists or not for security
                 return {"message": "If the email exists, a password reset link has been sent"}
         except Exception as e:
+            logger.exception("Unexpected error while requesting password reset")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to send password reset email"
@@ -110,8 +118,11 @@ class AuthenticationController:
                     detail="Invalid or expired reset token"
                 )
         except HTTPException:
+            # Error already mapped to user; log the message only
+            logger.error("Password reset failed: Invalid or expired reset token")
             raise
         except Exception as e:
+            logger.exception("Unexpected error during password reset")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to reset password"
@@ -129,8 +140,10 @@ class AuthenticationController:
                     detail="Invalid current password"
                 )
         except HTTPException:
+            logger.error("Change password failed: Invalid current password")
             raise
         except Exception as e:
+            logger.exception("Unexpected error during change password")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to change password"
@@ -148,8 +161,10 @@ class AuthenticationController:
                     detail="Invalid or expired verification token"
                 )
         except HTTPException:
+            logger.error("Email verification failed: Invalid or expired verification token")
             raise
         except Exception as e:
+            logger.exception("Unexpected error during email verification")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to verify email"
@@ -167,8 +182,10 @@ class AuthenticationController:
                     detail="Failed to send verification email"
                 )
         except HTTPException:
+            logger.error("Send verification email failed: user state invalid")
             raise
         except Exception as e:
+            logger.exception("Unexpected error sending verification email")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to send verification email"
@@ -186,8 +203,10 @@ class AuthenticationController:
                     detail="Failed to logout"
                 )
         except HTTPException:
+            logger.error("Logout failed: user state invalid")
             raise
         except Exception as e:
+            logger.exception("Unexpected error during logout")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to logout"
@@ -217,8 +236,10 @@ class AuthenticationController:
                 "created_at": user.created_at.isoformat() if user.created_at else None
             }
         except HTTPException:
+            logger.error("Get current user failed: user not found")
             raise
         except Exception as e:
+            logger.exception("Unexpected error getting current user")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to get user information"
