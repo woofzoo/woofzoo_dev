@@ -226,7 +226,9 @@ def get_user_service(
 
 def get_pet_service(
     pet_repository: PetRepository = Depends(get_pet_repository),
-    pet_id_service: PetIDService = Depends(get_pet_id_service)
+    pet_id_service: PetIDService = Depends(get_pet_id_service),
+    user_repository: UserRepository = Depends(get_user_repository),
+    email_service: EmailService = Depends(get_email_service)
 ) -> PetService:
     """
     Dependency to get pet service.
@@ -234,11 +236,13 @@ def get_pet_service(
     Args:
         pet_repository: Pet repository instance
         pet_id_service: Pet ID service instance
+        user_repository: User repository instance
+        email_service: Email service instance
         
     Returns:
         PetService instance
     """
-    return PetService(pet_repository, pet_id_service)
+    return PetService(pet_repository, pet_id_service, user_repository, email_service)
 
 
 def get_family_service(
@@ -572,6 +576,13 @@ def require_roles(required_roles: list[str]):
         return current_user
     
     return check_roles
+
+
+# Convenience dependencies for common role checks
+# These can be used directly in route definitions
+get_clinic_owner_user = require_roles(["clinic_owner"])
+get_pet_owner_user = require_roles(["pet_owner"])
+get_doctor_user = require_roles(["doctor"])
 
 
 # =============================================================================

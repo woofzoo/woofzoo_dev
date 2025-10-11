@@ -9,7 +9,8 @@ from typing import List
 
 from fastapi import HTTPException, status
 
-from app.schemas.pet import PetCreate, PetListResponse, PetResponse, PetUpdate, PetLookupRequest
+from app.models.user import User, UserRole
+from app.schemas.pet import PetCreate, PetListResponse, PetResponse, PetUpdate, PetLookupRequest, ClinicPetOnboardingRequest, ClinicPetOnboardingResponse
 from app.services.pet import PetService
 from loguru import logger
 
@@ -212,4 +213,90 @@ class PetController:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to retrieve pets"
+            )
+    
+    def onboard_pet_by_clinic(
+        self, 
+        onboarding_data: ClinicPetOnboardingRequest,
+        current_user: User
+    ) -> ClinicPetOnboardingResponse:
+        """
+        Onboard a pet via clinic.
+        
+        Note: Role validation (clinic_owner) is enforced at the route level.
+        
+        Args:
+            onboarding_data: Clinic pet onboarding request data
+            current_user: Current authenticated user (with clinic_owner role)
+            
+        Returns:
+            ClinicPetOnboardingResponse: Response with pet details and onboarding status
+            
+        Raises:
+            HTTPException: If onboarding fails
+        """
+        # Role check is handled by route dependency - no need to check again here
+        try:
+            logger.info(
+                "Clinic pet onboarding initiated",
+                extra={
+                    "clinic_user_id": current_user.id,
+                    "owner_email": onboarding_data.owner_email,
+                    "pet_name": onboarding_data.pet_name
+                }
+            )
+            
+            # Call service to onboard pet
+            pet, owner_user, is_new_user = self.pet_service.onboard_pet_by_clinic(
+                onboarding_data=onboarding_data,
+                clinic_user_id=current_user.public_id
+            )
+            
+            # Build response message
+            if is_new_user:
+                message = "Pet onboarded successfully. A new account was created for the owner. Verification email sent."
+            else:
+                message = "Pet onboarded successfully. Pet has been added to existing owner account. Notification email sent."
+            
+            logger.info(
+                "Clinic pet onboarding completed successfully",
+                extra={
+                    "clinic_user_id": current_user.id,
+                    "pet_id": pet.pet_id,
+                    "owner_user_id": str(owner_user.public_id),
+                    "is_new_user": is_new_user
+                }
+            )
+            
+            # Return response
+            return ClinicPetOnboardingResponse(
+                pet=PetResponse.model_validate(pet),
+                owner_created=is_new_user,
+                message=message
+            )
+            
+        except ValueError as e:
+            logger.warning(
+                "Clinic pet onboarding validation error",
+                extra={
+                    "clinic_user_id": current_user.id,
+                    "error": str(e)
+                }
+            )
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e)
+            )
+        except Exception as e:
+            logger.exception(
+                "Clinic pet onboarding failed",
+                extra={
+                    "clinic_user_id": current_user.id,
+                    "owner_email": onboarding_data.owner_email,
+                    "pet_name": onboarding_data.pet_name
+                }
+            )
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to onboard pet"
             )

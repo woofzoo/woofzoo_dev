@@ -8,8 +8,9 @@ dependency injection and request/response handling.
 from fastapi import APIRouter, Depends, Query, status
 
 from app.controllers.pet import PetController
-from app.dependencies import get_pet_controller, get_current_user_id
-from app.schemas.pet import PetCreate, PetListResponse, PetResponse, PetUpdate, PetLookupRequest
+from app.dependencies import get_pet_controller, get_current_user_id, get_current_user, get_clinic_owner_user
+from app.schemas.pet import PetCreate, PetListResponse, PetResponse, PetUpdate, PetLookupRequest, ClinicPetOnboardingRequest, ClinicPetOnboardingResponse
+from app.models.user import User
 
 # Create router
 router = APIRouter(prefix="/pets", tags=["pets"])
@@ -186,3 +187,38 @@ def lookup_pet(
 ) -> PetResponse:
     """Lookup a pet by pet ID."""
     return controller.lookup_pet(lookup_data.pet_id)
+
+
+@router.post(
+    "/clinic-onboard",
+    response_model=ClinicPetOnboardingResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Onboard a pet via clinic (clinic_owner only)",
+    description="Clinic owners can onboard a pet and create/link owner account. Owner receives verification email."
+)
+def onboard_pet_by_clinic(
+    onboarding_data: ClinicPetOnboardingRequest,
+    current_user: User = Depends(get_clinic_owner_user),  # Role check at route level!
+    controller: PetController = Depends(get_pet_controller)
+) -> ClinicPetOnboardingResponse:
+    """
+    Onboard a pet via clinic (clinic_owner role required).
+    
+    This endpoint allows clinic owners to:
+    - Register a new pet in the system
+    - Create a new owner account if the email doesn't exist
+    - Link the pet to an existing owner if the email exists
+    - Send verification email to the owner
+    - Mark the owner as admin of the pet
+    
+    The owner information required:
+    - email (mandatory)
+    - phone (optional)
+    - name (optional)
+    
+    The owner will receive an email notifying them that their pet has been registered.
+    If a new account is created, they'll also receive a verification link.
+    
+    **Authorization**: Requires `clinic_owner` role (enforced at route level).
+    """
+    return controller.onboard_pet_by_clinic(onboarding_data, current_user)

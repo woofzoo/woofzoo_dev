@@ -6,11 +6,19 @@ acting as an intermediary between controllers and repositories.
 """
 
 import uuid
-from typing import List, Optional
+import secrets
+from datetime import datetime, timedelta, timezone
+from typing import List, Optional, Tuple
+from passlib.context import CryptContext
 
 from app.models.pet import Pet
+from app.models.user import User
 from app.repositories.pet import PetRepository
-from app.schemas.pet import PetCreate, PetUpdate
+from app.repositories.user import UserRepository
+from app.services.email import EmailService
+from app.schemas.pet import PetCreate, PetUpdate, ClinicPetOnboardingRequest
+from app.config import settings
+from loguru import logger
 
 
 class PetService:
@@ -21,10 +29,19 @@ class PetService:
     validation, business rules, and coordination between repositories.
     """
     
-    def __init__(self, pet_repository: PetRepository, pet_id_service) -> None:
+    def __init__(
+        self, 
+        pet_repository: PetRepository, 
+        pet_id_service,
+        user_repository: Optional[UserRepository] = None,
+        email_service: Optional[EmailService] = None
+    ) -> None:
         """Initialize the pet service."""
         self.pet_repository = pet_repository
         self.pet_id_service = pet_id_service
+        self.user_repository = user_repository
+        self.email_service = email_service
+        self.pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
     
     def create_pet(self, pet_data: PetCreate) -> Pet:
         """Create a new pet with business logic validation."""
@@ -131,4 +148,147 @@ class PetService:
     def lookup_pet(self, pet_id: str) -> Optional[Pet]:
         """Lookup a pet by pet_id."""
         return self.pet_repository.get_by_pet_id(pet_id)
+    
+    def onboard_pet_by_clinic(
+        self, 
+        onboarding_data: ClinicPetOnboardingRequest,
+        clinic_user_id: uuid.UUID
+    ) -> Tuple[Pet, User, bool]:
+        """
+        Onboard a pet via clinic. Creates user if needed and sends notification email.
+        
+        Args:
+            onboarding_data: Clinic pet onboarding request data
+            clinic_user_id: UUID of the clinic user performing onboarding
+            
+        Returns:
+            Tuple[Pet, User, bool]: (created pet, owner user, is_new_user)
+            
+        Raises:
+            ValueError: If validation fails or dependencies not available
+        """
+        if not self.user_repository:
+            raise ValueError("User repository not available for clinic onboarding")
+        if not self.email_service:
+            raise ValueError("Email service not available for clinic onboarding")
+        
+        # 1. Check if user exists by email
+        existing_user = self.user_repository.get_by_email(onboarding_data.owner_email)
+        is_new_user = False
+        verification_token = None
+        
+        if existing_user:
+            # User already exists
+            owner_user = existing_user
+            logger.info(
+                "Using existing user for pet onboarding",
+                extra={"user_email": onboarding_data.owner_email, "user_id": str(owner_user.public_id)}
+            )
+        else:
+            # 2. Create new user account
+            is_new_user = True
+            
+            # Generate random password
+            random_password = secrets.token_urlsafe(16)
+            hashed_password = self.pwd_context.hash(random_password)
+            
+            # Generate verification token
+            verification_token = secrets.token_urlsafe(32)
+            verification_expires = datetime.now(timezone.utc) + timedelta(hours=settings.email_verification_expire_hours)
+            
+            # Parse name into first and last name
+            if onboarding_data.owner_name:
+                name_parts = onboarding_data.owner_name.strip().split(maxsplit=1)
+                first_name = name_parts[0] if len(name_parts) > 0 else "Pet"
+                last_name = name_parts[1] if len(name_parts) > 1 else "Owner"
+            else:
+                first_name = "Pet"
+                last_name = "Owner"
+            
+            # Create user with pet_owner role
+            owner_user = self.user_repository.create(
+                email=onboarding_data.owner_email,
+                password_hash=hashed_password,
+                first_name=first_name,
+                last_name=last_name,
+                phone=onboarding_data.owner_phone,
+                roles=["pet_owner"],
+                email_verification_token=verification_token,
+                email_verification_expires=verification_expires,
+                personalization={},
+                is_verified=False  # Require email verification
+            )
+            
+            logger.info(
+                "Created new user for pet onboarding",
+                extra={
+                    "user_email": onboarding_data.owner_email,
+                    "user_id": str(owner_user.public_id),
+                    "first_name": first_name,
+                    "last_name": last_name
+                }
+            )
+        
+        # 3. Generate pet_id
+        pet_id = self.pet_id_service.generate_pet_id(
+            onboarding_data.pet_type,
+            onboarding_data.breed
+        )
+        
+        # 4. Create pet with owner_id = user.public_id
+        pet = self.pet_repository.create(
+            pet_id=pet_id,
+            owner_id=owner_user.public_id,  # This makes the user the admin/owner of the pet
+            name=onboarding_data.pet_name,
+            pet_type=onboarding_data.pet_type,
+            breed=onboarding_data.breed,
+            age=onboarding_data.age,
+            gender=onboarding_data.gender,
+            weight=onboarding_data.weight,
+            photos=[],
+            emergency_contacts=onboarding_data.emergency_contacts or {},
+            insurance_info=onboarding_data.insurance_info or {}
+        )
+        
+        logger.info(
+            "Pet created successfully for clinic onboarding",
+            extra={
+                "pet_id": pet_id,
+                "pet_name": onboarding_data.pet_name,
+                "owner_id": str(owner_user.public_id),
+                "is_new_user": is_new_user
+            }
+        )
+        
+        # 5. Send notification email
+        try:
+            email_sent = self.email_service.send_pet_onboarding_notification_email(
+                to_email=owner_user.email,
+                to_name=owner_user.full_name,
+                pet_name=onboarding_data.pet_name,
+                pet_type=onboarding_data.pet_type,
+                pet_breed=onboarding_data.breed,
+                clinic_name="Clinic",  # TODO: Get actual clinic name from clinic_user_id
+                is_new_user=is_new_user,
+                verification_token=verification_token
+            )
+            
+            if email_sent:
+                logger.info(
+                    "Pet onboarding notification email sent",
+                    extra={"recipient_email": owner_user.email, "pet_id": pet_id}
+                )
+            else:
+                logger.warning(
+                    "Failed to send pet onboarding notification email",
+                    extra={"recipient_email": owner_user.email, "pet_id": pet_id}
+                )
+        except Exception as e:
+            logger.exception(
+                "Error sending pet onboarding notification email",
+                extra={"recipient_email": owner_user.email, "pet_id": pet_id, "error": str(e)}
+            )
+        
+        # 6. Return results
+        return pet, owner_user, is_new_user
 
