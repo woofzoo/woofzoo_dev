@@ -26,6 +26,10 @@ from app.schemas.doctor_queue import (
     CompleteVisitResponse,
 )
 from app.logger import logger
+from app.database import get_db_session
+from app.repositories.pet import PetRepository
+from app.repositories.user import UserRepository
+from app.repositories.medical_record import MedicalRecordRepository
 
 
 class DoctorController:
@@ -67,11 +71,6 @@ class DoctorController:
             queue_list: List[DoctorQueueItem] = []
             for access in queue_items:
                 # Get pet and owner info
-                from app.database import get_db_session
-                from app.repositories.pet import PetRepository
-                from app.repositories.user import UserRepository
-                from app.repositories.medical_record import MedicalRecordRepository
-                
                 db = next(get_db_session())
                 try:
                     pet_repo = PetRepository(db)
