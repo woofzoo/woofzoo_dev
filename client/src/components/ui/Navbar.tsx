@@ -157,23 +157,14 @@ const Navbar: React.FC<NavbarProps> = ({
          "h-16 bg-background-secondary/80 backdrop-blur-md border-b border-border-primary flex items-center justify-between px-6 relative z-20",
          className
       )}>
-         {/* Left Section - Mobile Toggle + Search */}
+         {/* Left Section - Toggle + Search */}
          <div className="flex items-center flex-1 max-w-lg space-x-4">
-            {/* Mobile Menu Button */}
+            {/* Toggle Button - Now visible on ALL screen sizes */}
             {onToggleSidebar && (
                <button
                   onClick={onToggleSidebar}
-                  className="md:hidden p-2.5 rounded-xl transition-all duration-200 border-2 border-transparent bg-background-primary/60 hover:bg-primary-pastel/30"
-               >
-                  <Menu className="w-5 h-5" style={{ color: 'var(--text-secondary)' }} />
-               </button>
-            )}
-
-            {/* Desktop Toggle Button (tablet size) */}
-            {onToggleSidebar && (
-               <button
-                  onClick={onToggleSidebar}
-                  className="hidden md:block lg:hidden p-2.5 rounded-xl transition-all duration-200 border-2 border-transparent bg-background-primary/60 hover:bg-primary-pastel/30"
+                  className="p-2.5 rounded-xl transition-all duration-200 border-2 border-transparent bg-background-primary/60 hover:bg-primary-pastel/30"
+                  title={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
                >
                   <Menu className="w-5 h-5" style={{ color: 'var(--text-secondary)' }} />
                </button>

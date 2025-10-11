@@ -37,7 +37,7 @@ export default function Input({ buttonType, label, size, ...props }: InputProps)
          <div className="relative">
             <input
                type={inputType}
-               className={inputVariants({ size })}
+               className={inputVariants({ size }) + "w-full border border-border-primary rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary-pastel focus:border-primary-pastel transition-all"}
                {...props}
             />
             {isPassword && (

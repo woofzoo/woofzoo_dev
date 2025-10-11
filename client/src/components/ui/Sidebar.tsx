@@ -121,7 +121,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed = false, onToggle }) => {
                            {!isCollapsed && (
                               <div className="text-left">
                                  <div
-                                    className={`font-medium cursor-pointer ${activeItem === item.id
+                                    className={`font-medium cursor-pointer text-sm ${activeItem === item.id
                                        ? 'text-primary'
                                        : 'text-text-primary'
                                        }`}
@@ -196,7 +196,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed = false, onToggle }) => {
                                     }}
                                  />
                                  <span
-                                    className="text-sm font-medium"
+                                    className="text-sm"
                                     style={{
                                        color: activeItem === subItem.id
                                           ? 'var(--secondary-color)'
@@ -213,43 +213,37 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed = false, onToggle }) => {
                      {/* Sub-items icons for collapsed state */}
                      {item.expandable && isCollapsed && item.subItems && (
                         <div className="mt-1 space-y-1">
-                           {/* Show parent/main icon as a small header above sub-items so users can identify the group when collapsed */}
-                           <div className="flex items-center justify-center p-1">
-                              <item.icon className="w-4 h-4 text-text-secondary" />
-                           </div>
-                           <div className="space-y-1">
-                              {item.subItems.map((subItem) => (
-                                 <button
-                                    key={`collapsed-${subItem.id}`}
-                                    onClick={() => {
-                                       // when collapsed, still set parent expanded state for consistency
-                                       setExpandedSections(prev => ({ ...prev, [item.id]: true }));
-                                       handleItemClick(subItem.id);
+                           {item.subItems.map((subItem) => (
+                              <button
+                                 key={`collapsed-${subItem.id}`}
+                                 onClick={() => {
+                                    // when collapsed, still set parent expanded state for consistency
+                                    setExpandedSections(prev => ({ ...prev, [item.id]: true }));
+                                    handleItemClick(subItem.id);
+                                 }}
+                                 className={`w-full flex items-center justify-center p-2 rounded-lg transition-all duration-200 group relative ${activeItem === subItem.id
+                                    ? 'bg-secondary-pastel border-l-[3px] border-solid border-secondary'
+                                    : 'hover:bg-background-primary/30 border-l-[3px] border-solid border-transparent'
+                                    }`}
+                                 title={subItem.label}
+                              >
+                                 <subItem.icon
+                                    className="w-4 h-4"
+                                    style={{
+                                       color: activeItem === subItem.id
+                                          ? 'var(--secondary-color)'
+                                          : 'var(--text-muted)'
                                     }}
-                                    className={`w-full flex items-center justify-center p-2 rounded-lg transition-all duration-200 group relative ${activeItem === subItem.id
-                                       ? 'bg-secondary-pastel border-l-[3px] border-solid border-secondary'
-                                       : 'hover:bg-background-primary/30 border-l-[3px] border-solid border-transparent'
-                                       }`}
-                                    title={subItem.label}
-                                 >
-                                    <subItem.icon
-                                       className="w-4 h-4"
-                                       style={{
-                                          color: activeItem === subItem.id
-                                             ? 'var(--secondary-color)'
-                                             : 'var(--text-muted)'
-                                       }}
-                                    />
+                                 />
 
-                                    {/* Sub-item tooltip for collapsed state */}
-                                    <div className="absolute left-full ml-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-50 pointer-events-none">
-                                       <div className="font-medium">{subItem.label}</div>
-                                       {/* Tooltip arrow */}
-                                       <div className="absolute left-0 top-1/2 transform -translate-x-1 -translate-y-1/2 w-2 h-2 bg-gray-900 rotate-45"></div>
-                                    </div>
-                                 </button>
-                              ))}
-                           </div>
+                                 {/* Sub-item tooltip for collapsed state */}
+                                 <div className="absolute left-full ml-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-50 pointer-events-none">
+                                    <div className="font-medium">{subItem.label}</div>
+                                    {/* Tooltip arrow */}
+                                    <div className="absolute left-0 top-1/2 transform -translate-x-1 -translate-y-1/2 w-2 h-2 bg-gray-900 rotate-45"></div>
+                                 </div>
+                              </button>
+                           ))}
                         </div>
                      )}
                   </div>
