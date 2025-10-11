@@ -1,0 +1,54 @@
+# WoofZoo Server - Cursor AI Rules
+
+## Database & Models
+
+### Enum Handling
+- **NEVER create database ENUMs** (no PostgreSQL ENUM types)
+- **Store enums as strings** in the database using `String(50)` or similar
+- **Define Python enums** in code using `enum.Enum` for type safety
+- **Example**:
+  ```python
+  # In model (CORRECT):
+  class Status(str, enum.Enum):
+      ACTIVE = "active"
+      INACTIVE = "inactive"
+  
+  status: Optional[str] = Column(String(50), nullable=True)
+  
+  # NOT this (WRONG):
+  status: Optional[str] = Column(Enum(Status), nullable=True)  # ❌ Don't use SQLAlchemy Enum()
+  ```
+- **In migrations**: Use `sa.String(50)`, never `sa.Enum()`
+- **Reason**: Database flexibility, easier migrations, no enum type management
+
+### Migration Guidelines
+- Always use string columns for enum-like fields
+- Never use `sa.Enum().create(op.get_bind())`
+- Never use `sa.Enum(name='...').drop()` in downgrades
+
+## General Best Practices
+
+### API Development
+- Use role-based access control with FastAPI dependencies
+- Always include proper error handling and logging
+- Provide comprehensive docstrings
+- Include request/response examples in schemas
+
+### Code Organization
+- Follow clean architecture: models → repositories → services → controllers → routes
+- Use dependency injection throughout
+- Keep business logic in services, not controllers
+- Controllers should only handle HTTP concerns
+
+### Security
+- Enforce RBAC at route level using dependencies
+- Validate all input with Pydantic schemas
+- Log all security-relevant actions
+- Never expose sensitive data in responses
+
+### Documentation
+- Every function must have a docstring with Args, Returns, Raises
+- Include examples in Pydantic schemas
+- Keep API documentation up to date
+- Document design decisions in comments
+

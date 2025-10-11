@@ -455,3 +455,94 @@ The WoofZoo Team
         """
         
         return text_content.strip(), html_content.strip()
+    
+    @staticmethod
+    def get_clinic_access_otp_email_content(
+        to_name: str,
+        otp_code: str,
+        pet_name: str,
+        clinic_name: str,
+        expires_in_minutes: int
+    ) -> tuple[str, str]:
+        """
+        Get clinic access OTP email content.
+        
+        Args:
+            to_name: Recipient name
+            otp_code: 6-digit OTP code
+            pet_name: Name of the pet
+            clinic_name: Name of the clinic
+            expires_in_minutes: OTP expiry time in minutes
+            
+        Returns:
+            tuple[str, str]: (text_content, html_content)
+        """
+        text_content = f"""
+Hello {to_name},
+
+{clinic_name} has requested access to your pet {pet_name}'s records for a clinic visit.
+
+Your One-Time Password (OTP) is:
+
+{otp_code}
+
+This OTP will expire in {expires_in_minutes} minutes.
+
+Please provide this code to the clinic staff to authorize access to your pet's medical records.
+
+If you did not request this or have any concerns, please contact {clinic_name} immediately.
+
+Best regards,
+The WoofZoo Team
+        """
+        
+        html_content = f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Clinic Access OTP - WoofZoo</title>
+    <style>
+        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+        .header {{ background-color: #2196F3; color: white; padding: 20px; text-align: center; }}
+        .content {{ padding: 20px; background-color: #f9f9f9; }}
+        .otp-box {{ background-color: #e3f2fd; border: 2px solid #2196F3; border-radius: 8px; padding: 20px; text-align: center; margin: 20px 0; }}
+        .otp-code {{ font-size: 36px; font-weight: bold; color: #1976D2; letter-spacing: 8px; font-family: 'Courier New', monospace; }}
+        .expiry {{ color: #f44336; font-weight: bold; }}
+        .footer {{ text-align: center; padding: 20px; color: #666; font-size: 12px; }}
+        .warning {{ background-color: #fff3e0; border-left: 4px solid #ff9800; padding: 15px; margin: 20px 0; }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔐 WoofZoo</h1>
+        </div>
+        <div class="content">
+            <h2>Hello {to_name}!</h2>
+            <p><strong>{clinic_name}</strong> has requested access to your pet <strong>{pet_name}'s</strong> records for a clinic visit.</p>
+            
+            <div class="otp-box">
+                <p style="margin-top: 0; color: #666;">Your One-Time Password (OTP)</p>
+                <div class="otp-code">{otp_code}</div>
+                <p class="expiry">⏱️ Expires in {expires_in_minutes} minutes</p>
+            </div>
+            
+            <p>Please provide this code to the clinic staff to authorize access to your pet's medical records.</p>
+            
+            <div class="warning">
+                <p style="margin: 0;"><strong>⚠️ Security Notice:</strong> If you did not request this or have any concerns, please contact {clinic_name} immediately. Do not share this code with anyone else.</p>
+            </div>
+            
+            <p style="margin-top: 30px;"><small>This is an automated message. Your pet's health information is protected and secure.</small></p>
+        </div>
+        <div class="footer">
+            <p>Best regards,<br>The WoofZoo Team</p>
+        </div>
+    </div>
+</body>
+</html>
+        """
+        
+        return text_content.strip(), html_content.strip()

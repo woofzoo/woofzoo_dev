@@ -10,7 +10,7 @@ from typing import Optional
 import uuid
 import enum
 
-from sqlalchemy import Column, DateTime, String, UUID, ForeignKey, Enum, Index
+from sqlalchemy import Column, DateTime, String, UUID, ForeignKey, Index, Float, Integer, Text
 from sqlalchemy.sql import func
 
 from app.database import Base
@@ -21,6 +21,14 @@ class AccessStatus(str, enum.Enum):
     ACTIVE = "active"
     EXPIRED = "expired"
     REVOKED = "revoked"
+
+
+class QueueStatus(str, enum.Enum):
+    """Queue status enumeration."""
+    PENDING_PRECHECK = "pending_precheck"
+    READY_FOR_DOCTOR = "ready_for_doctor"
+    WITH_DOCTOR = "with_doctor"
+    COMPLETED = "completed"
 
 
 class PetClinicAccess(Base):
@@ -73,8 +81,8 @@ class PetClinicAccess(Base):
     access_granted_at: datetime = Column(DateTime, nullable=False)
     access_expires_at: datetime = Column(DateTime, nullable=False, index=True)
     status: str = Column(
-        Enum(AccessStatus), 
-        default=AccessStatus.ACTIVE, 
+        String(50), 
+        default=AccessStatus.ACTIVE.value, 
         nullable=False,
         index=True
     )
@@ -88,6 +96,36 @@ class PetClinicAccess(Base):
         DateTime,
         server_default=func.now(),
         nullable=False
+    )
+    
+    # Pre-check vitals (taken by clinic staff before doctor sees pet)
+    pre_check_weight: Optional[float] = Column(Float, nullable=True)
+    pre_check_temperature: Optional[float] = Column(Float, nullable=True)
+    pre_check_heart_rate: Optional[int] = Column(Integer, nullable=True)
+    pre_check_respiratory_rate: Optional[int] = Column(Integer, nullable=True)
+    pre_check_notes: Optional[str] = Column(Text, nullable=True)
+    pre_check_completed_at: Optional[datetime] = Column(DateTime, nullable=True)
+    pre_check_by_user_id: Optional[uuid.UUID] = Column(
+        UUID(as_uuid=True),
+        ForeignKey("users.public_id"),
+        nullable=True
+    )
+    
+    # Queue management
+    queue_status: Optional[str] = Column(
+        String(50),
+        nullable=True,
+        index=True
+    )
+    queue_position: Optional[int] = Column(Integer, nullable=True)
+    assigned_to_doctor_at: Optional[datetime] = Column(DateTime, nullable=True)
+    visit_completed_at: Optional[datetime] = Column(DateTime, nullable=True)
+    
+    # Link to medical record
+    medical_record_id: Optional[uuid.UUID] = Column(
+        UUID(as_uuid=True),
+        ForeignKey("medical_records.id"),
+        nullable=True
     )
     
     def __repr__(self) -> str:

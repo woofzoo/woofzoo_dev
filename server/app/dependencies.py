@@ -16,6 +16,9 @@ from app.repositories.family import FamilyRepository
 from app.repositories.family_member import FamilyMemberRepository
 from app.repositories.family_invitation import FamilyInvitationRepository
 from app.repositories.photo import PhotoRepository
+from app.repositories.pet_clinic_access import PetClinicAccessRepository
+from app.repositories.otp import OTPRepository
+from app.repositories.medical_record import MedicalRecordRepository
 from app.services.auth import AuthService
 from app.services.email import EmailService
 from app.services.jwt import JWTService
@@ -30,6 +33,8 @@ from app.services.family_invitation import FamilyInvitationService
 from app.services.photo import PhotoService
 from app.services.storage import StorageService
 from app.services.auth_service import AuthenticationService
+from app.services.clinic_workflow_service import ClinicWorkflowService
+from app.services.doctor_queue_service import DoctorQueueService
 from app.middleware.auth import AuthMiddleware
 from app.controllers.auth import AuthController
 from app.controllers.owner import OwnerController
@@ -41,6 +46,8 @@ from app.controllers.family_member import FamilyMemberController
 from app.controllers.family_invitation import FamilyInvitationController
 from app.controllers.photo import PhotoController
 from app.controllers.auth_controller import AuthenticationController
+from app.controllers.clinic_workflow_controller import ClinicWorkflowController
+from app.controllers.doctor_controller import DoctorController
 
 # Security scheme
 security = HTTPBearer()
@@ -126,6 +133,45 @@ def get_family_invitation_repository(session: Session = Depends(get_db_session))
         FamilyInvitationRepository instance
     """
     return FamilyInvitationRepository(session)
+
+
+def get_pet_clinic_access_repository(session: Session = Depends(get_db_session)) -> PetClinicAccessRepository:
+    """
+    Dependency to get pet clinic access repository.
+    
+    Args:
+        session: Database session
+        
+    Returns:
+        PetClinicAccessRepository instance
+    """
+    return PetClinicAccessRepository(session)
+
+
+def get_otp_repository(session: Session = Depends(get_db_session)) -> OTPRepository:
+    """
+    Dependency to get OTP repository.
+    
+    Args:
+        session: Database session
+        
+    Returns:
+        OTPRepository instance
+    """
+    return OTPRepository(session)
+
+
+def get_medical_record_repository(session: Session = Depends(get_db_session)) -> MedicalRecordRepository:
+    """
+    Dependency to get medical record repository.
+    
+    Args:
+        session: Database session
+        
+    Returns:
+        MedicalRecordRepository instance
+    """
+    return MedicalRecordRepository(session)
 
 
 # =============================================================================
@@ -313,6 +359,70 @@ def get_authentication_service(
     return AuthenticationService(user_repository, jwt_service, email_service)
 
 
+def get_clinic_workflow_service(
+    session: Session = Depends(get_db_session),
+    pet_repository: PetRepository = Depends(get_pet_repository),
+    user_repository: UserRepository = Depends(get_user_repository),
+    pet_clinic_access_repository: PetClinicAccessRepository = Depends(get_pet_clinic_access_repository),
+    otp_repository: OTPRepository = Depends(get_otp_repository),
+    medical_record_repository: MedicalRecordRepository = Depends(get_medical_record_repository),
+    email_service: EmailService = Depends(get_email_service)
+) -> ClinicWorkflowService:
+    """
+    Dependency to get clinic workflow service.
+    
+    Args:
+        session: Database session
+        pet_repository: Pet repository instance
+        user_repository: User repository instance
+        pet_clinic_access_repository: Pet clinic access repository instance
+        otp_repository: OTP repository instance
+        medical_record_repository: Medical record repository instance
+        email_service: Email service instance
+        
+    Returns:
+        ClinicWorkflowService instance
+    """
+    return ClinicWorkflowService(
+        session,
+        pet_repository,
+        user_repository,
+        pet_clinic_access_repository,
+        otp_repository,
+        medical_record_repository,
+        email_service
+    )
+
+
+def get_doctor_queue_service(
+    session: Session = Depends(get_db_session),
+    pet_clinic_access_repository: PetClinicAccessRepository = Depends(get_pet_clinic_access_repository),
+    medical_record_repository: MedicalRecordRepository = Depends(get_medical_record_repository),
+    pet_repository: PetRepository = Depends(get_pet_repository),
+    user_repository: UserRepository = Depends(get_user_repository)
+) -> DoctorQueueService:
+    """
+    Dependency to get doctor queue service.
+    
+    Args:
+        session: Database session
+        pet_clinic_access_repository: Pet clinic access repository instance
+        medical_record_repository: Medical record repository instance
+        pet_repository: Pet repository instance
+        user_repository: User repository instance
+        
+    Returns:
+        DoctorQueueService instance
+    """
+    return DoctorQueueService(
+        session,
+        pet_clinic_access_repository,
+        medical_record_repository,
+        pet_repository,
+        user_repository
+    )
+
+
 def get_auth_middleware(
     jwt_service: JWTService = Depends(get_jwt_service),
     user_repository: UserRepository = Depends(get_user_repository)
@@ -456,7 +566,34 @@ def get_family_invitation_controller(
     return FamilyInvitationController(family_invitation_service)
 
 
+def get_clinic_workflow_controller(
+    clinic_workflow_service: ClinicWorkflowService = Depends(get_clinic_workflow_service)
+) -> ClinicWorkflowController:
+    """
+    Dependency to get clinic workflow controller.
+    
+    Args:
+        clinic_workflow_service: Clinic workflow service instance
+        
+    Returns:
+        ClinicWorkflowController instance
+    """
+    return ClinicWorkflowController(clinic_workflow_service)
 
+
+def get_doctor_controller(
+    doctor_queue_service: DoctorQueueService = Depends(get_doctor_queue_service)
+) -> DoctorController:
+    """
+    Dependency to get doctor controller.
+    
+    Args:
+        doctor_queue_service: Doctor queue service instance
+        
+    Returns:
+        DoctorController instance
+    """
+    return DoctorController(doctor_queue_service)
 
 
 # =============================================================================
