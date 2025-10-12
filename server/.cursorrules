@@ -1,125 +1,217 @@
 # WoofZoo Server - Cursor AI Rules
 
-## Database & Models
+This file serves as the main index for all coding rules and conventions.
 
-### Enum Handling
-- **NEVER create database ENUMs** (no PostgreSQL ENUM types)
-- **Store enums as strings** in the database using `String(50)` or similar
-- **Define Python enums** in code using `enum.Enum` for type safety
-- **Example**:
-  ```python
-  # In model (CORRECT):
-  class Status(str, enum.Enum):
-      ACTIVE = "active"
-      INACTIVE = "inactive"
-  
-  status: Optional[str] = Column(String(50), nullable=True)
-  
-  # NOT this (WRONG):
-  status: Optional[str] = Column(Enum(Status), nullable=True)  # ❌ Don't use SQLAlchemy Enum()
-  ```
-- **In migrations**: Use `sa.String(50)`, never `sa.Enum()`
-- **Reason**: Database flexibility, easier migrations, no enum type management
+## Rule Organization
 
-### Migration Guidelines
-- Always use string columns for enum-like fields
-- Never use `sa.Enum().create(op.get_bind())`
-- Never use `sa.Enum(name='...').drop()` in downgrades
+Rules are organized into separate files in the `rules/` directory for better maintainability and easier navigation.
 
-## General Best Practices
+---
 
-### API Development
-- Use role-based access control with FastAPI dependencies
-- Always include proper error handling and logging
-- Provide comprehensive docstrings
-- Include request/response examples in schemas
+## 📚 Rule Files
 
-### Code Organization
-- Follow clean architecture: models → repositories → services → controllers → routes
-- Use dependency injection throughout
-- Keep business logic in services, not controllers
-- Controllers should only handle HTTP concerns
+### [01-database.md](rules/01-database.md) - Database & Models
+- **NEVER create database ENUMs** - Store as strings
+- Migration guidelines
+- Enum handling patterns
 
-### Service Layer
-- Services must NEVER receive `Session` as a dependency
-- Services must ONLY call repository methods for data access
-- Services must NOT use `session.commit()`, `session.refresh()`, or `session.query()`
-- All database operations must go through repositories
-- Example:
-  ```python
-  # CORRECT ✅
-  class MyService:
-      def __init__(self, repo: Repository):
-          self.repo = repo
-      
-      def update_item(self, item_id):
-          item = self.repo.get(item_id)
-          item.field = "new_value"
-          return self.repo.update_entity(item)
-  
-  # WRONG ❌
-  class MyService:
-      def __init__(self, db: Session, repo: Repository):
-          self.db = db  # Never inject Session!
-      
-      def update_item(self, item_id):
-          item = self.repo.get(item_id)
-          item.field = "new_value"
-          self.db.commit()  # Never use session directly!
-  ```
+### [02-architecture.md](rules/02-architecture.md) - Architecture & Code Organization
+- Clean architecture: models → repositories → services → controllers → routes
+- Layer responsibilities
+- Dependency injection
 
-### Repository Layer
-- All database access must happen in repositories
-- Repositories should extend `BaseRepository` for common operations
-- Use `update_entity()`, `commit()`, `refresh()` from base repository
-- Add domain-specific query methods to repositories
-- Repositories handle all SQLAlchemy session operations
+### [03-service-layer.md](rules/03-service-layer.md) - Service Layer Rules
+- **NEVER inject `Session` into services** ⚠️
+- Services only call repository methods
+- Business logic patterns
 
-### Security
-- Enforce RBAC at route level using dependencies
-- Validate all input with Pydantic schemas
-- Log all security-relevant actions
-- Never expose sensitive data in responses
+### [04-repository-layer.md](rules/04-repository-layer.md) - Repository Layer Rules
+- All database access happens in repositories
+- BaseRepository usage
+- Domain-specific query methods
 
-### Documentation
-- Every function must have a docstring with Args, Returns, Raises
-- Include examples in Pydantic schemas
-- Keep API documentation up to date
-- Document design decisions in comments
+### [05-api-development.md](rules/05-api-development.md) - API Development & Security
+- Role-based access control (RBAC)
+- Input validation
+- Security best practices
 
-### Documentation Organization
-- **All implementation docs must go in `docs/YYYY-MM-DD/` folders**
-- **Create a new date folder for each day's documentation**
-- **Never create documentation files in the project root** (except README.md)
-- **File naming convention**: Use descriptive UPPERCASE names with underscores
-  - Examples: `FEATURE_IMPLEMENTATION.md`, `SERVICE_REFACTORING.md`
-- **What goes in dated folders**:
-  - Implementation summaries
-  - Status reports
-  - Feature guides
-  - API documentation
-  - Architecture decisions
-  - Migration guides
-  - Testing reports
-- **What stays in root**:
-  - `README.md` (main project readme)
-  - `.cursorrules` (this file)
-- **What stays in `docs/` root**:
-  - User journey documents
-  - Technical requirement documents (TRDs)
-  - Feature specifications
-  - Project timelines
-- **Example structure**:
-  ```
-  docs/
-  ├── 2025-10-12/
-  │   ├── SERVICE_LAYER_REFACTORING_COMPLETE.md
-  │   ├── CLINIC_WORKFLOW_IMPLEMENTATION.md
-  │   └── API_TESTING_GUIDE.md
-  ├── 2025-10-13/
-  │   └── NEW_FEATURE_IMPLEMENTATION.md
-  ├── features/
-  │   └── authentication-api.md
-  └── user_onboarding_trd_v2.md
-  ```
+### [06-documentation.md](rules/06-documentation.md) - Code Documentation
+- Function docstrings (Args, Returns, Raises)
+- Schema documentation
+- API route documentation
 
+### [07-doc-organization.md](rules/07-doc-organization.md) - Documentation Organization
+- **All docs go in `docs/YYYY-MM-DD/` folders** 📁
+- File naming: UPPERCASE with underscores
+- Never create docs in project root
+
+---
+
+## 🚨 Critical Rules (Always Remember)
+
+### 1. Never Inject Session into Services
+```python
+# ❌ WRONG
+class MyService:
+    def __init__(self, db: Session):
+        self.db = db
+
+# ✅ CORRECT
+class MyService:
+    def __init__(self, repo: Repository):
+        self.repo = repo
+```
+**See**: [rules/03-service-layer.md](rules/03-service-layer.md)
+
+### 2. Never Create Database ENUMs
+```python
+# ❌ WRONG
+status = Column(Enum(Status))
+
+# ✅ CORRECT  
+status = Column(String(50))
+```
+**See**: [rules/01-database.md](rules/01-database.md)
+
+### 3. All Docs in Dated Folders
+```bash
+# ✅ CORRECT
+docs/2025-10-12/MY_FEATURE_IMPLEMENTATION.md
+
+# ❌ WRONG
+MY_FEATURE_IMPLEMENTATION.md  # In project root
+```
+**See**: [rules/07-doc-organization.md](rules/07-doc-organization.md)
+
+### 4. Follow Clean Architecture
+```
+models → repositories → services → controllers → routes
+```
+**See**: [rules/02-architecture.md](rules/02-architecture.md)
+
+### 5. Enforce RBAC at Route Level
+```python
+@router.post("/clinic-endpoint")
+def endpoint(
+    current_user: User = Depends(get_clinic_owner_user)  # Role check!
+):
+    ...
+```
+**See**: [rules/05-api-development.md](rules/05-api-development.md)
+
+---
+
+## 📖 Quick Reference
+
+| Need to... | See |
+|------------|-----|
+| Create a service | [03-service-layer.md](rules/03-service-layer.md) |
+| Add repository method | [04-repository-layer.md](rules/04-repository-layer.md) |
+| Handle enums | [01-database.md](rules/01-database.md) |
+| Secure an endpoint | [05-api-development.md](rules/05-api-development.md) |
+| Write docs | [06-documentation.md](rules/06-documentation.md) |
+| Organize files | [07-doc-organization.md](rules/07-doc-organization.md) |
+| Understand architecture | [02-architecture.md](rules/02-architecture.md) |
+
+---
+
+## 🔍 Finding Specific Rules
+
+### By Category
+- **Database**: [rules/01-database.md](rules/01-database.md)
+- **Architecture**: [rules/02-architecture.md](rules/02-architecture.md)
+- **Services**: [rules/03-service-layer.md](rules/03-service-layer.md)
+- **Repositories**: [rules/04-repository-layer.md](rules/04-repository-layer.md)
+- **APIs**: [rules/05-api-development.md](rules/05-api-development.md)
+- **Docs**: [rules/06-documentation.md](rules/06-documentation.md), [rules/07-doc-organization.md](rules/07-doc-organization.md)
+
+### Search All Rules
+```bash
+# Find rules about a specific topic
+grep -r "your-topic" rules/
+
+# List all rule files
+ls -1 rules/*.md
+```
+
+---
+
+## 📂 Project Structure
+
+```
+server/
+├── .cursorrules           # This file (index of rules)
+├── README.md             # Project README
+│
+├── rules/                # Modular rule files
+│   ├── README.md
+│   ├── 01-database.md
+│   ├── 02-architecture.md
+│   ├── 03-service-layer.md
+│   ├── 04-repository-layer.md
+│   ├── 05-api-development.md
+│   ├── 06-documentation.md
+│   └── 07-doc-organization.md
+│
+├── docs/                 # Documentation
+│   ├── YYYY-MM-DD/      # Date-based docs
+│   ├── features/        # Feature specs
+│   └── [TRDs & journeys]
+│
+└── app/                  # Application code
+    ├── models/          # Database models
+    ├── repositories/    # Data access layer
+    ├── services/        # Business logic layer
+    ├── controllers/     # HTTP layer
+    └── routes/          # API endpoints
+```
+
+---
+
+## 🎯 For Cursor AI
+
+When generating or modifying code:
+1. ✅ Follow clean architecture (no layer bypassing)
+2. ✅ Never inject `Session` into services
+3. ✅ Never create database ENUMs
+4. ✅ Put all docs in `docs/YYYY-MM-DD/` folders
+5. ✅ Enforce RBAC at route level
+6. ✅ Document all functions with docstrings
+7. ✅ Use descriptive UPPERCASE names for docs
+
+---
+
+## 🔄 Rule Updates
+
+To update rules:
+1. Edit the relevant file in `rules/`
+2. Update examples if needed
+3. Keep this index in sync
+4. Document rationale for changes
+
+---
+
+## 📝 Documentation Standards
+
+- Every function needs docstring with Args, Returns, Raises
+- Pydantic schemas need examples
+- API routes need full documentation
+- Complex logic needs inline comments
+- All implementation docs go in `docs/YYYY-MM-DD/`
+
+---
+
+## ✅ Compliance
+
+These rules are **mandatory** for all code in this project.
+
+Cursor AI automatically enforces these rules when generating code.
+
+For detailed information on any rule, see the corresponding file in the `rules/` directory.
+
+---
+
+**Rule Files**: 7  
+**Last Updated**: October 12, 2025  
+**Status**: ✅ Active and Enforced  
+**Full Index**: [rules/README.md](rules/README.md)
