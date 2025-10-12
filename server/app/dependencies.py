@@ -360,7 +360,6 @@ def get_authentication_service(
 
 
 def get_clinic_workflow_service(
-    session: Session = Depends(get_db_session),
     pet_repository: PetRepository = Depends(get_pet_repository),
     user_repository: UserRepository = Depends(get_user_repository),
     pet_clinic_access_repository: PetClinicAccessRepository = Depends(get_pet_clinic_access_repository),
@@ -372,7 +371,6 @@ def get_clinic_workflow_service(
     Dependency to get clinic workflow service.
     
     Args:
-        session: Database session
         pet_repository: Pet repository instance
         user_repository: User repository instance
         pet_clinic_access_repository: Pet clinic access repository instance
@@ -384,7 +382,6 @@ def get_clinic_workflow_service(
         ClinicWorkflowService instance
     """
     return ClinicWorkflowService(
-        session,
         pet_repository,
         user_repository,
         pet_clinic_access_repository,
@@ -395,7 +392,6 @@ def get_clinic_workflow_service(
 
 
 def get_doctor_queue_service(
-    session: Session = Depends(get_db_session),
     pet_clinic_access_repository: PetClinicAccessRepository = Depends(get_pet_clinic_access_repository),
     medical_record_repository: MedicalRecordRepository = Depends(get_medical_record_repository),
     pet_repository: PetRepository = Depends(get_pet_repository),
@@ -405,7 +401,6 @@ def get_doctor_queue_service(
     Dependency to get doctor queue service.
     
     Args:
-        session: Database session
         pet_clinic_access_repository: Pet clinic access repository instance
         medical_record_repository: Medical record repository instance
         pet_repository: Pet repository instance
@@ -415,7 +410,6 @@ def get_doctor_queue_service(
         DoctorQueueService instance
     """
     return DoctorQueueService(
-        session,
         pet_clinic_access_repository,
         medical_record_repository,
         pet_repository,

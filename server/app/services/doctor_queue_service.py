@@ -12,9 +12,6 @@ from typing import List, Tuple, Optional
 from datetime import datetime, timezone, date, timedelta
 import uuid
 
-from sqlalchemy.orm import Session
-from sqlalchemy import and_, or_
-
 from app.models.pet_clinic_access import PetClinicAccess, QueueStatus
 from app.models.medical_record import MedicalRecord
 from app.models.pet import Pet
@@ -31,14 +28,12 @@ class DoctorQueueService:
     
     def __init__(
         self,
-        db: Session,
         pet_clinic_access_repository: PetClinicAccessRepository,
         medical_record_repository: MedicalRecordRepository,
         pet_repository: PetRepository,
         user_repository: UserRepository
     ):
         """Initialize the doctor queue service."""
-        self.db = db
         self.pet_clinic_access_repository = pet_clinic_access_repository
         self.medical_record_repository = medical_record_repository
         self.pet_repository = pet_repository
@@ -59,23 +54,15 @@ class DoctorQueueService:
         """
         today = datetime.now(timezone.utc).date()
         tomorrow = today + timedelta(days=1)
+        start_date = datetime.combine(today, datetime.min.time())
+        end_date = datetime.combine(tomorrow, datetime.min.time())
         
-        # Query all access records assigned to this doctor today
-        queue_items = self.db.query(PetClinicAccess).filter(
-            and_(
-                PetClinicAccess.medical_record_id.isnot(None),
-                PetClinicAccess.assigned_to_doctor_at >= datetime.combine(today, datetime.min.time()),
-                PetClinicAccess.assigned_to_doctor_at < datetime.combine(tomorrow, datetime.min.time()),
-                PetClinicAccess.queue_status.in_([QueueStatus.WITH_DOCTOR, QueueStatus.COMPLETED])
-            )
-        ).join(
-            MedicalRecord,
-            PetClinicAccess.medical_record_id == MedicalRecord.id
-        ).filter(
-            MedicalRecord.doctor_id == doctor_id
-        ).order_by(
-            PetClinicAccess.queue_position
-        ).all()
+        # Use repository method to get queue items
+        queue_items = self.pet_clinic_access_repository.get_todays_queue_for_doctor(
+            doctor_id=doctor_id,
+            start_date=start_date,
+            end_date=end_date
+        )
         
         # Calculate statistics
         total = len(queue_items)
@@ -137,15 +124,12 @@ class DoctorQueueService:
         if not owner:
             raise ValueError("Pet owner not found")
         
-        # Get medical history (excluding current visit)
-        medical_history = self.db.query(MedicalRecord).filter(
-            and_(
-                MedicalRecord.pet_id == pet.id,
-                MedicalRecord.id != medical_record_id
-            )
-        ).order_by(
-            MedicalRecord.visit_date.desc()
-        ).limit(10).all()
+        # Get medical history using repository method
+        medical_history = self.medical_record_repository.get_medical_history_excluding(
+            pet_id=pet.id,
+            exclude_record_id=medical_record_id,
+            limit=10
+        )
         
         logger.info(
             "Visit details retrieved",
@@ -197,27 +181,23 @@ class DoctorQueueService:
         if medical_record.doctor_id != doctor_id:
             raise ValueError("Not authorized to update this medical record")
         
-        # Update fields
-        if diagnosis is not None:
-            medical_record.diagnosis = diagnosis
-        if treatment_plan is not None:
-            medical_record.treatment_plan = treatment_plan
-        if clinical_notes is not None:
-            medical_record.clinical_notes = clinical_notes
+        # Prepare vital signs update
+        vital_signs_update = {}
+        if weight:
+            vital_signs_update["weight"] = weight
+        if temperature:
+            vital_signs_update["temperature"] = temperature
+        if vital_signs:
+            vital_signs_update.update(vital_signs)
         
-        # Update vital signs
-        if weight or temperature or vital_signs:
-            existing_vitals = medical_record.vital_signs or {}
-            if weight:
-                existing_vitals["weight"] = weight
-            if temperature:
-                existing_vitals["temperature"] = temperature
-            if vital_signs:
-                existing_vitals.update(vital_signs)
-            medical_record.vital_signs = existing_vitals
-        
-        self.db.commit()
-        self.db.refresh(medical_record)
+        # Use repository method to update
+        medical_record = self.medical_record_repository.update_visit_record(
+            medical_record_id=medical_record_id,
+            diagnosis=diagnosis,
+            treatment_plan=treatment_plan,
+            clinical_notes=clinical_notes,
+            vital_signs_update=vital_signs_update if vital_signs_update else None
+        )
         
         logger.info(
             "Visit details updated",
@@ -262,25 +242,19 @@ class DoctorQueueService:
         if medical_record.doctor_id != doctor_id:
             raise ValueError("Not authorized to complete this visit")
         
-        # Update medical record with follow-up info
+        # Update medical record with follow-up info using repository method
         if follow_up_required:
-            medical_record.follow_up_date = follow_up_date
-            medical_record.follow_up_notes = follow_up_notes
+            medical_record = self.medical_record_repository.update_follow_up(
+                medical_record_id=medical_record_id,
+                follow_up_date=follow_up_date,
+                follow_up_notes=follow_up_notes
+            )
         
-        # Find associated access record
-        access = self.db.query(PetClinicAccess).filter(
-            PetClinicAccess.medical_record_id == medical_record_id
-        ).first()
-        
-        if access:
-            # Update access record
-            access.queue_status = QueueStatus.COMPLETED
-            access.visit_completed_at = datetime.now(timezone.utc)
-        
-        self.db.commit()
-        self.db.refresh(medical_record)
-        if access:
-            self.db.refresh(access)
+        # Use repository method to complete visit
+        access = self.pet_clinic_access_repository.complete_visit(
+            medical_record_id=medical_record_id,
+            completed_at=datetime.now(timezone.utc)
+        )
         
         logger.info(
             "Visit marked as complete",

@@ -13,8 +13,6 @@ from datetime import datetime, timezone, timedelta
 import uuid
 import secrets
 
-from sqlalchemy.orm import Session
-
 from app.models.pet import Pet
 from app.models.user import User
 from app.models.pet_clinic_access import PetClinicAccess, QueueStatus, AccessStatus
@@ -35,7 +33,6 @@ class ClinicWorkflowService:
     
     def __init__(
         self,
-        db: Session,
         pet_repository: PetRepository,
         user_repository: UserRepository,
         pet_clinic_access_repository: PetClinicAccessRepository,
@@ -44,7 +41,6 @@ class ClinicWorkflowService:
         email_service: EmailService
     ):
         """Initialize the clinic workflow service."""
-        self.db = db
         self.pet_repository = pet_repository
         self.user_repository = user_repository
         self.pet_clinic_access_repository = pet_clinic_access_repository
@@ -271,7 +267,9 @@ class ClinicWorkflowService:
             otp_id=otp.id,
             purpose="Clinic visit with doctor assignment",
             status=AccessStatus.ACTIVE,
-            queue_status=QueueStatus.PENDING_PRECHECK
+            queue_status=QueueStatus.PENDING_PRECHECK,
+            access_granted_at=datetime.now(timezone.utc),
+            access_expires_at=datetime.now(timezone.utc) + timedelta(hours=10)
         )
         
         logger.info(
@@ -325,20 +323,18 @@ class ClinicWorkflowService:
         if access.queue_status != QueueStatus.PENDING_PRECHECK:
             raise ValueError(f"Cannot update pre-checks. Current status: {access.queue_status}")
         
-        # Update pre-check fields
-        access.pre_check_weight = weight
-        access.pre_check_temperature = temperature
-        access.pre_check_heart_rate = heart_rate
-        access.pre_check_respiratory_rate = respiratory_rate
-        access.pre_check_notes = notes
-        access.pre_check_completed_at = datetime.now(timezone.utc)
-        access.pre_check_by_user_id = clinic_user_id
-        
-        # Update queue status to ready for doctor
-        access.queue_status = QueueStatus.READY_FOR_DOCTOR
-        
-        self.db.commit()
-        self.db.refresh(access)
+        # Use repository method to update pre-check vitals
+        access = self.pet_clinic_access_repository.update_pre_check_vitals(
+            access_record_id=access_record_id,
+            weight=weight,
+            temperature=temperature,
+            heart_rate=heart_rate,
+            respiratory_rate=respiratory_rate,
+            notes=notes,
+            completed_at=datetime.now(timezone.utc),
+            completed_by_user_id=clinic_user_id,
+            new_queue_status=QueueStatus.READY_FOR_DOCTOR.value
+        )
         
         logger.info(
             "Pre-check vitals updated",
@@ -404,21 +400,21 @@ class ClinicWorkflowService:
             ]) else None
         )
         
-        # Update access record
-        access.medical_record_id = medical_record.id
-        access.queue_status = QueueStatus.WITH_DOCTOR
-        access.assigned_to_doctor_at = datetime.now(timezone.utc)
+        # Calculate queue position using repository method
+        assigned_at = datetime.now(timezone.utc)
+        active_count = self.pet_clinic_access_repository.count_active_in_queue(
+            queue_status=QueueStatus.WITH_DOCTOR.value,
+            assigned_before=assigned_at
+        )
         
-        # Calculate queue position (simple: count active pets with doctor)
-        active_count = self.db.query(PetClinicAccess).filter(
-            PetClinicAccess.queue_status == QueueStatus.WITH_DOCTOR,
-            PetClinicAccess.assigned_to_doctor_at <= access.assigned_to_doctor_at
-        ).count()
-        access.queue_position = active_count
-        
-        self.db.commit()
-        self.db.refresh(access)
-        self.db.refresh(medical_record)
+        # Use repository method to update access record for doctor assignment
+        access = self.pet_clinic_access_repository.assign_to_doctor(
+            access_record_id=access_record_id,
+            medical_record_id=medical_record.id,
+            queue_status=QueueStatus.WITH_DOCTOR.value,
+            assigned_at=assigned_at,
+            queue_position=active_count
+        )
         
         logger.info(
             "Pet assigned to doctor",

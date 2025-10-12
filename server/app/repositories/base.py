@@ -66,6 +66,44 @@ class BaseRepository(Generic[ModelType]):
         self.session.refresh(instance)
         return instance
     
+    def update_entity(self, entity: ModelType) -> ModelType:
+        """
+        Update entity and commit changes.
+        
+        Args:
+            entity: Model instance to update
+            
+        Returns:
+            Updated model instance
+        """
+        self.session.add(entity)
+        self.session.commit()
+        self.session.refresh(entity)
+        return entity
+    
+    def delete_entity(self, entity: ModelType) -> None:
+        """
+        Delete entity and commit.
+        
+        Args:
+            entity: Model instance to delete
+        """
+        self.session.delete(entity)
+        self.session.commit()
+    
+    def commit(self) -> None:
+        """Commit current transaction."""
+        self.session.commit()
+    
+    def refresh(self, entity: ModelType) -> None:
+        """
+        Refresh entity from database.
+        
+        Args:
+            entity: Model instance to refresh
+        """
+        self.session.refresh(entity)
+    
     def get_by_id(self, id: str) -> Optional[ModelType]:
         """
         Get a record by ID.

@@ -236,5 +236,109 @@ class MedicalRecordRepository(BaseRepository[MedicalRecord]):
             return result.scalars().all()
         except (ValueError, AttributeError):
             return []
+    
+    def get_medical_history_excluding(
+        self,
+        pet_id: uuid.UUID,
+        exclude_record_id: uuid.UUID,
+        limit: int = 10
+    ) -> List[MedicalRecord]:
+        """
+        Get medical history for a pet, excluding a specific record.
+        
+        Args:
+            pet_id: Pet UUID
+            exclude_record_id: Medical record UUID to exclude
+            limit: Maximum number of records to return
+            
+        Returns:
+            List of MedicalRecord instances, ordered by visit date descending
+        """
+        medical_history = self.session.query(MedicalRecord).filter(
+            and_(
+                MedicalRecord.pet_id == pet_id,
+                MedicalRecord.id != exclude_record_id
+            )
+        ).order_by(
+            MedicalRecord.visit_date.desc()
+        ).limit(limit).all()
+        
+        return medical_history
+    
+    def update_visit_record(
+        self,
+        medical_record_id: uuid.UUID,
+        diagnosis: Optional[str] = None,
+        treatment_plan: Optional[str] = None,
+        clinical_notes: Optional[str] = None,
+        vital_signs_update: Optional[dict] = None
+    ) -> MedicalRecord:
+        """
+        Update a medical record with visit details.
+        
+        Args:
+            medical_record_id: Medical record UUID
+            diagnosis: Diagnosis text
+            treatment_plan: Treatment plan
+            clinical_notes: Clinical notes
+            vital_signs_update: Vital signs to update/add
+            
+        Returns:
+            Updated MedicalRecord instance
+            
+        Raises:
+            ValueError: If record not found
+        """
+        medical_record = self.get(medical_record_id)
+        if not medical_record:
+            raise ValueError("Medical record not found")
+        
+        # Update fields
+        if diagnosis is not None:
+            medical_record.diagnosis = diagnosis
+        if treatment_plan is not None:
+            medical_record.treatment_plan = treatment_plan
+        if clinical_notes is not None:
+            medical_record.clinical_notes = clinical_notes
+        
+        # Update vital signs
+        if vital_signs_update:
+            existing_vitals = medical_record.vital_signs or {}
+            existing_vitals.update(vital_signs_update)
+            medical_record.vital_signs = existing_vitals
+        
+        return self.update_entity(medical_record)
+    
+    def update_follow_up(
+        self,
+        medical_record_id: uuid.UUID,
+        follow_up_date: Optional[date] = None,
+        follow_up_notes: Optional[str] = None
+    ) -> MedicalRecord:
+        """
+        Update follow-up information for a medical record.
+        
+        Args:
+            medical_record_id: Medical record UUID
+            follow_up_date: Date for follow-up
+            follow_up_notes: Follow-up instructions
+            
+        Returns:
+            Updated MedicalRecord instance
+            
+        Raises:
+            ValueError: If record not found
+        """
+        medical_record = self.get(medical_record_id)
+        if not medical_record:
+            raise ValueError("Medical record not found")
+        
+        if follow_up_date is not None:
+            medical_record.follow_up_date = follow_up_date
+            medical_record.follow_up_required = True
+        if follow_up_notes is not None:
+            medical_record.follow_up_notes = follow_up_notes
+        
+        return self.update_entity(medical_record)
 
 

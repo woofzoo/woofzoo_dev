@@ -37,10 +37,7 @@ class PetRepository(BaseRepository[Pet]):
         Returns:
             Pet instance or None if not found
         """
-        result = self.session.execute(
-            select(Pet).where(Pet.id == id)
-        )
-        return result.scalar_one_or_none()
+        return self.session.get(Pet, id)
     
     def get_by_pet_id(self, pet_id: str) -> Optional[Pet]:
         """

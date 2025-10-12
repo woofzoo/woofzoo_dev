@@ -40,6 +40,41 @@
 - Keep business logic in services, not controllers
 - Controllers should only handle HTTP concerns
 
+### Service Layer
+- Services must NEVER receive `Session` as a dependency
+- Services must ONLY call repository methods for data access
+- Services must NOT use `session.commit()`, `session.refresh()`, or `session.query()`
+- All database operations must go through repositories
+- Example:
+  ```python
+  # CORRECT ✅
+  class MyService:
+      def __init__(self, repo: Repository):
+          self.repo = repo
+      
+      def update_item(self, item_id):
+          item = self.repo.get(item_id)
+          item.field = "new_value"
+          return self.repo.update_entity(item)
+  
+  # WRONG ❌
+  class MyService:
+      def __init__(self, db: Session, repo: Repository):
+          self.db = db  # Never inject Session!
+      
+      def update_item(self, item_id):
+          item = self.repo.get(item_id)
+          item.field = "new_value"
+          self.db.commit()  # Never use session directly!
+  ```
+
+### Repository Layer
+- All database access must happen in repositories
+- Repositories should extend `BaseRepository` for common operations
+- Use `update_entity()`, `commit()`, `refresh()` from base repository
+- Add domain-specific query methods to repositories
+- Repositories handle all SQLAlchemy session operations
+
 ### Security
 - Enforce RBAC at route level using dependencies
 - Validate all input with Pydantic schemas
@@ -51,4 +86,40 @@
 - Include examples in Pydantic schemas
 - Keep API documentation up to date
 - Document design decisions in comments
+
+### Documentation Organization
+- **All implementation docs must go in `docs/YYYY-MM-DD/` folders**
+- **Create a new date folder for each day's documentation**
+- **Never create documentation files in the project root** (except README.md)
+- **File naming convention**: Use descriptive UPPERCASE names with underscores
+  - Examples: `FEATURE_IMPLEMENTATION.md`, `SERVICE_REFACTORING.md`
+- **What goes in dated folders**:
+  - Implementation summaries
+  - Status reports
+  - Feature guides
+  - API documentation
+  - Architecture decisions
+  - Migration guides
+  - Testing reports
+- **What stays in root**:
+  - `README.md` (main project readme)
+  - `.cursorrules` (this file)
+- **What stays in `docs/` root**:
+  - User journey documents
+  - Technical requirement documents (TRDs)
+  - Feature specifications
+  - Project timelines
+- **Example structure**:
+  ```
+  docs/
+  ├── 2025-10-12/
+  │   ├── SERVICE_LAYER_REFACTORING_COMPLETE.md
+  │   ├── CLINIC_WORKFLOW_IMPLEMENTATION.md
+  │   └── API_TESTING_GUIDE.md
+  ├── 2025-10-13/
+  │   └── NEW_FEATURE_IMPLEMENTATION.md
+  ├── features/
+  │   └── authentication-api.md
+  └── user_onboarding_trd_v2.md
+  ```
 
