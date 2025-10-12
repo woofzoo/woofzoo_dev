@@ -148,6 +148,20 @@ def get_pet_clinic_access_repository(session: Session = Depends(get_db_session))
     return PetClinicAccessRepository(session)
 
 
+def get_clinic_profile_repository(session: Session = Depends(get_db_session)):
+    """
+    Dependency to get clinic profile repository.
+    
+    Args:
+        session: Database session
+        
+    Returns:
+        ClinicProfileRepository instance
+    """
+    from app.repositories.clinic_profile import ClinicProfileRepository
+    return ClinicProfileRepository(session)
+
+
 def get_otp_repository(session: Session = Depends(get_db_session)) -> OTPRepository:
     """
     Dependency to get OTP repository.
@@ -363,6 +377,7 @@ def get_clinic_workflow_service(
     pet_repository: PetRepository = Depends(get_pet_repository),
     user_repository: UserRepository = Depends(get_user_repository),
     pet_clinic_access_repository: PetClinicAccessRepository = Depends(get_pet_clinic_access_repository),
+    clinic_profile_repository = Depends(get_clinic_profile_repository),
     otp_repository: OTPRepository = Depends(get_otp_repository),
     medical_record_repository: MedicalRecordRepository = Depends(get_medical_record_repository),
     email_service: EmailService = Depends(get_email_service)
@@ -374,6 +389,7 @@ def get_clinic_workflow_service(
         pet_repository: Pet repository instance
         user_repository: User repository instance
         pet_clinic_access_repository: Pet clinic access repository instance
+        clinic_profile_repository: Clinic profile repository instance
         otp_repository: OTP repository instance
         medical_record_repository: Medical record repository instance
         email_service: Email service instance
@@ -385,6 +401,7 @@ def get_clinic_workflow_service(
         pet_repository,
         user_repository,
         pet_clinic_access_repository,
+        clinic_profile_repository,
         otp_repository,
         medical_record_repository,
         email_service

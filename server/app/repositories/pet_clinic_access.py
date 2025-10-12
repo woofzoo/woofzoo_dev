@@ -28,6 +28,12 @@ class PetClinicAccessRepository(BaseRepository[PetClinicAccess]):
     def __init__(self, session: Session) -> None:
         """Initialize the pet clinic access repository."""
         super().__init__(PetClinicAccess, session)
+
+    def get_by_id(self, id: uuid.UUID) -> Optional[PetClinicAccess]:
+        """
+        Get a pet clinic access by id.
+        """
+        return self.session.get(PetClinicAccess, id)
     
     def get_by_pet_id(self, pet_id: str, skip: int = 0, limit: int = 100) -> List[PetClinicAccess]:
         """
@@ -256,7 +262,7 @@ class PetClinicAccessRepository(BaseRepository[PetClinicAccess]):
         Raises:
             ValueError: If access record not found
         """
-        access = self.get(access_record_id)
+        access = self.get_by_id(access_record_id)
         if not access:
             raise ValueError("Access record not found")
         

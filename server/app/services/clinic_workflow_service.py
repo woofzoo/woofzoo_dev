@@ -21,6 +21,7 @@ from app.models.medical_record import MedicalRecord
 from app.repositories.pet import PetRepository
 from app.repositories.user import UserRepository
 from app.repositories.pet_clinic_access import PetClinicAccessRepository
+from app.repositories.clinic_profile import ClinicProfileRepository
 from app.repositories.otp import OTPRepository
 from app.repositories.medical_record import MedicalRecordRepository
 from app.services.email import EmailService
@@ -36,6 +37,7 @@ class ClinicWorkflowService:
         pet_repository: PetRepository,
         user_repository: UserRepository,
         pet_clinic_access_repository: PetClinicAccessRepository,
+        clinic_profile_repository: ClinicProfileRepository,
         otp_repository: OTPRepository,
         medical_record_repository: MedicalRecordRepository,
         email_service: EmailService
@@ -44,6 +46,7 @@ class ClinicWorkflowService:
         self.pet_repository = pet_repository
         self.user_repository = user_repository
         self.pet_clinic_access_repository = pet_clinic_access_repository
+        self.clinic_profile_repository = clinic_profile_repository
         self.otp_repository = otp_repository
         self.medical_record_repository = medical_record_repository
         self.email_service = email_service
@@ -223,7 +226,7 @@ class ClinicWorkflowService:
         
         Args:
             pet_id: UUID of the pet
-            clinic_id: UUID of the clinic
+            clinic_id: UUID of the clinic profile (not user_id)
             otp_code: OTP code to verify
             clinic_user_id: UUID of the clinic user
             
@@ -232,7 +235,13 @@ class ClinicWorkflowService:
             
         Raises:
             ValueError: If OTP is invalid, expired, or already used
+            ValueError: If clinic profile not found
         """
+        # Get clinic profile to retrieve user_id
+        clinic_profile = self.clinic_profile_repository.get_by_user_id(str(clinic_id))
+        if not clinic_profile:
+            raise ValueError("Clinic profile not found")
+        
         # Get pet and owner
         pet = self.pet_repository.get_by_id(pet_id)
         if not pet:
@@ -259,10 +268,10 @@ class ClinicWorkflowService:
         # Mark OTP as used
         self.otp_repository.mark_used(otp.id)
         
-        # Create access record
+        # Create access record with clinic's id
         access = self.pet_clinic_access_repository.create(
             pet_id=pet_id,
-            clinic_id=clinic_id,
+            clinic_id=clinic_profile.id,  # Use id from clinic profile
             owner_id=owner.public_id,
             otp_id=otp.id,
             purpose="Clinic visit with doctor assignment",
@@ -277,7 +286,8 @@ class ClinicWorkflowService:
             extra={
                 "access_id": str(access.id),
                 "pet_id": str(pet_id),
-                "clinic_id": str(clinic_id),
+                "clinic_profile_id": str(clinic_id),
+                "clinic_user_id": str(clinic_profile.user_id),
                 "queue_status": access.queue_status
             }
         )
@@ -313,7 +323,7 @@ class ClinicWorkflowService:
             ValueError: If access record not found or invalid status
         """
         # Get access record
-        access = self.pet_clinic_access_repository.get(access_record_id)
+        access = self.pet_clinic_access_repository.get_by_id(access_record_id)
         if not access:
             raise ValueError("Access record not found")
         
