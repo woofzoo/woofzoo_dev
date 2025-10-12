@@ -301,7 +301,7 @@ class PetClinicAccessRepository(BaseRepository[PetClinicAccess]):
         Raises:
             ValueError: If access record not found
         """
-        access = self.get(access_record_id)
+        access = self.get_by_id(access_record_id)
         if not access:
             raise ValueError("Access record not found")
         

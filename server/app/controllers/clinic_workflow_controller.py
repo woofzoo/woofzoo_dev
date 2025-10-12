@@ -376,6 +376,7 @@ class ClinicWorkflowController:
             
             access, medical_record = self.clinic_workflow_service.assign_to_doctor(
                 access_record_id=access_id,
+                clinic_user=current_user,
                 doctor_id=doctor_id,
                 visit_type=assign_request.visit_type,
                 chief_complaint=assign_request.chief_complaint

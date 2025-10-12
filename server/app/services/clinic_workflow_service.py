@@ -360,6 +360,7 @@ class ClinicWorkflowService:
     def assign_to_doctor(
         self,
         access_record_id: uuid.UUID,
+        clinic_user: User,
         doctor_id: uuid.UUID,
         visit_type: str,
         chief_complaint: Optional[str] = None
@@ -380,7 +381,7 @@ class ClinicWorkflowService:
             ValueError: If access record not found or invalid status
         """
         # Get access record
-        access = self.pet_clinic_access_repository.get(access_record_id)
+        access = self.pet_clinic_access_repository.get_by_id(access_record_id)
         if not access:
             raise ValueError("Access record not found")
         
@@ -390,13 +391,21 @@ class ClinicWorkflowService:
         if access.queue_status != QueueStatus.READY_FOR_DOCTOR:
             raise ValueError(f"Pet not ready for doctor assignment. Current status: {access.queue_status}")
         
+        # Get clinic profile to retrieve user_id
+        clinic_profile = self.clinic_profile_repository.get_by_user_id(str(clinic_user.public_id))
+        if not clinic_profile:
+            raise ValueError("Only clinic owners can assign pets to doctors")
+
         # Create medical record
         medical_record = self.medical_record_repository.create(
             pet_id=access.pet_id,
             doctor_id=doctor_id,
+            clinic_id=clinic_profile.id,
             visit_date=datetime.now(timezone.utc),
             visit_type=visit_type,
             chief_complaint=chief_complaint or "Clinic visit",
+            created_by_user_id=clinic_user.public_id,
+            created_by_role=clinic_user.roles[0],
             vital_signs={
                 "weight": access.pre_check_weight,
                 "temperature": access.pre_check_temperature,
