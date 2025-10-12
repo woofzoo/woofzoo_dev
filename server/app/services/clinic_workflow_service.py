@@ -154,7 +154,7 @@ class ClinicWorkflowService:
             ValueError: If pet not found or owner not found
         """
         # Get pet and owner
-        pet = self.pet_repository.get(pet_id)
+        pet = self.pet_repository.get_by_id(pet_id)
         if not pet:
             raise ValueError("Pet not found")
         
@@ -170,7 +170,7 @@ class ClinicWorkflowService:
         
         # Create OTP record
         otp = self.otp_repository.create(
-            user_id=owner.public_id,
+            phone_number=owner.phone,
             otp_code=otp_code,
             purpose=OTPPurpose.PET_ACCESS,
             expires_at=expires_at,
@@ -238,7 +238,7 @@ class ClinicWorkflowService:
             ValueError: If OTP is invalid, expired, or already used
         """
         # Get pet and owner
-        pet = self.pet_repository.get(pet_id)
+        pet = self.pet_repository.get_by_id(pet_id)
         if not pet:
             raise ValueError("Pet not found")
         
@@ -247,14 +247,14 @@ class ClinicWorkflowService:
             raise ValueError("Pet owner not found")
         
         # Verify OTP
-        otp = self.otp_repository.get_by_code_and_user(otp_code, owner.public_id)
+        otp = self.otp_repository.get_by_code_and_user(otp_code, owner.phone)
         if not otp:
             raise ValueError("Invalid OTP code")
         
         if otp.is_used:
             raise ValueError("OTP has already been used")
         
-        if otp.is_expired:
+        if otp.is_expired():
             raise ValueError("OTP has expired")
         
         if otp.purpose != OTPPurpose.PET_ACCESS:
@@ -267,8 +267,7 @@ class ClinicWorkflowService:
         access = self.pet_clinic_access_repository.create(
             pet_id=pet_id,
             clinic_id=clinic_id,
-            access_type="CLINIC_VISIT",
-            granted_by_user_id=owner.public_id,
+            owner_id=owner.public_id,
             otp_id=otp.id,
             purpose="Clinic visit with doctor assignment",
             status=AccessStatus.ACTIVE,

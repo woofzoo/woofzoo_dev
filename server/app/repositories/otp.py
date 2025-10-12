@@ -30,7 +30,7 @@ class OTPRepository(BaseRepository[OTP]):
     
     def create(
         self,
-        user_id: uuid.UUID,
+        phone_number: str,
         otp_code: str,
         purpose: OTPPurpose,
         expires_at: datetime,
@@ -43,7 +43,7 @@ class OTPRepository(BaseRepository[OTP]):
         for pet access OTPs until the model is updated.
         
         Args:
-            user_id: User UUID
+            phone_number: User phone number
             otp_code: 6-digit OTP code
             purpose: Purpose of the OTP
             expires_at: Expiration datetime
@@ -53,7 +53,7 @@ class OTPRepository(BaseRepository[OTP]):
             Created OTP instance
         """
         otp = OTP(
-            phone_number=str(user_id),  # Temporary: storing user_id as phone_number
+            phone_number=phone_number,
             otp_code=otp_code,
             purpose=purpose,
             expires_at=expires_at,
@@ -64,13 +64,13 @@ class OTPRepository(BaseRepository[OTP]):
         self.session.refresh(otp)
         return otp
     
-    def get_by_code_and_user(self, otp_code: str, user_id: uuid.UUID) -> Optional[OTP]:
+    def get_by_code_and_user(self, otp_code: str, user_phone_number: str) -> Optional[OTP]:
         """
         Get OTP by code and user ID.
         
         Args:
             otp_code: OTP code to find
-            user_id: User UUID
+            user_phone_number: User phone number
             
         Returns:
             OTP instance if found, None otherwise
@@ -79,7 +79,7 @@ class OTPRepository(BaseRepository[OTP]):
             select(OTP).where(
                 and_(
                     OTP.otp_code == otp_code,
-                    OTP.phone_number == str(user_id),  # Temporary: stored as phone_number
+                    OTP.phone_number == user_phone_number,  # Temporary: stored as phone_number
                     OTP.is_used == False
                 )
             )
@@ -89,15 +89,16 @@ class OTPRepository(BaseRepository[OTP]):
     def mark_used(self, otp_id: uuid.UUID) -> bool:
         """
         Mark an OTP as used.
-        
+
         Args:
             otp_id: OTP record ID
-            
+
         Returns:
             True if marked, False if not found
         """
-        otp = self.get(otp_id)
-        if otp:
+        # Get the OTP instance and update if not already used
+        otp = self.session.get(OTP, otp_id)
+        if otp and not otp.is_used:
             otp.is_used = True
             self.session.commit()
             return True
