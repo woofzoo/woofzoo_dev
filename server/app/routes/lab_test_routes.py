@@ -13,11 +13,11 @@ from app.repositories.lab_test import LabTestRepository
 from app.repositories.pet import PetRepository
 from app.repositories.family_member import FamilyMemberRepository
 from app.repositories.pet_clinic_access import PetClinicAccessRepository
-from app.dependencies import get_current_user, get_db_session
+from app.dependencies import get_doctor_user, get_db_session
 from app.models.user import User
 from app.schemas.lab_test import LabTestCreate, LabTestResponse, LabTestUpdate
 
-router = APIRouter(prefix="/api/v1/lab-tests", tags=["lab-tests"])
+router = APIRouter(prefix="/lab-tests", tags=["lab-tests"])
 
 
 def get_lab_test_controller(db: Session = Depends(get_db_session)) -> LabTestController:
@@ -34,30 +34,30 @@ def get_lab_test_controller(db: Session = Depends(get_db_session)) -> LabTestCon
 @router.post("/", response_model=LabTestResponse, status_code=status.HTTP_201_CREATED)
 def create_lab_test(
     lab_test_data: LabTestCreate,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_doctor_user),
     controller: LabTestController = Depends(get_lab_test_controller)
 ):
-    """Order a new lab test."""
+    """Order a new lab test (doctor only)."""
     return controller.create_lab_test(lab_test_data, current_user)
 
 
 @router.get("/pet/{pet_id}", response_model=List[LabTestResponse])
 def get_lab_tests_by_pet(
     pet_id: str,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_doctor_user),
     controller: LabTestController = Depends(get_lab_test_controller)
 ):
-    """Get all lab tests for a pet."""
+    """Get all lab tests for a pet (doctor only)."""
     return controller.get_lab_tests_by_pet(pet_id, current_user)
 
 
 @router.get("/pet/{pet_id}/abnormal", response_model=List[LabTestResponse])
 def get_abnormal_results(
     pet_id: str,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_doctor_user),
     controller: LabTestController = Depends(get_lab_test_controller)
 ):
-    """Get lab tests with abnormal results."""
+    """Get lab tests with abnormal results (doctor only)."""
     return controller.get_abnormal_results(pet_id, current_user)
 
 
@@ -65,9 +65,9 @@ def get_abnormal_results(
 def update_lab_test(
     lab_test_id: str,
     lab_test_data: LabTestUpdate,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_doctor_user),
     controller: LabTestController = Depends(get_lab_test_controller)
 ):
-    """Update a lab test (e.g., add results)."""
+    """Update a lab test (e.g., add results) (doctor only)."""
     return controller.update_lab_test(lab_test_id, lab_test_data, current_user)
 

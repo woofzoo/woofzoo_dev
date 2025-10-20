@@ -4,7 +4,7 @@ Prescription Pydantic schemas for request/response validation.
 This module defines Pydantic models for prescription-related API operations.
 """
 
-from datetime import datetime, date
+from datetime import datetime, date, timezone
 from typing import Optional
 from uuid import UUID
 from pydantic import BaseModel, Field, ConfigDict, field_validator, field_serializer
@@ -20,8 +20,14 @@ class PrescriptionBase(BaseModel):
     route: str = Field(..., min_length=1, max_length=50, description="Route (e.g., 'Oral', 'Topical')")
     duration: str = Field(..., min_length=1, max_length=100, description="Duration (e.g., '7 days')")
     instructions: Optional[str] = Field(None, description="Special administration instructions")
-    prescribed_date: date = Field(..., description="Date prescribed")
-    start_date: date = Field(..., description="Date to start medication")
+    prescribed_date: date = Field(
+        default_factory=lambda: datetime.now(timezone.utc).date(),
+        description="Date prescribed (defaults to today in UTC if not provided)"
+    )
+    start_date: date = Field(
+        default_factory=lambda: datetime.now(timezone.utc).date(),
+        description="Date to start medication (defaults to today in UTC if not provided)"
+    )
     end_date: Optional[date] = Field(None, description="Date to stop medication")
     quantity: float = Field(..., gt=0, description="Amount prescribed")
     refills_allowed: int = Field(0, ge=0, description="Number of refills allowed")
@@ -46,9 +52,9 @@ class PrescriptionBase(BaseModel):
                 "route": "Oral",
                 "duration": "10 days",
                 "instructions": "Give with food",
-                "prescribed_date": "2025-10-01",
-                "start_date": "2025-10-01",
-                "end_date": "2025-10-11",
+                "prescribed_date": "2025-10-20",  # Optional: defaults to today's date in UTC
+                "start_date": "2025-10-20",  # Optional: defaults to today's date in UTC
+                "end_date": "2025-10-30",
                 "quantity": 20.0,
                 "refills_allowed": 0
             }

@@ -268,3 +268,101 @@ class PetLookupRequest(BaseModel):
             }
         }
     )
+
+
+class ClinicPetOnboardingRequest(BaseModel):
+    """Schema for clinic pet onboarding request."""
+    
+    # Owner details
+    owner_email: str = Field(..., description="Owner's email address (mandatory)")
+    owner_phone: Optional[str] = Field(None, description="Owner's phone number (optional)")
+    owner_name: Optional[str] = Field(None, description="Owner's full name (optional)")
+    
+    # Pet details
+    pet_name: str = Field(..., min_length=1, max_length=100, description="Pet's name")
+    pet_type: str = Field(..., description="Type of pet (e.g., DOG, CAT)")
+    breed: str = Field(..., description="Breed of the pet")
+    age: Optional[int] = Field(None, ge=0, le=50, description="Pet's age in years")
+    gender: Optional[str] = Field(None, description="Pet's gender (MALE, FEMALE)")
+    weight: Optional[float] = Field(None, ge=0.1, le=500.0, description="Pet's weight in kg")
+    emergency_contacts: Optional[dict[str, Any]] = Field(None, description="Emergency contact information")
+    insurance_info: Optional[dict[str, Any]] = Field(None, description="Insurance information")
+    
+    @field_validator('pet_type')
+    @classmethod
+    def validate_pet_type(cls, v):
+        """Validate pet type."""
+        return v.upper()
+    
+    @field_validator('breed')
+    @classmethod
+    def validate_breed(cls, v):
+        """Validate breed."""
+        return v.title()
+    
+    @field_validator('gender')
+    @classmethod
+    def validate_gender(cls, v):
+        """Validate gender value."""
+        if v is not None:
+            v = v.upper()
+            if v not in ['MALE', 'FEMALE']:
+                raise ValueError('Gender must be either MALE or FEMALE')
+        return v
+    
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "owner_email": "john.doe@example.com",
+                "owner_phone": "+1234567890",
+                "owner_name": "John Doe",
+                "pet_name": "Buddy",
+                "pet_type": "DOG",
+                "breed": "Golden Retriever",
+                "age": 3,
+                "gender": "MALE",
+                "weight": 25.5,
+                "emergency_contacts": {
+                    "vet": {"name": "Dr. Smith", "phone": "+1234567890"}
+                },
+                "insurance_info": {
+                    "provider": "PetCare Insurance",
+                    "policy_number": "PC123456789"
+                }
+            }
+        }
+    )
+
+
+class ClinicPetOnboardingResponse(BaseModel):
+    """Schema for clinic pet onboarding response."""
+    
+    pet: PetResponse = Field(..., description="Created pet information")
+    owner_created: bool = Field(..., description="True if new user account was created")
+    message: str = Field(..., description="Success message")
+    
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "pet": {
+                    "id": "550e8400-e29b-41d4-a716-446655440000",
+                    "pet_id": "DOG-GOLDEN-RETRIEVER-000001",
+                    "owner_id": "550e8400-e29b-41d4-a716-446655440000",
+                    "name": "Buddy",
+                    "pet_type": "DOG",
+                    "breed": "Golden Retriever",
+                    "age": 3,
+                    "gender": "MALE",
+                    "weight": 25.5,
+                    "photos": [],
+                    "emergency_contacts": {},
+                    "insurance_info": {},
+                    "is_active": True,
+                    "created_at": "2025-01-01T12:00:00Z",
+                    "updated_at": "2025-01-01T12:00:00Z"
+                },
+                "owner_created": True,
+                "message": "Pet onboarded successfully. Verification email sent to owner."
+            }
+        }
+    )

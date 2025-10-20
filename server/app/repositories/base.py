@@ -66,6 +66,44 @@ class BaseRepository(Generic[ModelType]):
         self.session.refresh(instance)
         return instance
     
+    def update_entity(self, entity: ModelType) -> ModelType:
+        """
+        Update entity and commit changes.
+        
+        Args:
+            entity: Model instance to update
+            
+        Returns:
+            Updated model instance
+        """
+        self.session.add(entity)
+        self.session.commit()
+        self.session.refresh(entity)
+        return entity
+    
+    def delete_entity(self, entity: ModelType) -> None:
+        """
+        Delete entity and commit.
+        
+        Args:
+            entity: Model instance to delete
+        """
+        self.session.delete(entity)
+        self.session.commit()
+    
+    def commit(self) -> None:
+        """Commit current transaction."""
+        self.session.commit()
+    
+    def refresh(self, entity: ModelType) -> None:
+        """
+        Refresh entity from database.
+        
+        Args:
+            entity: Model instance to refresh
+        """
+        self.session.refresh(entity)
+    
     def get_by_id(self, id: str) -> Optional[ModelType]:
         """
         Get a record by ID.
@@ -88,6 +126,20 @@ class BaseRepository(Generic[ModelType]):
         except (ValueError, AttributeError):
             # Invalid UUID format
             return None
+    
+    def get(self, id: uuid.UUID) -> Optional[ModelType]:
+        """
+        Get a record by UUID.
+        
+        Convenience method that accepts UUID directly instead of string.
+        
+        Args:
+            id: Record UUID
+            
+        Returns:
+            Model instance or None if not found
+        """
+        return self.get_by_id(str(id))
     
     def get_all(self, skip: int = 0, limit: int = 100) -> List[ModelType]:
         """

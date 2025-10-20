@@ -1,0 +1,217 @@
+# WoofZoo Server - Cursor AI Rules
+
+This file serves as the main index for all coding rules and conventions.
+
+## Rule Organization
+
+Rules are organized into separate files in the `rules/` directory for better maintainability and easier navigation.
+
+---
+
+## 📚 Rule Files
+
+### [01-database.md](rules/01-database.md) - Database & Models
+- **NEVER create database ENUMs** - Store as strings
+- Migration guidelines
+- Enum handling patterns
+
+### [02-architecture.md](rules/02-architecture.md) - Architecture & Code Organization
+- Clean architecture: models → repositories → services → controllers → routes
+- Layer responsibilities
+- Dependency injection
+
+### [03-service-layer.md](rules/03-service-layer.md) - Service Layer Rules
+- **NEVER inject `Session` into services** ⚠️
+- Services only call repository methods
+- Business logic patterns
+
+### [04-repository-layer.md](rules/04-repository-layer.md) - Repository Layer Rules
+- All database access happens in repositories
+- BaseRepository usage
+- Domain-specific query methods
+
+### [05-api-development.md](rules/05-api-development.md) - API Development & Security
+- Role-based access control (RBAC)
+- Input validation
+- Security best practices
+
+### [06-documentation.md](rules/06-documentation.md) - Code Documentation
+- Function docstrings (Args, Returns, Raises)
+- Schema documentation
+- API route documentation
+
+### [07-doc-organization.md](rules/07-doc-organization.md) - Documentation Organization
+- **All docs go in `docs/YYYY-MM-DD/` folders** 📁
+- File naming: UPPERCASE with underscores
+- Never create docs in project root
+
+---
+
+## 🚨 Critical Rules (Always Remember)
+
+### 1. Never Inject Session into Services
+```python
+# ❌ WRONG
+class MyService:
+    def __init__(self, db: Session):
+        self.db = db
+
+# ✅ CORRECT
+class MyService:
+    def __init__(self, repo: Repository):
+        self.repo = repo
+```
+**See**: [rules/03-service-layer.md](rules/03-service-layer.md)
+
+### 2. Never Create Database ENUMs
+```python
+# ❌ WRONG
+status = Column(Enum(Status))
+
+# ✅ CORRECT  
+status = Column(String(50))
+```
+**See**: [rules/01-database.md](rules/01-database.md)
+
+### 3. All Docs in Dated Folders
+```bash
+# ✅ CORRECT
+docs/2025-10-12/MY_FEATURE_IMPLEMENTATION.md
+
+# ❌ WRONG
+MY_FEATURE_IMPLEMENTATION.md  # In project root
+```
+**See**: [rules/07-doc-organization.md](rules/07-doc-organization.md)
+
+### 4. Follow Clean Architecture
+```
+models → repositories → services → controllers → routes
+```
+**See**: [rules/02-architecture.md](rules/02-architecture.md)
+
+### 5. Enforce RBAC at Route Level
+```python
+@router.post("/clinic-endpoint")
+def endpoint(
+    current_user: User = Depends(get_clinic_owner_user)  # Role check!
+):
+    ...
+```
+**See**: [rules/05-api-development.md](rules/05-api-development.md)
+
+---
+
+## 📖 Quick Reference
+
+| Need to... | See |
+|------------|-----|
+| Create a service | [03-service-layer.md](rules/03-service-layer.md) |
+| Add repository method | [04-repository-layer.md](rules/04-repository-layer.md) |
+| Handle enums | [01-database.md](rules/01-database.md) |
+| Secure an endpoint | [05-api-development.md](rules/05-api-development.md) |
+| Write docs | [06-documentation.md](rules/06-documentation.md) |
+| Organize files | [07-doc-organization.md](rules/07-doc-organization.md) |
+| Understand architecture | [02-architecture.md](rules/02-architecture.md) |
+
+---
+
+## 🔍 Finding Specific Rules
+
+### By Category
+- **Database**: [rules/01-database.md](rules/01-database.md)
+- **Architecture**: [rules/02-architecture.md](rules/02-architecture.md)
+- **Services**: [rules/03-service-layer.md](rules/03-service-layer.md)
+- **Repositories**: [rules/04-repository-layer.md](rules/04-repository-layer.md)
+- **APIs**: [rules/05-api-development.md](rules/05-api-development.md)
+- **Docs**: [rules/06-documentation.md](rules/06-documentation.md), [rules/07-doc-organization.md](rules/07-doc-organization.md)
+
+### Search All Rules
+```bash
+# Find rules about a specific topic
+grep -r "your-topic" rules/
+
+# List all rule files
+ls -1 rules/*.md
+```
+
+---
+
+## 📂 Project Structure
+
+```
+server/
+├── .cursorrules           # This file (index of rules)
+├── README.md             # Project README
+│
+├── rules/                # Modular rule files
+│   ├── README.md
+│   ├── 01-database.md
+│   ├── 02-architecture.md
+│   ├── 03-service-layer.md
+│   ├── 04-repository-layer.md
+│   ├── 05-api-development.md
+│   ├── 06-documentation.md
+│   └── 07-doc-organization.md
+│
+├── docs/                 # Documentation
+│   ├── YYYY-MM-DD/      # Date-based docs
+│   ├── features/        # Feature specs
+│   └── [TRDs & journeys]
+│
+└── app/                  # Application code
+    ├── models/          # Database models
+    ├── repositories/    # Data access layer
+    ├── services/        # Business logic layer
+    ├── controllers/     # HTTP layer
+    └── routes/          # API endpoints
+```
+
+---
+
+## 🎯 For Cursor AI
+
+When generating or modifying code:
+1. ✅ Follow clean architecture (no layer bypassing)
+2. ✅ Never inject `Session` into services
+3. ✅ Never create database ENUMs
+4. ✅ Put all docs in `docs/YYYY-MM-DD/` folders
+5. ✅ Enforce RBAC at route level
+6. ✅ Document all functions with docstrings
+7. ✅ Use descriptive UPPERCASE names for docs
+
+---
+
+## 🔄 Rule Updates
+
+To update rules:
+1. Edit the relevant file in `rules/`
+2. Update examples if needed
+3. Keep this index in sync
+4. Document rationale for changes
+
+---
+
+## 📝 Documentation Standards
+
+- Every function needs docstring with Args, Returns, Raises
+- Pydantic schemas need examples
+- API routes need full documentation
+- Complex logic needs inline comments
+- All implementation docs go in `docs/YYYY-MM-DD/`
+
+---
+
+## ✅ Compliance
+
+These rules are **mandatory** for all code in this project.
+
+Cursor AI automatically enforces these rules when generating code.
+
+For detailed information on any rule, see the corresponding file in the `rules/` directory.
+
+---
+
+**Rule Files**: 7  
+**Last Updated**: October 12, 2025  
+**Status**: ✅ Active and Enforced  
+**Full Index**: [rules/README.md](rules/README.md)

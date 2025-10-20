@@ -26,6 +26,18 @@ class PetRepository(BaseRepository[Pet]):
     def __init__(self, session: Session) -> None:
         """Initialize the pet repository."""
         super().__init__(Pet, session)
+
+    def get_by_id(self, id: uuid.UUID) -> Optional[Pet]:
+        """
+        Get a pet by id.
+        
+        Args:
+            id: Pet's unique identifier
+            
+        Returns:
+            Pet instance or None if not found
+        """
+        return self.session.get(Pet, id)
     
     def get_by_pet_id(self, pet_id: str) -> Optional[Pet]:
         """
@@ -42,7 +54,7 @@ class PetRepository(BaseRepository[Pet]):
         )
         return result.scalar_one_or_none()
     
-    def get_by_owner_id(self, owner_id: str, skip: int = 0, limit: int = 100) -> List[Pet]:
+    def get_by_owner_id(self, owner_id: uuid.UUID, skip: int = 0, limit: int = 100) -> List[Pet]:
         """
         Get all pets for a specific owner.
         
@@ -54,15 +66,9 @@ class PetRepository(BaseRepository[Pet]):
         Returns:
             List of pet instances
         """
-        # Convert string owner_id to UUID
-        try:
-            owner_id_uuid = uuid.UUID(owner_id)
-        except (ValueError, AttributeError):
-            return []
-        
         result = self.session.execute(
             select(Pet)
-            .where(Pet.owner_id == owner_id_uuid)
+            .where(Pet.owner_id == owner_id)
             .where(Pet.is_active == True)
             .offset(skip)
             .limit(limit)

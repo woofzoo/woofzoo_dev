@@ -210,3 +210,86 @@ class EmailService:
         subject = f"You're invited to join {family_name} on WoofZoo! 🐾"
         
         return self.send_email(to_email, to_name, subject, text_content, html_content)
+    
+    def send_pet_onboarding_notification_email(
+        self, 
+        to_email: str, 
+        to_name: str, 
+        pet_name: str,
+        pet_type: str,
+        pet_breed: str,
+        clinic_name: Optional[str] = None,
+        is_new_user: bool = False,
+        verification_token: Optional[str] = None
+    ) -> bool:
+        """
+        Send pet onboarding notification email.
+        
+        Args:
+            to_email: Recipient email address
+            to_name: Recipient name
+            pet_name: Name of the pet
+            pet_type: Type of pet
+            pet_breed: Breed of pet
+            clinic_name: Name of the clinic (optional)
+            is_new_user: Whether this is a new user account
+            verification_token: Email verification token (for new users)
+            
+        Returns:
+            bool: True if email sent successfully, False otherwise
+        """
+        # Build verification URL if needed
+        verification_url = None
+        if is_new_user and verification_token:
+            verification_url = f"{self.frontend_url}/api/auth/verify-email?token={verification_token}"
+        
+        # Get email content from templates
+        text_content, html_content = EmailTemplates.get_pet_onboarding_notification_email_content(
+            to_name=to_name,
+            pet_name=pet_name,
+            pet_type=pet_type,
+            pet_breed=pet_breed,
+            clinic_name=clinic_name or "a veterinary clinic",
+            is_new_user=is_new_user,
+            verification_url=verification_url
+        )
+        
+        subject = f"Your Pet {pet_name} Has Been Registered - WoofZoo"
+        
+        return self.send_email(to_email, to_name, subject, text_content, html_content)
+    
+    def send_clinic_access_otp_email(
+        self,
+        to_email: str,
+        to_name: str,
+        otp_code: str,
+        pet_name: str,
+        clinic_name: str,
+        expires_in_minutes: int = 10
+    ) -> bool:
+        """
+        Send clinic access OTP email to pet owner.
+        
+        Args:
+            to_email: Recipient email address
+            to_name: Recipient name
+            otp_code: 6-digit OTP code
+            pet_name: Name of the pet
+            clinic_name: Name of the clinic
+            expires_in_minutes: OTP expiry time in minutes
+            
+        Returns:
+            bool: True if email sent successfully, False otherwise
+        """
+        # Get email content from templates
+        text_content, html_content = EmailTemplates.get_clinic_access_otp_email_content(
+            to_name=to_name,
+            otp_code=otp_code,
+            pet_name=pet_name,
+            clinic_name=clinic_name,
+            expires_in_minutes=expires_in_minutes
+        )
+        
+        subject = f"Clinic Access OTP for {pet_name} - WoofZoo"
+        
+        return self.send_email(to_email, to_name, subject, text_content, html_content)
