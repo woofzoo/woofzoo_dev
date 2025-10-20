@@ -21,6 +21,9 @@ from app.routes.clinic_access_routes import router as clinic_access_router
 from app.routes.clinic_workflow import router as clinic_workflow_router
 from app.routes.doctor import router as doctor_router
 from app.routes.prescription_routes import router as prescription_router
+from app.routes.allergy_routes import router as allergy_router
+from app.routes.vaccination_routes import router as vaccination_router
+from app.routes.lab_test_routes import router as lab_test_router
 
 __all__ = [
     "auth_router",
@@ -40,4 +43,7 @@ __all__ = [
     "clinic_workflow_router",
     "doctor_router",
     "prescription_router",
+    "allergy_router",
+    "vaccination_router",
+    "lab_test_router",
 ]

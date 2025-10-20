@@ -17,7 +17,7 @@ from app.dependencies import get_current_user, get_db_session
 from app.models.user import User
 from app.schemas.lab_test import LabTestCreate, LabTestResponse, LabTestUpdate
 
-router = APIRouter(prefix="/api/v1/lab-tests", tags=["lab-tests"])
+router = APIRouter(prefix="/lab-tests", tags=["lab-tests"])
 
 
 def get_lab_test_controller(db: Session = Depends(get_db_session)) -> LabTestController:

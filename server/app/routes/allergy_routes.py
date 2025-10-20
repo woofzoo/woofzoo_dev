@@ -17,7 +17,7 @@ from app.dependencies import get_current_user, get_db_session
 from app.models.user import User
 from app.schemas.allergy import AllergyCreate, AllergyResponse
 
-router = APIRouter(prefix="/api/v1/allergies", tags=["allergies"])
+router = APIRouter(prefix="/allergies", tags=["allergies"])
 
 
 def get_allergy_controller(db: Session = Depends(get_db_session)) -> AllergyController:

@@ -250,7 +250,7 @@ curl -X POST "http://localhost:8000/api/doctor/visits/{medical_record_id}/comple
 
 ### 1. Add Prescription (Medication)
 
-**Endpoint**: `POST /api/v1/prescriptions/`  
+**Endpoint**: `POST /api/prescriptions/`  
 **Authorization**: Any authenticated user (permissions checked internally)  
 **Description**: Create a new prescription/medication record
 
@@ -292,7 +292,7 @@ curl -X POST "http://localhost:8000/api/doctor/visits/{medical_record_id}/comple
 
 **cURL Example**:
 ```bash
-curl -X POST "http://localhost:8000/api/v1/prescriptions/" \
+curl -X POST "http://localhost:8000/api/prescriptions/" \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -310,7 +310,7 @@ curl -X POST "http://localhost:8000/api/v1/prescriptions/" \
 
 ### 2. Get Prescriptions for Pet
 
-**Endpoint**: `GET /api/v1/prescriptions/pet/{pet_id}`  
+**Endpoint**: `GET /api/prescriptions/pet/{pet_id}`  
 **Query Parameters**: 
 - `skip` (default: 0)
 - `limit` (default: 100, max: 1000)
@@ -319,7 +319,7 @@ curl -X POST "http://localhost:8000/api/v1/prescriptions/" \
 
 **cURL Example**:
 ```bash
-curl -X GET "http://localhost:8000/api/v1/prescriptions/pet/{pet_id}?skip=0&limit=10" \
+curl -X GET "http://localhost:8000/api/prescriptions/pet/{pet_id}?skip=0&limit=10" \
   -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
 
@@ -327,7 +327,7 @@ curl -X GET "http://localhost:8000/api/v1/prescriptions/pet/{pet_id}?skip=0&limi
 
 ### 3. Update Prescription
 
-**Endpoint**: `PUT /api/v1/prescriptions/{prescription_id}`  
+**Endpoint**: `PUT /api/prescriptions/{prescription_id}`  
 **Description**: Update prescription details (e.g., extend duration, add notes)
 
 **Request Body**:
@@ -341,7 +341,7 @@ curl -X GET "http://localhost:8000/api/v1/prescriptions/pet/{pet_id}?skip=0&limi
 
 **cURL Example**:
 ```bash
-curl -X PUT "http://localhost:8000/api/v1/prescriptions/{prescription_id}" \
+curl -X PUT "http://localhost:8000/api/prescriptions/{prescription_id}" \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -356,7 +356,7 @@ curl -X PUT "http://localhost:8000/api/v1/prescriptions/{prescription_id}" \
 
 ### 1. Add Allergy
 
-**Endpoint**: `POST /api/v1/allergies/`  
+**Endpoint**: `POST /api/allergies/`  
 **Authorization**: Any authenticated user (permissions checked internally)  
 **Description**: Record a new allergy for a pet
 
@@ -391,7 +391,7 @@ curl -X PUT "http://localhost:8000/api/v1/prescriptions/{prescription_id}" \
 
 **cURL Example**:
 ```bash
-curl -X POST "http://localhost:8000/api/v1/allergies/" \
+curl -X POST "http://localhost:8000/api/allergies/" \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -407,12 +407,12 @@ curl -X POST "http://localhost:8000/api/v1/allergies/" \
 
 ### 2. Get All Allergies for Pet
 
-**Endpoint**: `GET /api/v1/allergies/pet/{pet_id}`  
+**Endpoint**: `GET /api/allergies/pet/{pet_id}`  
 **Description**: Get all known allergies for a pet
 
 **cURL Example**:
 ```bash
-curl -X GET "http://localhost:8000/api/v1/allergies/pet/{pet_id}" \
+curl -X GET "http://localhost:8000/api/allergies/pet/{pet_id}" \
   -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
 
@@ -420,12 +420,12 @@ curl -X GET "http://localhost:8000/api/v1/allergies/pet/{pet_id}" \
 
 ### 3. Get Critical Allergies
 
-**Endpoint**: `GET /api/v1/allergies/pet/{pet_id}/critical`  
+**Endpoint**: `GET /api/allergies/pet/{pet_id}/critical`  
 **Description**: Get only severe and life-threatening allergies (important before prescribing)
 
 **cURL Example**:
 ```bash
-curl -X GET "http://localhost:8000/api/v1/allergies/pet/{pet_id}/critical" \
+curl -X GET "http://localhost:8000/api/allergies/pet/{pet_id}/critical" \
   -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
 
@@ -435,7 +435,7 @@ curl -X GET "http://localhost:8000/api/v1/allergies/pet/{pet_id}/critical" \
 
 ### 1. Add Vaccination
 
-**Endpoint**: `POST /api/v1/vaccinations/`  
+**Endpoint**: `POST /api/vaccinations/`  
 **Authorization**: Any authenticated user (permissions checked internally)  
 **Description**: Record a vaccination administered to a pet
 
@@ -479,7 +479,7 @@ curl -X GET "http://localhost:8000/api/v1/allergies/pet/{pet_id}/critical" \
 
 **cURL Example**:
 ```bash
-curl -X POST "http://localhost:8000/api/v1/vaccinations/" \
+curl -X POST "http://localhost:8000/api/vaccinations/" \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -497,12 +497,12 @@ curl -X POST "http://localhost:8000/api/v1/vaccinations/" \
 
 ### 2. Get All Vaccinations for Pet
 
-**Endpoint**: `GET /api/v1/vaccinations/pet/{pet_id}`  
+**Endpoint**: `GET /api/vaccinations/pet/{pet_id}`  
 **Description**: Get complete vaccination history
 
 **cURL Example**:
 ```bash
-curl -X GET "http://localhost:8000/api/v1/vaccinations/pet/{pet_id}" \
+curl -X GET "http://localhost:8000/api/vaccinations/pet/{pet_id}" \
   -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
 
@@ -510,12 +510,12 @@ curl -X GET "http://localhost:8000/api/v1/vaccinations/pet/{pet_id}" \
 
 ### 3. Get Due Vaccinations
 
-**Endpoint**: `GET /api/v1/vaccinations/pet/{pet_id}/due`  
+**Endpoint**: `GET /api/vaccinations/pet/{pet_id}/due`  
 **Description**: Get vaccinations that are due or overdue (useful for preventive care)
 
 **cURL Example**:
 ```bash
-curl -X GET "http://localhost:8000/api/v1/vaccinations/pet/{pet_id}/due" \
+curl -X GET "http://localhost:8000/api/vaccinations/pet/{pet_id}/due" \
   -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
 
@@ -525,7 +525,7 @@ curl -X GET "http://localhost:8000/api/v1/vaccinations/pet/{pet_id}/due" \
 
 ### 1. Order Lab Test
 
-**Endpoint**: `POST /api/v1/lab-tests/`  
+**Endpoint**: `POST /api/lab-tests/`  
 **Authorization**: Any authenticated user (permissions checked internally)  
 **Description**: Order a new lab test for a pet
 
@@ -572,7 +572,7 @@ curl -X GET "http://localhost:8000/api/v1/vaccinations/pet/{pet_id}/due" \
 
 **cURL Example**:
 ```bash
-curl -X POST "http://localhost:8000/api/v1/lab-tests/" \
+curl -X POST "http://localhost:8000/api/lab-tests/" \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -589,7 +589,7 @@ curl -X POST "http://localhost:8000/api/v1/lab-tests/" \
 
 ### 2. Update Lab Test (Add Results)
 
-**Endpoint**: `PUT /api/v1/lab-tests/{lab_test_id}`  
+**Endpoint**: `PUT /api/lab-tests/{lab_test_id}`  
 **Description**: Update lab test with results when available
 
 **Request Body**:
@@ -612,7 +612,7 @@ curl -X POST "http://localhost:8000/api/v1/lab-tests/" \
 
 **cURL Example**:
 ```bash
-curl -X PUT "http://localhost:8000/api/v1/lab-tests/{lab_test_id}" \
+curl -X PUT "http://localhost:8000/api/lab-tests/{lab_test_id}" \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -627,12 +627,12 @@ curl -X PUT "http://localhost:8000/api/v1/lab-tests/{lab_test_id}" \
 
 ### 3. Get Lab Tests for Pet
 
-**Endpoint**: `GET /api/v1/lab-tests/pet/{pet_id}`  
+**Endpoint**: `GET /api/lab-tests/pet/{pet_id}`  
 **Description**: Get all lab tests for a pet
 
 **cURL Example**:
 ```bash
-curl -X GET "http://localhost:8000/api/v1/lab-tests/pet/{pet_id}" \
+curl -X GET "http://localhost:8000/api/lab-tests/pet/{pet_id}" \
   -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
 
@@ -640,12 +640,12 @@ curl -X GET "http://localhost:8000/api/v1/lab-tests/pet/{pet_id}" \
 
 ### 4. Get Abnormal Lab Results
 
-**Endpoint**: `GET /api/v1/lab-tests/pet/{pet_id}/abnormal`  
+**Endpoint**: `GET /api/lab-tests/pet/{pet_id}/abnormal`  
 **Description**: Get only tests with abnormal findings (useful for quick review)
 
 **cURL Example**:
 ```bash
-curl -X GET "http://localhost:8000/api/v1/lab-tests/pet/{pet_id}/abnormal" \
+curl -X GET "http://localhost:8000/api/lab-tests/pet/{pet_id}/abnormal" \
   -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
 
@@ -756,7 +756,7 @@ curl -X GET "http://localhost:8000/api/doctor/visits/mr-123" \
   -H "Authorization: Bearer $TOKEN"
 
 # Step 3: Check for critical allergies before prescribing
-curl -X GET "http://localhost:8000/api/v1/allergies/pet/pet-456/critical" \
+curl -X GET "http://localhost:8000/api/allergies/pet/pet-456/critical" \
   -H "Authorization: Bearer $TOKEN"
 
 # Step 4: Update visit with diagnosis and treatment plan
@@ -772,7 +772,7 @@ curl -X PATCH "http://localhost:8000/api/doctor/visits/mr-123" \
   }'
 
 # Step 5: Prescribe anti-inflammatory medication
-curl -X POST "http://localhost:8000/api/v1/prescriptions/" \
+curl -X POST "http://localhost:8000/api/prescriptions/" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -786,7 +786,7 @@ curl -X POST "http://localhost:8000/api/v1/prescriptions/" \
   }'
 
 # Step 6: Order lab test to monitor kidney function (NSAID safety)
-curl -X POST "http://localhost:8000/api/v1/lab-tests/" \
+curl -X POST "http://localhost:8000/api/lab-tests/" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -822,22 +822,22 @@ curl -X POST "http://localhost:8000/api/doctor/visits/mr-123/complete" \
 | Update Visit | `/api/doctor/visits/{id}` | PATCH | Add diagnosis/treatment |
 | Complete Visit | `/api/doctor/visits/{id}/complete` | POST | Mark as done |
 | **Prescriptions** |
-| Add Medication | `/api/v1/prescriptions/` | POST | Prescribe medication |
-| Get by Pet | `/api/v1/prescriptions/pet/{pet_id}` | GET | View prescriptions |
-| Update Prescription | `/api/v1/prescriptions/{id}` | PUT | Modify prescription |
+| Add Medication | `/api/prescriptions/` | POST | Prescribe medication |
+| Get by Pet | `/api/prescriptions/pet/{pet_id}` | GET | View prescriptions |
+| Update Prescription | `/api/prescriptions/{id}` | PUT | Modify prescription |
 | **Allergies** |
-| Add Allergy | `/api/v1/allergies/` | POST | Record allergy |
-| Get by Pet | `/api/v1/allergies/pet/{pet_id}` | GET | View all allergies |
-| Critical Only | `/api/v1/allergies/pet/{pet_id}/critical` | GET | View severe allergies |
+| Add Allergy | `/api/allergies/` | POST | Record allergy |
+| Get by Pet | `/api/allergies/pet/{pet_id}` | GET | View all allergies |
+| Critical Only | `/api/allergies/pet/{pet_id}/critical` | GET | View severe allergies |
 | **Vaccinations** |
-| Add Vaccination | `/api/v1/vaccinations/` | POST | Record vaccination |
-| Get by Pet | `/api/v1/vaccinations/pet/{pet_id}` | GET | View vaccination history |
-| Due Vaccines | `/api/v1/vaccinations/pet/{pet_id}/due` | GET | View due vaccinations |
+| Add Vaccination | `/api/vaccinations/` | POST | Record vaccination |
+| Get by Pet | `/api/vaccinations/pet/{pet_id}` | GET | View vaccination history |
+| Due Vaccines | `/api/vaccinations/pet/{pet_id}/due` | GET | View due vaccinations |
 | **Lab Tests** |
-| Order Test | `/api/v1/lab-tests/` | POST | Order lab test |
-| Add Results | `/api/v1/lab-tests/{id}` | PUT | Update with results |
-| Get by Pet | `/api/v1/lab-tests/pet/{pet_id}` | GET | View all tests |
-| Abnormal Results | `/api/v1/lab-tests/pet/{pet_id}/abnormal` | GET | View abnormal only |
+| Order Test | `/api/lab-tests/` | POST | Order lab test |
+| Add Results | `/api/lab-tests/{id}` | PUT | Update with results |
+| Get by Pet | `/api/lab-tests/pet/{pet_id}` | GET | View all tests |
+| Abnormal Results | `/api/lab-tests/pet/{pet_id}/abnormal` | GET | View abnormal only |
 | **Medical Records** |
 | Create Record | `/api/medical-records/` | POST | Create new record |
 | Get by Pet | `/api/medical-records/pet/{pet_id}` | GET | View history |
@@ -882,7 +882,7 @@ curl -X POST "http://localhost:8000/api/auth/login" \
 ### 1. Always Check Allergies First
 ```bash
 # Before prescribing, always check critical allergies
-GET /api/v1/allergies/pet/{pet_id}/critical
+GET /api/allergies/pet/{pet_id}/critical
 ```
 
 ### 2. Complete Visit Last

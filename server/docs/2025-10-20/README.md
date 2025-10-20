@@ -54,6 +54,17 @@ This folder contains all documentation created on **October 20, 2025**.
   - Complete example workflow with cURL commands
   - API summary table
 
+### 5. **API_PREFIX_FIX.md**
+- **Type**: Configuration Fix
+- **Status**: ✅ Complete
+- **Purpose**: Fix duplicate API prefix issue in route files
+- **Changes**:
+  - Removed `/api/v1` from allergy, vaccination, and lab test routes
+  - Routes now use `/api` prefix from config
+  - Added missing routes to main.py
+  - Updated documentation with correct endpoints
+  - All 14 medical record endpoints now properly registered
+
 ---
 
 ## 🎯 What Was Accomplished
@@ -163,6 +174,6 @@ Database
 
 **Documentation Date**: October 20, 2025  
 **Implementation Status**: ✅ Complete  
-**Files**: 4 documents  
-**Total Lines**: ~2,400 lines of documentation
+**Files**: 5 documents  
+**Total Lines**: ~2,900 lines of documentation
 

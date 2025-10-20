@@ -17,7 +17,7 @@ from app.dependencies import get_current_user, get_db_session
 from app.models.user import User
 from app.schemas.vaccination import VaccinationCreate, VaccinationResponse
 
-router = APIRouter(prefix="/api/v1/vaccinations", tags=["vaccinations"])
+router = APIRouter(prefix="/vaccinations", tags=["vaccinations"])
 
 
 def get_vaccination_controller(db: Session = Depends(get_db_session)) -> VaccinationController:
