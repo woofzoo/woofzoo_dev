@@ -162,6 +162,20 @@ def get_clinic_profile_repository(session: Session = Depends(get_db_session)):
     return ClinicProfileRepository(session)
 
 
+def get_doctor_profile_repository(session: Session = Depends(get_db_session)):
+    """
+    Dependency to get doctor profile repository.
+    
+    Args:
+        session: Database session
+        
+    Returns:
+        DoctorProfileRepository instance
+    """
+    from app.repositories.doctor_profile import DoctorProfileRepository
+    return DoctorProfileRepository(session)
+
+
 def get_otp_repository(session: Session = Depends(get_db_session)) -> OTPRepository:
     """
     Dependency to get OTP repository.
@@ -412,7 +426,8 @@ def get_doctor_queue_service(
     pet_clinic_access_repository: PetClinicAccessRepository = Depends(get_pet_clinic_access_repository),
     medical_record_repository: MedicalRecordRepository = Depends(get_medical_record_repository),
     pet_repository: PetRepository = Depends(get_pet_repository),
-    user_repository: UserRepository = Depends(get_user_repository)
+    user_repository: UserRepository = Depends(get_user_repository),
+    doctor_profile_repository = Depends(get_doctor_profile_repository)
 ) -> DoctorQueueService:
     """
     Dependency to get doctor queue service.
@@ -422,6 +437,7 @@ def get_doctor_queue_service(
         medical_record_repository: Medical record repository instance
         pet_repository: Pet repository instance
         user_repository: User repository instance
+        doctor_profile_repository: Doctor profile repository instance
         
     Returns:
         DoctorQueueService instance
@@ -430,7 +446,8 @@ def get_doctor_queue_service(
         pet_clinic_access_repository,
         medical_record_repository,
         pet_repository,
-        user_repository
+        user_repository,
+        doctor_profile_repository
     )
 
 

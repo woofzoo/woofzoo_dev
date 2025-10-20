@@ -127,6 +127,20 @@ class BaseRepository(Generic[ModelType]):
             # Invalid UUID format
             return None
     
+    def get(self, id: uuid.UUID) -> Optional[ModelType]:
+        """
+        Get a record by UUID.
+        
+        Convenience method that accepts UUID directly instead of string.
+        
+        Args:
+            id: Record UUID
+            
+        Returns:
+            Model instance or None if not found
+        """
+        return self.get_by_id(str(id))
+    
     def get_all(self, skip: int = 0, limit: int = 100) -> List[ModelType]:
         """
         Get all records with pagination.

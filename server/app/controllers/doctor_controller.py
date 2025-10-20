@@ -26,10 +26,6 @@ from app.schemas.doctor_queue import (
     CompleteVisitResponse,
 )
 from app.logger import logger
-from app.database import get_db_session
-from app.repositories.pet import PetRepository
-from app.repositories.user import UserRepository
-from app.repositories.medical_record import MedicalRecordRepository
 
 
 class DoctorController:
@@ -46,6 +42,9 @@ class DoctorController:
         """
         Get today's queue for the logged-in doctor.
         
+        This method now uses the service layer for profile resolution and data fetching,
+        following clean architecture principles. No direct database access.
+        
         Args:
             current_user: Current authenticated doctor user
             
@@ -53,76 +52,29 @@ class DoctorController:
             DoctorQueueResponse: Today's queue with statistics
             
         Raises:
-            HTTPException: If fetching queue fails
+            HTTPException: If fetching queue fails or doctor profile not found
         """
         try:
-            # TODO: Get doctor_id from current_user's doctor profile
-            # For now, using user's public_id as placeholder
-            doctor_id = current_user.public_id
-            
             logger.info(
                 "Fetching today's queue",
-                extra={"doctor_id": str(doctor_id)}
+                extra={"user_id": str(current_user.public_id)}
             )
             
-            queue_items, statistics = self.doctor_queue_service.get_todays_queue(doctor_id)
+            # Service layer handles profile resolution and data fetching
+            queue_details, statistics = self.doctor_queue_service.get_todays_queue_with_details(
+                current_user.public_id
+            )
             
-            # Build response
+            # Build response from service data
             queue_list: List[DoctorQueueItem] = []
-            for access in queue_items:
-                # Get pet and owner info
-                db = next(get_db_session())
-                try:
-                    pet_repo = PetRepository(db)
-                    user_repo = UserRepository(db)
-                    mr_repo = MedicalRecordRepository(db)
-                    
-                    pet = pet_repo.get(access.pet_id)
-                    if not pet:
-                        continue
-                    
-                    owner = user_repo.get_by_public_id(pet.owner_id)
-                    if not owner:
-                        continue
-                    
-                    medical_record = mr_repo.get(access.medical_record_id)
-                    if not medical_record:
-                        continue
-                    
-                    # Build pre-checks dict
-                    pre_checks = None
-                    if access.pre_check_weight or access.pre_check_temperature:
-                        pre_checks = {
-                            "weight": access.pre_check_weight,
-                            "temperature": access.pre_check_temperature,
-                            "heart_rate": access.pre_check_heart_rate,
-                            "respiratory_rate": access.pre_check_respiratory_rate,
-                            "notes": access.pre_check_notes
-                        }
-                    
-                    queue_item = DoctorQueueItem(
-                        queue_position=access.queue_position or 0,
-                        pet=PetQueueInfo(
-                            id=str(pet.id),
-                            pet_id=pet.pet_id,
-                            name=pet.name,
-                            pet_type=pet.pet_type,
-                            breed=pet.breed,
-                            age=pet.age,
-                            owner_name=owner.full_name
-                        ),
-                        visit_info=VisitInfo(
-                            medical_record_id=str(medical_record.id),
-                            visit_type=medical_record.visit_type or "GENERAL",
-                            chief_complaint=medical_record.chief_complaint,
-                            assigned_at=access.assigned_to_doctor_at,
-                            pre_checks=pre_checks
-                        ),
-                        status=access.queue_status
-                    )
-                    queue_list.append(queue_item)
-                finally:
-                    db.close()
+            for item in queue_details:
+                queue_item = DoctorQueueItem(
+                    queue_position=item["queue_position"],
+                    pet=PetQueueInfo(**item["pet"]),
+                    visit_info=VisitInfo(**item["visit_info"]),
+                    status=item["status"]
+                )
+                queue_list.append(queue_item)
             
             return DoctorQueueResponse(
                 date=date.today(),
@@ -130,10 +82,20 @@ class DoctorController:
                 **statistics
             )
         
+        except ValueError as e:
+            # Profile not found or validation error
+            logger.warning(
+                "Doctor queue access error",
+                extra={"user_id": str(current_user.id), "error": str(e)}
+            )
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=str(e)
+            )
         except Exception as e:
             logger.exception(
                 "Failed to fetch today's queue",
-                extra={"doctor_id": str(current_user.id)}
+                extra={"user_id": str(current_user.id)}
             )
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -160,13 +122,16 @@ class DoctorController:
         """
         try:
             record_id = uuid.UUID(medical_record_id)
-            doctor_id = current_user.public_id  # TODO: Get from doctor profile
+            
+            # Resolve doctor profile ID using service layer
+            doctor_id = self.doctor_queue_service.get_doctor_profile_id(current_user.public_id)
             
             logger.info(
                 "Fetching visit details",
                 extra={
                     "medical_record_id": medical_record_id,
-                    "doctor_id": str(doctor_id)
+                    "user_id": str(current_user.public_id),
+                    "doctor_profile_id": str(doctor_id)
                 }
             )
             
@@ -258,13 +223,16 @@ class DoctorController:
         """
         try:
             record_id = uuid.UUID(medical_record_id)
-            doctor_id = current_user.public_id  # TODO: Get from doctor profile
+            
+            # Resolve doctor profile ID using service layer
+            doctor_id = self.doctor_queue_service.get_doctor_profile_id(current_user.public_id)
             
             logger.info(
                 "Updating visit details",
                 extra={
                     "medical_record_id": medical_record_id,
-                    "doctor_id": str(doctor_id)
+                    "user_id": str(current_user.public_id),
+                    "doctor_profile_id": str(doctor_id)
                 }
             )
             
@@ -326,13 +294,16 @@ class DoctorController:
         """
         try:
             record_id = uuid.UUID(medical_record_id)
-            doctor_id = current_user.public_id  # TODO: Get from doctor profile
+            
+            # Resolve doctor profile ID using service layer
+            doctor_id = self.doctor_queue_service.get_doctor_profile_id(current_user.public_id)
             
             logger.info(
                 "Completing visit",
                 extra={
                     "medical_record_id": medical_record_id,
-                    "doctor_id": str(doctor_id)
+                    "user_id": str(current_user.public_id),
+                    "doctor_profile_id": str(doctor_id)
                 }
             )
             

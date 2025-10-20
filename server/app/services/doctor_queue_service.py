@@ -20,6 +20,7 @@ from app.repositories.pet_clinic_access import PetClinicAccessRepository
 from app.repositories.medical_record import MedicalRecordRepository
 from app.repositories.pet import PetRepository
 from app.repositories.user import UserRepository
+from app.repositories.doctor_profile import DoctorProfileRepository
 from app.logger import logger
 
 
@@ -31,13 +32,15 @@ class DoctorQueueService:
         pet_clinic_access_repository: PetClinicAccessRepository,
         medical_record_repository: MedicalRecordRepository,
         pet_repository: PetRepository,
-        user_repository: UserRepository
+        user_repository: UserRepository,
+        doctor_profile_repository: DoctorProfileRepository
     ):
         """Initialize the doctor queue service."""
         self.pet_clinic_access_repository = pet_clinic_access_repository
         self.medical_record_repository = medical_record_repository
         self.pet_repository = pet_repository
         self.user_repository = user_repository
+        self.doctor_profile_repository = doctor_profile_repository
     
     def get_todays_queue(
         self,
@@ -85,6 +88,139 @@ class DoctorQueueService:
         )
         
         return queue_items, statistics
+    
+    def get_doctor_profile_id(self, user_id: uuid.UUID) -> uuid.UUID:
+        """
+        Get doctor profile ID from user ID.
+        
+        This method implements the service layer approach for profile resolution,
+        keeping profile lookup logic in the business layer rather than middleware.
+        
+        Args:
+            user_id: Doctor user's public ID
+            
+        Returns:
+            Doctor profile ID
+            
+        Raises:
+            ValueError: If doctor profile not found for this user
+        """
+        profile = self.doctor_profile_repository.get_by_user_id(str(user_id))
+        if not profile:
+            raise ValueError(f"Doctor profile not found for user {user_id}")
+        
+        logger.info(
+            "Doctor profile resolved",
+            extra={
+                "user_id": str(user_id),
+                "doctor_profile_id": str(profile.id)
+            }
+        )
+        
+        return profile.id
+    
+    def get_todays_queue_with_details(
+        self,
+        user_id: uuid.UUID
+    ) -> Tuple[List[dict], dict]:
+        """
+        Get today's queue with all related details (orchestration method).
+        
+        This method orchestrates data from multiple repositories to build a complete
+        queue with pet, owner, and visit information. It follows the service layer
+        pattern by handling all business logic and data fetching.
+        
+        Args:
+            user_id: Doctor user's public ID
+            
+        Returns:
+            Tuple of (queue_items_with_details, statistics)
+            - queue_items_with_details: List of dicts with pet, owner, visit info
+            - statistics: Dict with total, completed, in_progress counts
+            
+        Raises:
+            ValueError: If doctor profile not found
+        """
+        # Step 1: Resolve doctor profile ID (service layer logic)
+        doctor_id = self.get_doctor_profile_id(user_id)
+        
+        # Step 2: Get queue items (existing method)
+        queue_items, statistics = self.get_todays_queue(doctor_id)
+        
+        # Step 3: Fetch related data for each queue item
+        queue_details = []
+        for access in queue_items:
+            # Fetch pet
+            pet = self.pet_repository.get(access.pet_id)
+            if not pet:
+                logger.warning(
+                    "Pet not found in queue",
+                    extra={"pet_id": str(access.pet_id), "access_id": str(access.id)}
+                )
+                continue
+            
+            # Fetch owner
+            owner = self.user_repository.get_by_public_id(pet.owner_id)
+            if not owner:
+                logger.warning(
+                    "Owner not found in queue",
+                    extra={"owner_id": str(pet.owner_id), "pet_id": str(pet.id)}
+                )
+                continue
+            
+            # Fetch medical record
+            medical_record = self.medical_record_repository.get(access.medical_record_id)
+            if not medical_record:
+                logger.warning(
+                    "Medical record not found in queue",
+                    extra={"medical_record_id": str(access.medical_record_id), "access_id": str(access.id)}
+                )
+                continue
+            
+            # Build pre-checks dict
+            pre_checks = None
+            if access.pre_check_weight or access.pre_check_temperature:
+                pre_checks = {
+                    "weight": access.pre_check_weight,
+                    "temperature": access.pre_check_temperature,
+                    "heart_rate": access.pre_check_heart_rate,
+                    "respiratory_rate": access.pre_check_respiratory_rate,
+                    "notes": access.pre_check_notes
+                }
+            
+            # Build complete queue item
+            queue_details.append({
+                "queue_position": access.queue_position or 0,
+                "pet": {
+                    "id": str(pet.id),
+                    "pet_id": pet.pet_id,
+                    "name": pet.name,
+                    "pet_type": pet.pet_type,
+                    "breed": pet.breed,
+                    "age": pet.age,
+                    "owner_name": owner.full_name
+                },
+                "visit_info": {
+                    "medical_record_id": str(medical_record.id),
+                    "visit_type": medical_record.visit_type or "GENERAL",
+                    "chief_complaint": medical_record.chief_complaint,
+                    "assigned_at": access.assigned_to_doctor_at,
+                    "pre_checks": pre_checks
+                },
+                "status": access.queue_status
+            })
+        
+        logger.info(
+            "Today's queue with details retrieved",
+            extra={
+                "user_id": str(user_id),
+                "doctor_profile_id": str(doctor_id),
+                "queue_size": len(queue_details),
+                **statistics
+            }
+        )
+        
+        return queue_details, statistics
     
     def get_visit_details(
         self,
