@@ -17,7 +17,7 @@ from app.dependencies import get_current_user, get_db_session
 from app.models.user import User
 from app.schemas.prescription import PrescriptionCreate, PrescriptionResponse, PrescriptionUpdate
 
-router = APIRouter(prefix="/api/v1/prescriptions", tags=["prescriptions"])
+router = APIRouter(prefix="/prescriptions", tags=["prescriptions"])
 
 
 def get_prescription_controller(db: Session = Depends(get_db_session)) -> PrescriptionController:
