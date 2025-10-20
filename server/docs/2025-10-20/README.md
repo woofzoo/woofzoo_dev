@@ -65,6 +65,18 @@ This folder contains all documentation created on **October 20, 2025**.
   - Updated documentation with correct endpoints
   - All 14 medical record endpoints now properly registered
 
+### 6. **DOCTOR_ROLE_PROTECTION.md**
+- **Type**: Security Enhancement
+- **Status**: ✅ Complete
+- **Priority**: High
+- **Purpose**: Add doctor role requirement to all medical record endpoints
+- **Changes**:
+  - Changed from `get_current_user` to `get_doctor_user`
+  - All 14 medical record endpoints now require doctor role
+  - Route-level role validation enforced
+  - Updated API documentation with authorization requirements
+  - Non-doctors will receive 403 Forbidden
+
 ---
 
 ## 🎯 What Was Accomplished
@@ -174,6 +186,6 @@ Database
 
 **Documentation Date**: October 20, 2025  
 **Implementation Status**: ✅ Complete  
-**Files**: 5 documents  
-**Total Lines**: ~2,900 lines of documentation
+**Files**: 6 documents  
+**Total Lines**: ~3,400 lines of documentation
 

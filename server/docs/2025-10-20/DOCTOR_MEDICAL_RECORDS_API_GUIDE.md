@@ -251,7 +251,7 @@ curl -X POST "http://localhost:8000/api/doctor/visits/{medical_record_id}/comple
 ### 1. Add Prescription (Medication)
 
 **Endpoint**: `POST /api/prescriptions/`  
-**Authorization**: Any authenticated user (permissions checked internally)  
+**Authorization**: Requires `doctor` role (enforced at route level)  
 **Description**: Create a new prescription/medication record
 
 **Request Body**:
@@ -357,7 +357,7 @@ curl -X PUT "http://localhost:8000/api/prescriptions/{prescription_id}" \
 ### 1. Add Allergy
 
 **Endpoint**: `POST /api/allergies/`  
-**Authorization**: Any authenticated user (permissions checked internally)  
+**Authorization**: Requires `doctor` role (enforced at route level)  
 **Description**: Record a new allergy for a pet
 
 **Request Body**:
@@ -436,7 +436,7 @@ curl -X GET "http://localhost:8000/api/allergies/pet/{pet_id}/critical" \
 ### 1. Add Vaccination
 
 **Endpoint**: `POST /api/vaccinations/`  
-**Authorization**: Any authenticated user (permissions checked internally)  
+**Authorization**: Requires `doctor` role (enforced at route level)  
 **Description**: Record a vaccination administered to a pet
 
 **Request Body**:
@@ -526,7 +526,7 @@ curl -X GET "http://localhost:8000/api/vaccinations/pet/{pet_id}/due" \
 ### 1. Order Lab Test
 
 **Endpoint**: `POST /api/lab-tests/`  
-**Authorization**: Any authenticated user (permissions checked internally)  
+**Authorization**: Requires `doctor` role (enforced at route level)  
 **Description**: Order a new lab test for a pet
 
 **Request Body**:
@@ -869,11 +869,31 @@ curl -X POST "http://localhost:8000/api/auth/login" \
 
 ## Permissions
 
-- **Doctor Role Required**: Visit management endpoints (`/api/doctor/*`)
-- **Permission Checked**: Other endpoints check if you have permission to access the pet's data
-  - Pet owner (admin)
-  - Family member with appropriate permissions
-  - Clinic/doctor with active access
+### Doctor Role Required (Enforced at Route Level)
+
+All medical record management endpoints now require the `doctor` role:
+
+**Visit Management**:
+- `/api/doctor/*` - All doctor queue endpoints
+
+**Medical Records**:
+- `/api/prescriptions/*` - All prescription endpoints
+- `/api/allergies/*` - All allergy endpoints
+- `/api/vaccinations/*` - All vaccination endpoints
+- `/api/lab-tests/*` - All lab test endpoints
+
+**Authorization Check**:
+1. JWT token validated
+2. User role checked
+3. Must have `"doctor"` in roles array
+4. Returns `403 Forbidden` if not a doctor
+
+**Example Error Response** (Non-doctor user):
+```json
+{
+  "detail": "User does not have required role: doctor"
+}
+```
 
 ---
 
