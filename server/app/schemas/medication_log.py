@@ -36,12 +36,14 @@ class MedicationLogBase(BaseModel):
 class MedicationLogCreate(MedicationLogBase):
     """Schema for creating a new medication log entry."""
     
-    pet_id: str = Field(..., description="Pet's unique identifier")
+    pet_id: Optional[str] = Field(None, description="Pet's unique identifier (auto-filled from URL)")
     
     @field_validator('pet_id')
     @classmethod
     def validate_pet_id(cls, v):
         """Convert UUID to string if needed."""
+        if v is None:
+            return None
         if isinstance(v, uuid.UUID):
             return str(v)
         return v
@@ -49,7 +51,6 @@ class MedicationLogCreate(MedicationLogBase):
     model_config = ConfigDict(
         json_schema_extra={
             "example": {
-                "pet_id": "550e8400-e29b-41d4-a716-446655440000",
                 "medication_name": "Amoxicillin",
                 "dosage": "250",
                 "dosage_unit": "mg",

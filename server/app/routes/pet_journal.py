@@ -50,6 +50,7 @@ def get_pet_journal_controller(
     description="Create a new journal entry for a pet (activity, medication, event, or health note)"
 )
 def create_journal_entry(
+    pet_id: str,
     journal_data: PetJournalCreate,
     user_id: int = Depends(get_current_user_id),
     controller: PetJournalController = Depends(get_pet_journal_controller)
@@ -63,6 +64,8 @@ def create_journal_entry(
     - activity_event: Special events or activities
     - health_note: Health observations and notes
     """
+    # Set pet_id from URL path
+    journal_data.pet_id = pet_id
     return controller.create_journal_entry(journal_data, user_id)
 
 

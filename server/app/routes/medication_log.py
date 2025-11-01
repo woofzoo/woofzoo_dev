@@ -9,8 +9,10 @@ from datetime import datetime
 from typing import Optional
 
 from fastapi import APIRouter, Depends, Query, status
+from sqlalchemy.orm import Session
 
 from app.controllers.medication_log_controller import MedicationLogController
+from app.database import get_db_session
 from app.dependencies import get_current_user_id
 from app.schemas.medication_log import (
     MedicationLogCreate,
@@ -24,22 +26,19 @@ from app.schemas.medication_log import (
 router = APIRouter(prefix="/pets", tags=["medication-logs"])
 
 
-# Dependency to get medication log controller (will be added to dependencies.py)
-def get_medication_log_controller() -> MedicationLogController:
+# Dependency to get medication log controller
+def get_medication_log_controller(
+    db: Session = Depends(get_db_session)
+) -> MedicationLogController:
     """Get medication log controller with dependency injection."""
-    from app.database import SessionLocal
     from app.repositories.medication_log_repository import MedicationLogRepository
     from app.repositories.pet import PetRepository
     from app.services.medication_log_service import MedicationLogService
     
-    db = SessionLocal()
-    try:
-        med_log_repo = MedicationLogRepository(db)
-        pet_repo = PetRepository(db)
-        med_log_service = MedicationLogService(med_log_repo, pet_repo)
-        return MedicationLogController(med_log_service)
-    finally:
-        db.close()
+    med_log_repo = MedicationLogRepository(db)
+    pet_repo = PetRepository(db)
+    med_log_service = MedicationLogService(med_log_repo, pet_repo)
+    return MedicationLogController(med_log_service)
 
 
 # API Endpoints
@@ -51,6 +50,7 @@ def get_medication_log_controller() -> MedicationLogController:
     description="Log when a medication was given to a pet"
 )
 def log_medication(
+    pet_id: str,
     log_data: MedicationLogCreate,
     user_id: int = Depends(get_current_user_id),
     controller: MedicationLogController = Depends(get_medication_log_controller)
@@ -61,6 +61,8 @@ def log_medication(
     This endpoint allows pet owners to track when they give medication to their pets,
     including the dosage, time, and any notes.
     """
+    # Set pet_id from URL path
+    log_data.pet_id = pet_id
     return controller.log_medication(log_data, user_id)
 
 

@@ -103,12 +103,14 @@ class PetJournalBase(BaseModel):
 class PetJournalCreate(PetJournalBase):
     """Schema for creating a new pet journal entry."""
     
-    pet_id: str = Field(..., description="Pet's unique identifier")
+    pet_id: Optional[str] = Field(None, description="Pet's unique identifier (auto-filled from URL)")
     
     @field_validator('pet_id')
     @classmethod
     def validate_pet_id(cls, v):
         """Convert UUID to string if needed."""
+        if v is None:
+            return None
         if isinstance(v, uuid.UUID):
             return str(v)
         return v
@@ -116,7 +118,6 @@ class PetJournalCreate(PetJournalBase):
     model_config = ConfigDict(
         json_schema_extra={
             "example": {
-                "pet_id": "550e8400-e29b-41d4-a716-446655440000",
                 "entry_type": "health_note",
                 "title": "Slight cough observed",
                 "content": "Noticed Buddy coughing a few times today. Will monitor for the next few days.",
