@@ -25,6 +25,10 @@ from app.models.allergy import Allergy, AllergyType, AllergySeverity
 from app.models.vaccination import Vaccination
 from app.models.medical_record_attachment import MedicalRecordAttachment, AttachmentType
 
+# Pet Journal and Medication Log Models
+from app.models.pet_journal import PetJournal
+from app.models.medication_log import MedicationLog
+
 __all__ = [
     # User & Owner Models
     "User",
@@ -57,4 +61,7 @@ __all__ = [
     "Vaccination",
     "MedicalRecordAttachment",
     "AttachmentType",
+    # Pet Journal and Medication Log
+    "PetJournal",
+    "MedicationLog",
 ]
