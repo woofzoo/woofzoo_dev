@@ -9,8 +9,10 @@ from datetime import date
 from typing import Optional
 
 from fastapi import APIRouter, Depends, Query, status
+from sqlalchemy.orm import Session
 
 from app.controllers.pet_journal_controller import PetJournalController
+from app.database import get_db_session
 from app.dependencies import get_current_user_id
 from app.schemas.pet_journal import (
     PetJournalCreate,
@@ -24,23 +26,19 @@ from app.schemas.pet_journal import (
 router = APIRouter(prefix="/pets", tags=["pet-journal"])
 
 
-# Dependency to get pet journal controller (will be added to dependencies.py)
-def get_pet_journal_controller() -> PetJournalController:
+# Dependency to get pet journal controller
+def get_pet_journal_controller(
+    db: Session = Depends(get_db_session)
+) -> PetJournalController:
     """Get pet journal controller with dependency injection."""
-    from app.dependencies import get_db
-    from app.database import SessionLocal
     from app.repositories.pet_journal_repository import PetJournalRepository
     from app.repositories.pet import PetRepository
     from app.services.pet_journal_service import PetJournalService
     
-    db = SessionLocal()
-    try:
-        journal_repo = PetJournalRepository(db)
-        pet_repo = PetRepository(db)
-        journal_service = PetJournalService(journal_repo, pet_repo)
-        return PetJournalController(journal_service)
-    finally:
-        db.close()
+    journal_repo = PetJournalRepository(db)
+    pet_repo = PetRepository(db)
+    journal_service = PetJournalService(journal_repo, pet_repo)
+    return PetJournalController(journal_service)
 
 
 # API Endpoints

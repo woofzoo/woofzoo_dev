@@ -52,10 +52,9 @@ class JournalDetails(BaseModel):
     photo_urls: Optional[list[str]] = Field(None, description="URLs to related photos")
     
     # Allow additional fields for extensibility
-    model_config = ConfigDict(extra="allow")
-    
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        extra="allow",
+        json_schema_extra={
             "example": {
                 "activity_duration_minute": 30,
                 "location": "Central Park",
@@ -63,6 +62,8 @@ class JournalDetails(BaseModel):
                 "notes": "Had a great time playing fetch"
             }
         }
+    )
+
 
 
 class PetJournalBase(BaseModel):
