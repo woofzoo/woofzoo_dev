@@ -32,17 +32,8 @@ from app.routes import (
     medical_record_router,
     doctor_clinic_association_router,
     clinic_access_router,
-<<<<<<< Updated upstream
-=======
-    clinic_workflow_router,
-    doctor_router,
-    prescription_router,
-    allergy_router,
-    vaccination_router,
-    lab_test_router,
     pet_journal_router,
     medication_log_router,
->>>>>>> Stashed changes
 )
 
 
@@ -118,18 +109,9 @@ app.include_router(clinic_profile_router, prefix=settings.api_prefix)
 app.include_router(medical_record_router, prefix=settings.api_prefix)
 app.include_router(doctor_clinic_association_router, prefix=settings.api_prefix)
 app.include_router(clinic_access_router, prefix=settings.api_prefix)
-<<<<<<< Updated upstream
-
-=======
-app.include_router(clinic_workflow_router, prefix=settings.api_prefix)
-app.include_router(doctor_router, prefix=settings.api_prefix)
-app.include_router(prescription_router, prefix=settings.api_prefix)
-app.include_router(allergy_router, prefix=settings.api_prefix)
-app.include_router(vaccination_router, prefix=settings.api_prefix)
-app.include_router(lab_test_router, prefix=settings.api_prefix)
 app.include_router(pet_journal_router, prefix=settings.api_prefix)
 app.include_router(medication_log_router, prefix=settings.api_prefix)
->>>>>>> Stashed changes
+
 
 
 @app.get("/", tags=["root"])
