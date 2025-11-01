@@ -30,7 +30,7 @@ class PetJournal(Base):
         title: Brief title/summary of the entry
         content: Detailed content of the journal entry
         entry_date: Date the activity/event occurred
-        metadata: JSON object for flexible additional data
+        details: JSON object for structured additional information
         created_at: Entry creation timestamp
         updated_at: Entry last update timestamp
     """
@@ -59,7 +59,7 @@ class PetJournal(Base):
     entry_date: date = Column(Date, nullable=False, index=True)
     
     # Flexible metadata for additional information
-    metadata: dict = Column(JSON, nullable=False, default=dict)
+    details: dict = Column(JSON, nullable=False, default=dict)
     
     # Timestamps
     created_at: datetime = Column(
@@ -88,7 +88,7 @@ class PetJournal(Base):
             "title": self.title,
             "content": self.content,
             "entry_date": self.entry_date.isoformat() if self.entry_date else None,
-            "metadata": self.metadata,
+            "details": self.details,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }

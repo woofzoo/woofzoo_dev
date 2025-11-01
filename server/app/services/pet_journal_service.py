@@ -76,7 +76,7 @@ class PetJournalService:
             title=journal_data.title,
             content=journal_data.content,
             entry_date=journal_data.entry_date,
-            metadata=journal_data.metadata or {}
+            details=journal_data.details.model_dump() if journal_data.details else {}
         )
         
         logger.info(
