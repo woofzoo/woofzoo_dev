@@ -4,11 +4,11 @@ Pet model for the application.
 This module defines the Pet SQLAlchemy model representing pets in the system.
 """
 
-from datetime import datetime
+from datetime import datetime, date
 from typing import Optional
 import uuid
 
-from sqlalchemy import Column, DateTime, String, Integer, Float, Boolean, UUID, ForeignKey, JSON, Enum
+from sqlalchemy import Column, DateTime, Date, String, Integer, Float, Boolean, UUID, ForeignKey, JSON, Enum
 from sqlalchemy.sql import func
 import enum
 
@@ -34,7 +34,8 @@ class Pet(Base):
         name: Pet's name
         pet_type: Type of pet (DOG, CAT, BIRD, etc.)
         breed: Pet's breed
-        age: Pet's age in years (optional)
+        date_of_birth: Pet's date of birth (optional)
+        age: Pet's age in years (optional, computed from date_of_birth if available)
         gender: Pet's gender (Male, Female, Unknown)
         weight: Pet's weight (optional)
         photos: JSON object containing photo URLs and metadata
@@ -54,6 +55,7 @@ class Pet(Base):
     name: str = Column(String(50), nullable=False)
     pet_type: str = Column(String(20), nullable=False)
     breed: str = Column(String(50), nullable=False)
+    date_of_birth: Optional[date] = Column(Date, nullable=True)
     age: Optional[int] = Column(Integer, nullable=True)
     gender: str = Column(Enum(Gender), default=Gender.UNKNOWN, nullable=False)
     weight: Optional[float] = Column(Float, nullable=True)
@@ -96,7 +98,8 @@ class Pet(Base):
             "name": self.name,
             "pet_type": self.pet_type,
             "breed": self.breed,
-            "age": self.age,
+            "date_of_birth": self.date_of_birth.isoformat() if self.date_of_birth else None,
+            "age": self.calculate_age() if self.date_of_birth else self.age,
             "gender": self.gender.value if self.gender else None,
             "weight": self.weight,
             "photos": self.photos,
@@ -106,3 +109,22 @@ class Pet(Base):
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }
+    
+    def calculate_age(self) -> Optional[int]:
+        """
+        Calculate pet's age from date of birth.
+        
+        Returns:
+            Age in years, or None if date_of_birth is not set
+        """
+        if not self.date_of_birth:
+            return None
+        
+        today = datetime.now().date()
+        age_years = today.year - self.date_of_birth.year
+        
+        # Adjust if birthday hasn't occurred yet this year
+        if (today.month, today.day) < (self.date_of_birth.month, self.date_of_birth.day):
+            age_years -= 1
+        
+        return age_years

@@ -32,6 +32,8 @@ from app.routes import (
     medical_record_router,
     doctor_clinic_association_router,
     clinic_access_router,
+    pet_journal_router,
+    medication_log_router,
 )
 
 
@@ -107,6 +109,8 @@ app.include_router(clinic_profile_router, prefix=settings.api_prefix)
 app.include_router(medical_record_router, prefix=settings.api_prefix)
 app.include_router(doctor_clinic_association_router, prefix=settings.api_prefix)
 app.include_router(clinic_access_router, prefix=settings.api_prefix)
+app.include_router(pet_journal_router, prefix=settings.api_prefix)
+app.include_router(medication_log_router, prefix=settings.api_prefix)
 
 
 

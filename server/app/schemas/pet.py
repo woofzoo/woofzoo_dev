@@ -4,7 +4,7 @@ Pet Pydantic schemas for request/response validation.
 This module defines Pydantic models for pet-related API operations.
 """
 
-from datetime import datetime
+from datetime import datetime, date
 from typing import Optional, Any
 import uuid
 
@@ -19,7 +19,8 @@ class PetBase(BaseModel):
     name: str = Field(..., min_length=1, max_length=100, description="Pet's name")
     pet_type: str = Field(..., description="Type of pet (e.g., DOG, CAT)")
     breed: str = Field(..., description="Breed of the pet")
-    age: Optional[int] = Field(None, ge=0, le=50, description="Pet's age in years")
+    date_of_birth: Optional[date] = Field(None, description="Pet's date of birth")
+    age: Optional[int] = Field(None, ge=0, le=50, description="Pet's age in years (optional if date_of_birth provided)")
     gender: Optional[str] = Field(None, description="Pet's gender (MALE, FEMALE)")
     weight: Optional[float] = Field(None, ge=0.1, le=500.0, description="Pet's weight in kg")
     photos: Optional[list[str]] = Field(None, description="List of photo URLs")
@@ -52,6 +53,7 @@ class PetBase(BaseModel):
                 "name": "Buddy",
                 "pet_type": "DOG",
                 "breed": "Golden Retriever",
+                "date_of_birth": "2022-01-15",
                 "age": 3,
                 "gender": "MALE",
                 "weight": 25.5,
@@ -112,6 +114,7 @@ class PetUpdate(BaseModel):
     name: Optional[str] = Field(None, min_length=1, max_length=100, description="Pet's name")
     pet_type: Optional[str] = Field(None, description="Type of pet (e.g., DOG, CAT)")
     breed: Optional[str] = Field(None, description="Breed of the pet")
+    date_of_birth: Optional[date] = Field(None, description="Pet's date of birth")
     age: Optional[int] = Field(None, ge=0, le=50, description="Pet's age in years")
     gender: Optional[str] = Field(None, description="Pet's gender (MALE, FEMALE)")
     weight: Optional[float] = Field(None, ge=0.1, le=500.0, description="Pet's weight in kg")
@@ -174,6 +177,8 @@ class PetResponse(PetBase):
     id: str = Field(..., description="Pet unique identifier")
     pet_id: str = Field(..., description="Pet's unique pet ID")
     owner_id: str = Field(..., description="Owner's unique identifier")
+    date_of_birth: Optional[date] = Field(None, description="Pet's date of birth")
+    age: Optional[int] = Field(None, description="Pet's age (computed from date_of_birth or stored value)")
     is_active: bool = Field(..., description="Pet profile status")
     created_at: datetime = Field(..., description="Pet creation timestamp")
     updated_at: datetime = Field(..., description="Pet last update timestamp")

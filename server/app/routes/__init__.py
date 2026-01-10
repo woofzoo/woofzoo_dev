@@ -18,6 +18,8 @@ from app.routes.clinic_profile_routes import router as clinic_profile_router
 from app.routes.medical_record_routes import router as medical_record_router
 from app.routes.doctor_clinic_association_routes import router as doctor_clinic_association_router
 from app.routes.clinic_access_routes import router as clinic_access_router
+from app.routes.pet_journal import router as pet_journal_router
+from app.routes.medication_log import router as medication_log_router
 
 __all__ = [
     "auth_router",
@@ -34,4 +36,12 @@ __all__ = [
     "medical_record_router",
     "doctor_clinic_association_router",
     "clinic_access_router",
+    "clinic_workflow_router",
+    "doctor_router",
+    "prescription_router",
+    "allergy_router",
+    "vaccination_router",
+    "lab_test_router",
+    "pet_journal_router",
+    "medication_log_router",
 ]
